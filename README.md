@@ -5,10 +5,10 @@ How to use/test locally
 It should at least work until the following commits
 
 -   rustc 1.49.0-nightly (beb5ae474 2020-10-04)
--   polkadot.js.org (apps v0.75.2-37)
--   Polkadot rococo-v1 @ `a2c8b66ce192b1976d67eb0f2939ff64ea4fd2ae`
--   Cumulus rococo-v1 @ `47862314c4af4e40225d679bf1ce06cae1e63724`
--   Substrate rococo-v1 (newer than 2.0.0) @ `ecb85f764fa68dcf89dbf01e50567420f8605524`
+-   polkadot.js.org (apps v0.75.2-56)
+-   Polkadot rococo-v1 @ `a3e1113655acfa42ae210310de90df086933ce26`
+-   Cumulus rococo-v1 @ `7277f7aae5c0b45543a53d823d0c6c1da2a3ab18`
+-   Substrate rococo-v1 (newer than 2.0.0) @ `a9bbc7bdbfd3fa66537e5feedf1562dcb2c132a5`
 
 ### 2. How to use
 
@@ -53,19 +53,19 @@ cargo build --release
 
 # Export genesis state
 # --parachain-id 59 as an example that can be chosen freely. Make sure to everywhere use the same parachain id
-./target/release/dev-parachain export-genesis-state --parachain-id 59 > genesis-state
+./target/release/sherpax export-genesis-state --parachain-id 59 > genesis-state
 
 # Export genesis wasm
-./target/release/dev-parachain export-genesis-wasm > genesis-wasm
+./target/release/sherpax export-genesis-wasm > genesis-wasm
 
 # Collator1
-./target/release/dev-parachain --collator --tmp --parachain-id 59 --port 40335 --ws-port 9946 -- --execution wasm --chain ../polkadot/rococo-local-cfde-real-overseer.json --port 30335
+./target/release/sherpax --collator --tmp --parachain-id 59 --port 40335 --ws-port 9946 -- --execution wasm --chain ../polkadot/rococo-local-cfde-real-overseer.json --port 30335
 
 # Collator2
-./target/release/dev-parachain --collator --tmp --parachain-id 59 --port 40336 --ws-port 9947 -- --execution wasm --chain ../polkadot/rococo-local-cfde-real-overseer.json --port 30336
+./target/release/sherpax --collator --tmp --parachain-id 59 --port 40336 --ws-port 9947 -- --execution wasm --chain ../polkadot/rococo-local-cfde-real-overseer.json --port 30336
 
 # Parachain Full Node 1
-./target/release/dev-parachain --tmp --parachain-id 59 --port 40337 --ws-port 9948 -- --execution wasm --chain ../polkadot/rococo-local-cfde-real-overseer.json --port 30337
+./target/release/sherpax --tmp --parachain-id 59 --port 40337 --ws-port 9948 -- --execution wasm --chain ../polkadot/rococo-local-cfde-real-overseer.json --port 30337
 ```
 
 ### 4. Register the parachain

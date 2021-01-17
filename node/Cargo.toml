@@ -1,11 +1,11 @@
 [package]
-name = 'dev-parachain'
+name = 'sherpax'
 version = '0.1.0'
 authors = ["ChainX Developers"]
 edition = '2018'
 
 [[bin]]
-name = 'dev-parachain'
+name = 'sherpax'
 path = 'src/main.rs'
 
 [dependencies]
