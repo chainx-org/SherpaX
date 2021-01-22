@@ -94,7 +94,9 @@ In case the apps complain about missing types when registering the parachain via
     "token_1": "AssetId",
     "account": "AccountId",
     "total_liquidity": "TokenBalance",
-    "holding_liquidity": "TokenBalance"
+    "holding_liquidity": "TokenBalance",
+    "reserve_0": "TokenBalance",
+    "reserve_1": "TokenBalance"
   },
   "AssetId": {
     "_enum": {
@@ -103,9 +105,7 @@ In case the apps complain about missing types when registering the parachain via
     }
   },
   "Id": "u32",
-  "CurrencyOf": "u128",
-  "ExchangeId": "u32",
-  "TokenBalance": "u64",
+  "TokenBalance": "u128",
   "OriginKind": {
     "_enum": {
       "Native": null,
@@ -332,12 +332,12 @@ In case the apps complain about missing types when registering the parachain via
   "ValidatorSignature": "Signature",
   "HeadData": "Vec<u8>",
   "CandidateDescriptor": {
-    "para_id": "u32",
-    "relay_parent": "Hash",
-    "collator_id": "Hash",
-    "persisted_validation_data_hash": "Hash",
-    "pov_hash": "Hash",
-    "erasure_root": "Hash",
+    "paraId": "u32",
+    "relayParent": "Hash",
+    "collator": "Hash",
+    "persistedValidationDataHash": "Hash",
+    "povHash": "Hash",
+    "erasureRoot": "Hash",
     "signature": "Signature"
   },
   "CandidateReceipt": {
