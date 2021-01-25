@@ -5,10 +5,10 @@ How to use/test locally
 It should at least work until the following commits
 
 -   rustc 1.49.0-nightly (beb5ae474 2020-10-04)
--   polkadot.js.org (apps v0.75.2-56)
--   Polkadot rococo-v1 @ `a3e1113655acfa42ae210310de90df086933ce26`
--   Cumulus rococo-v1 @ `7277f7aae5c0b45543a53d823d0c6c1da2a3ab18`
--   Substrate rococo-v1 (newer than 2.0.0) @ `a9bbc7bdbfd3fa66537e5feedf1562dcb2c132a5`
+-   polkadot.js.org (apps v0.76.2-29)
+-   Polkadot rococo-v1 @ `bb0ed79311b89049088bc6d8e8aefba6ea09a95f`
+-   Cumulus rococo-v1 @ `89762272e30f7479c15b374ca3402cfbf93343c0`
+-   Substrate rococo-v1 (newer than 2.0.0) @ `4b687dfb4def2b5eee9f5a20629e3fc3563587ee`
 
 ### 2. How to use
 
@@ -83,6 +83,14 @@ In case the apps complain about missing types when registering the parachain via
   "Keys": "(AccountId,AccountId,AccountId,AccountId,AccountId,AccountId)",
   "AccountInfo": "AccountInfoWithRefCount",
   "PairId": "u32",
+  "PerDispatchClass": {
+    "normal": "u32",
+    "operational": "u32",
+    "mandatory": "u32"
+  },
+  "BlockLength": {
+    "max": "PerDispatchClass"
+  },
   "Pair": {
     "token_0": "AssetId",
     "token_1": "AssetId",
