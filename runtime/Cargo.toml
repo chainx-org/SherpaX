@@ -35,9 +35,8 @@ pallet-transaction-payment = { git = 'https://github.com/paritytech/substrate', 
 
 # Cumulus dependencies
 cumulus-runtime = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
-cumulus-parachain-upgrade = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
+cumulus-parachain-system = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 cumulus-primitives = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
-cumulus-message-broker = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 parachain-info = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 xcm-handler = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 
@@ -77,8 +76,7 @@ std = [
 	'parachain-info/std',
 	'dev-parachain-primitives/std',
 	'cumulus-runtime/std',
-	'cumulus-parachain-upgrade/std',
-	'cumulus-message-broker/std',
+	'cumulus-parachain-system/std',
 	'cumulus-primitives/std',
 	"xcm-handler/std",
 	"xcm/std",
