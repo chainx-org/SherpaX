@@ -70,8 +70,8 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
 	properties.insert("tokenDecimals".into(), 8.into());
 	let wasm = WASM_BINARY.ok_or("No WASM")?;
 	Ok(ChainSpec::from_genesis(
-		"ChainX Parachain Testnet",
-		"chainx_parachain_testnet",
+		"SherpaX PC1",
+		"sherpax",
 		ChainType::Live,
 		move || {
 			testnet_genesis(
