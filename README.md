@@ -4,11 +4,11 @@ How to use/test locally
 
 It should at least work until the following commits
 
--   rustc 1.49.0-nightly (beb5ae474 2020-10-04)
--   polkadot.js.org (apps v0.77.2-21)
--   Polkadot rococo-v1 @ `dcebc8177412a3ac7891283d1441f1a346e9982c`
--   Cumulus rococo-v1 @ `4b69b8d4bfa113fb3af2da34d1b71313bc43fb0c`
--   Substrate rococo-v1 (newer than 2.0.0) @ `0b0d124d5f9be89f614f2be8e9da038fcb9f540e`
+-   rustc 1.52.0-nightly (d1206f950 2021-02-15)
+-   polkadot.js.org (apps v0.80.2-10)
+-   Polkadot rococo-v1 @ `93e7c522c1e077f2d9fe023a5505ea10011ce185`
+-   Cumulus rococo-v1 @ `fad35c28b1f73aaeb25dedb46674b48774c092b4`
+-   Substrate rococo-v1 (newer than 2.0.0) @ `e03ca38d45f438932ec92bf69a40b6b16b6ec643`
 
 ### 2. How to use
 
