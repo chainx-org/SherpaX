@@ -1,4 +1,3 @@
-# for possible configuration values see https://github.com/rust-lang/rustfmt/blob/master/Configurations.md
-
-merge_imports = true
-hard_tabs = true
+use_small_heuristics = "Max"
+imports_granularity = "Crate"
+edition = "2018"

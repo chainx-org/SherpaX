@@ -22,12 +22,12 @@ use serde::{Deserialize, Serialize};
 use hex_literal::hex;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
-use dev_parachain_runtime::{GenesisConfig, SystemConfig, WASM_BINARY,
+use dev_parachain_runtime::{GenesisConfig, SystemConfig,
 							BalancesConfig, SudoConfig, ParachainInfoConfig};
 use dev_parachain_primitives::{AccountId, Signature};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<dev_parachain_runtime::GenesisConfig, Extensions>;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -47,11 +47,10 @@ pub struct Extensions {
 }
 
 impl Extensions {
-	/// Try to get the extension from the given `ChainSpec`.
-	#[allow(clippy::borrowed_box)]
-	pub fn try_get(chain_spec: &dyn sc_service::ChainSpec) -> Option<&Self> {
-		sc_chain_spec::get_extension(chain_spec.extensions())
-	}
+    /// Try to get the extension from the given `ChainSpec`.
+    pub fn try_get(chain_spec: &dyn sc_service::ChainSpec) -> Option<&Self> {
+        sc_chain_spec::get_extension(chain_spec.extensions())
+    }
 }
 
 type AccountPublic = <Signature as Verify>::Signer;
@@ -68,14 +67,13 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
 	let mut properties = Properties::new();
 	properties.insert("tokenSymbol".into(), "PCX".into());
 	properties.insert("tokenDecimals".into(), 8.into());
-	let wasm = WASM_BINARY.ok_or("No WASM")?;
+
 	Ok(ChainSpec::from_genesis(
 		"SherpaX PC1",
 		"sherpax",
 		ChainType::Live,
 		move || {
 			testnet_genesis(
-				wasm,
 				hex!["18ec21f2ee09b23cc0be299d316fe0688b42c3904500f0690bae24328433a025"].into(),
 				vec![
 					get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -99,17 +97,18 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
 }
 
 fn testnet_genesis(
-	wasm_binary: &[u8],
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
 ) -> GenesisConfig {
 	GenesisConfig {
-		frame_system: Some(SystemConfig {
-			code: wasm_binary.to_vec(),
-			changes_trie_config: Default::default(),
-		}),
-		pallet_balances: Some(BalancesConfig {
+        frame_system: SystemConfig {
+            code: dev_parachain_runtime::WASM_BINARY
+                .expect("WASM binary was not build, please build it!")
+                .to_vec(),
+            changes_trie_config: Default::default(),
+        },
+        pallet_balances: BalancesConfig {
 			balances: endowed_accounts
 				.iter()
 				.cloned()
@@ -118,8 +117,8 @@ fn testnet_genesis(
 					k => (k, 1 << 30),
 				})
 				.collect(),
-		}),
-		pallet_sudo: Some(SudoConfig { key: root_key }),
-		parachain_info: Some(ParachainInfoConfig { parachain_id: id }),
-	}
+        },
+        pallet_sudo: SudoConfig { key: root_key },
+        parachain_info: ParachainInfoConfig { parachain_id: id },
+    }
 }

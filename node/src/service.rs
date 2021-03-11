@@ -75,13 +75,13 @@ pub fn new_partial(
 		client.clone(),
 	);
 
-	let import_queue = cumulus_client_consensus_relay_chain::import_queue(
-		client.clone(),
-		client.clone(),
-		inherent_data_providers.clone(),
-		&task_manager.spawn_handle(),
-		registry.clone(),
-	)?;
+    let import_queue = cumulus_client_consensus_relay_chain::import_queue(
+        client.clone(),
+        client.clone(),
+        inherent_data_providers.clone(),
+        &task_manager.spawn_essential_handle(),
+        registry,
+    )?;
 
 	let params = PartialComponents {
 		backend,
@@ -187,14 +187,14 @@ where
 		Arc::new(move |hash, data| network.announce_block(hash, Some(data)))
 	};
 
-	if validator {
-		let proposer_factory = sc_basic_authorship::ProposerFactory::new(
-			task_manager.spawn_handle(),
-			client.clone(),
-			transaction_pool,
-			prometheus_registry.as_ref(),
-		);
-		let spawner = task_manager.spawn_handle();
+    if validator {
+        let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
+            task_manager.spawn_handle(),
+            client.clone(),
+            transaction_pool,
+            prometheus_registry.as_ref(),
+        );
+        let spawner = task_manager.spawn_handle();
 
 		let parachain_consensus = build_relay_chain_consensus(BuildRelayChainConsensusParams {
 			para_id: id,
