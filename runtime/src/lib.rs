@@ -1,4 +1,4 @@
-// Copyright 2020 ChainX
+// Copyright 2020-2021 ChainX
 // Copyright 2019 Parity Technologies (UK) Ltd.
 // This file is part of Cumulus.
 
@@ -19,56 +19,41 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-// Make the WASM binary available.
-#[cfg(feature = "std")]
-include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
-
 use dev_parachain_primitives::*;
 use sp_api::impl_runtime_apis;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
-    traits::{BlakeTwo256, Block as BlockT, AccountIdLookup},
+    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, Convert},
     transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult,
+    ApplyExtrinsicResult, ModuleId, Perbill,
 };
-use sp_std::prelude::*;
+use sp_std::{
+    prelude::{Box, Vec},
+    vec,
+};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
-pub use frame_support::{
+use frame_support::{
     construct_runtime, parameter_types,
     traits::Randomness,
     weights::{
-        constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+        constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight,
     },
-    StorageValue,
 };
-use frame_system::{
-    limits::{BlockLength, BlockWeights},
-    EnsureRoot,
-};
-pub use pallet_balances::Call as BalancesCall;
-pub use pallet_timestamp::Call as TimestampCall;
-#[cfg(any(feature = "std", test))]
-pub use sp_runtime::BuildStorage;
-pub use sp_runtime::{Perbill, Permill};
+use frame_system::limits::{BlockLength, BlockWeights};
+use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
-// XCM imports
-use polkadot_parachain::primitives::Sibling;
-use xcm::v0::{Junction, MultiLocation, NetworkId};
-use xcm_builder::{
-    AccountId32Aliases, CurrencyAdapter, LocationInverter, ParentIsDefault, RelayChainAsNative,
-    SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-    SovereignSignedViaLocation,
-};
-use xcm_executor::{
-    traits::{IsConcrete, NativeAsset},
-    Config, XcmExecutor,
-};
+mod zenlink;
+use zenlink_protocol::{AssetId, PairInfo, TokenBalance, ZenlinkMultiAsset};
+
+// Make the WASM binary available.
+#[cfg(feature = "std")]
+include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub type SessionHandlers = ();
 
@@ -101,12 +86,6 @@ pub const DAYS: BlockNumber = HOURS * 24;
 // 1 in 4 blocks (on average, not counting collisions) will be primary babe blocks.
 pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
 
-#[derive(codec::Encode, codec::Decode)]
-pub enum XCMPMessage<XAccountId, XBalance> {
-    /// Transfer tokens to the given account from the Parachain account.
-    TransferToken(XAccountId, XBalance),
-}
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
@@ -123,6 +102,7 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
 
 parameter_types! {
+    pub const SS58Prefix: u8 = 42;
     pub const BlockHashCount: BlockNumber = 250;
     pub const Version: RuntimeVersion = VERSION;
     pub RuntimeBlockLength: BlockLength =
@@ -200,8 +180,6 @@ impl pallet_timestamp::Config for Runtime {
 
 parameter_types! {
     pub const ExistentialDeposit: u128 = 500;
-    pub const TransferFee: u128 = 0;
-    pub const CreationFee: u128 = 0;
     pub const TransactionByteFee: u128 = 1;
     pub const MaxLocks: u32 = 50;
 }
@@ -234,66 +212,11 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnValidationData = ();
     type SelfParaId = ParachainInfo;
-    type DownwardMessageHandlers = ();
-    type HrmpMessageHandlers = ();
+    type DownwardMessageHandlers = ZenlinkProtocol;
+    type HrmpMessageHandlers = ZenlinkProtocol;
 }
 
 impl parachain_info::Config for Runtime {}
-
-parameter_types! {
-    pub const RococoLocation: MultiLocation = MultiLocation::X1(Junction::Parent);
-    pub const RococoNetwork: NetworkId = NetworkId::Polkadot;
-    pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
-    pub Ancestry: MultiLocation = Junction::Parachain {
-        id: ParachainInfo::parachain_id().into()
-    }.into();
-    pub const SS58Prefix: u8 = 42;
-}
-
-type LocationConverter = (
-    ParentIsDefault<AccountId>,
-    SiblingParachainConvertsVia<Sibling, AccountId>,
-    AccountId32Aliases<RococoNetwork, AccountId>,
-);
-
-type LocalAssetTransactor = CurrencyAdapter<
-    // Use this currency:
-    Balances,
-    // Use this currency when it is a fungible asset matching the given location or name:
-    IsConcrete<RococoLocation>,
-    // Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
-    LocationConverter,
-    // Our chain's account ID type (we can't get away without mentioning it explicitly):
-    AccountId,
->;
-
-type LocalOriginConverter = (
-    SovereignSignedViaLocation<LocationConverter, Origin>,
-    RelayChainAsNative<RelayChainOrigin, Origin>,
-    SiblingParachainAsNative<cumulus_pallet_xcm_handler::Origin, Origin>,
-    SignedAccountId32AsNative<RococoNetwork, Origin>,
-);
-
-pub struct XcmConfig;
-impl Config for XcmConfig {
-    type Call = Call;
-    type XcmSender = XcmHandler;
-    // How to withdraw and deposit an asset.
-    type AssetTransactor = LocalAssetTransactor;
-    type OriginConverter = LocalOriginConverter;
-    type IsReserve = NativeAsset;
-    type IsTeleporter = ();
-    type LocationInverter = LocationInverter<Ancestry>;
-}
-
-impl cumulus_pallet_xcm_handler::Config for Runtime {
-    type Event = Event;
-    type XcmExecutor = XcmExecutor<XcmConfig>;
-    type UpwardMessageSender = ParachainSystem;
-    type HrmpMessageSender = ParachainSystem;
-    type SendXcmOrigin = EnsureRoot<AccountId>;
-    type AccountIdConverter = LocationConverter;
-}
 
 construct_runtime! {
     pub enum Runtime where
@@ -301,15 +224,15 @@ construct_runtime! {
         NodeBlock = dev_parachain_primitives::Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
-        System: frame_system::{Module, Call, Storage, Config, Event<T>},
-        Timestamp: pallet_timestamp::{Module, Call, Storage, Inherent},
-        Balances: pallet_balances::{Module, Call, Storage, Config<T>, Event<T>},
-        Sudo: pallet_sudo::{Module, Call, Storage, Config<T>, Event<T>},
-        RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
-        ParachainSystem: cumulus_pallet_parachain_system::{Module, Call, Storage, Inherent, Event},
-        TransactionPayment: pallet_transaction_payment::{Module, Storage},
-        ParachainInfo: parachain_info::{Module, Storage, Config},
-        XcmHandler: cumulus_pallet_xcm_handler::{Module, Event<T>, Origin},
+        System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
+        Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 1,
+        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 2,
+        Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 3,
+        RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Call, Storage} = 4,
+        ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event} = 5,
+        TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 6,
+        ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
+        ZenlinkProtocol: zenlink_protocol::{Pallet, Origin, Call, Storage, Event<T>} = 9,
     }
 }
 
@@ -342,7 +265,7 @@ pub type Executive = frame_executive::Executive<
     Block,
     frame_system::ChainContext<Runtime>,
     Runtime,
-    AllModules,
+    AllPallets,
 >;
 
 impl_runtime_apis! {
@@ -386,7 +309,7 @@ impl_runtime_apis! {
         }
 
         fn random_seed() -> <Block as BlockT>::Hash {
-            RandomnessCollectiveFlip::random_seed()
+            RandomnessCollectiveFlip::random_seed().0
         }
     }
 
@@ -414,6 +337,78 @@ impl_runtime_apis! {
 
         fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
             SessionKeys::generate(seed)
+        }
+    }
+
+    impl zenlink_protocol_runtime_api::ZenlinkProtocolApi<Block, AccountId> for Runtime {
+        fn get_assets() -> Vec<AssetId> {
+            ZenlinkProtocol::assets_list()
+        }
+
+        fn get_balance(
+            asset_id: AssetId,
+            owner: AccountId
+        ) -> TokenBalance {
+            ZenlinkProtocol::multi_asset_balance_of(&asset_id, &owner)
+        }
+
+        fn get_sovereigns_info(
+            asset_id: AssetId
+        ) -> Vec<(u32, AccountId, TokenBalance)> {
+            ZenlinkProtocol::get_sovereigns_info(&asset_id)
+        }
+
+        fn get_all_pairs() -> Vec<PairInfo<AccountId, TokenBalance>> {
+            ZenlinkProtocol::get_all_pairs()
+        }
+
+        fn get_owner_pairs(
+            owner: AccountId
+        ) -> Vec<PairInfo<AccountId, TokenBalance>> {
+            ZenlinkProtocol::get_owner_pairs(&owner)
+        }
+
+        fn get_amount_in_price(
+            supply: TokenBalance,
+            path: Vec<AssetId>
+        ) -> TokenBalance {
+            ZenlinkProtocol::desired_in_amount(supply, path)
+        }
+
+        fn get_amount_out_price(
+            supply: TokenBalance,
+            path: Vec<AssetId>
+        ) -> TokenBalance {
+            ZenlinkProtocol::supply_out_amount(supply, path)
+        }
+
+        fn get_estimate_lptoken(
+            token_0: AssetId,
+            token_1: AssetId,
+            amount_0_desired: TokenBalance,
+            amount_1_desired: TokenBalance,
+            amount_0_min: TokenBalance,
+            amount_1_min: TokenBalance,
+        ) -> TokenBalance{
+            ZenlinkProtocol::get_estimate_lptoken(
+                token_0,
+                token_1,
+                amount_0_desired,
+                amount_1_desired,
+                amount_0_min,
+                amount_1_min)
+        }
+    }
+
+    impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<
+        Block,
+        Balance,
+    > for Runtime {
+        fn query_info(uxt: <Block as BlockT>::Extrinsic, len: u32) -> RuntimeDispatchInfo<Balance> {
+            TransactionPayment::query_info(uxt, len)
+        }
+        fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
+            TransactionPayment::query_fee_details(uxt, len)
         }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2020 ChainX
+// Copyright 2020-2021 ChainX
 // Copyright 2020 Parity Technologies (UK) Ltd.
 // This file is part of Cumulus.
 
@@ -19,13 +19,12 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 use sp_runtime::{
     generic,
     traits::{BlakeTwo256, IdentifyAccount, Verify},
     MultiSignature,
 };
-
-pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
 /// Opaque block header type.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;

@@ -1,4 +1,4 @@
-// Copyright 2020 ChainX
+// Copyright 2020-2021 ChainX
 // Copyright 2019 Parity Technologies (UK) Ltd.
 // This file is part of Cumulus.
 
@@ -46,7 +46,7 @@ pub enum Subcommand {
     ImportBlocks(sc_cli::ImportBlocksCmd),
 
     /// Remove the whole chain.
-    PurgeChain(cumulus_cli::PurgeChainCmd),
+    PurgeChain(cumulus_client_cli::PurgeChainCmd),
 
     /// Revert the chain to a previous state.
     Revert(sc_cli::RevertCmd),
@@ -108,9 +108,9 @@ impl std::ops::Deref for RunCmd {
 
 #[derive(Debug, StructOpt)]
 #[structopt(settings = &[
-	structopt::clap::AppSettings::GlobalVersion,
-	structopt::clap::AppSettings::ArgsNegateSubcommands,
-	structopt::clap::AppSettings::SubcommandsNegateReqs,
+    structopt::clap::AppSettings::GlobalVersion,
+    structopt::clap::AppSettings::ArgsNegateSubcommands,
+    structopt::clap::AppSettings::SubcommandsNegateReqs,
 ])]
 pub struct Cli {
     #[structopt(subcommand)]
