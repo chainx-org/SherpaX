@@ -5,10 +5,10 @@ How to use/test locally
 It should at least work until the following commits
 
 -   rustc 1.52.0-nightly (d1206f950 2021-02-15)
--   polkadot.js.org (apps v0.85.2-7)
--   Polkadot rococo-v1 @ `34e8d5061434c039f0e13c8319dedf54dbb4bc81`
--   Cumulus rococo-v1 @ `90b1e1804897193b3911f49b45de51532e305733`
--   Substrate rococo-v1  @ `1404f2af4cbe90d35b4c8a1405a9452feb789adc`
+-   polkadot.js.org (apps v0.86.2)
+-   Polkadot rococo-v1 @ `f3e2cbf49f179104d20b9f1b54830710ddac8be3`
+-   Cumulus rococo-v1 @ `9d89ed653217203810822483ae86fd8867f59620`
+-   Substrate rococo-v1  @ `401c24e8a62cdf058882b0e92815faef966d9fa1`
 
 ### 2. How to use
 
