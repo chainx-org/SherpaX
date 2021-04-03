@@ -1284,6 +1284,7 @@ dependencies = [
  "sp-trie",
  "sp-version",
  "trie-db",
+ "xcm",
 ]
 
 [[package]]
@@ -1299,6 +1300,7 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "sp-trie",
+ "xcm",
 ]
 
 [[package]]
@@ -5304,6 +5306,7 @@ dependencies = [
  "polkadot-erasure-coding",
  "polkadot-node-core-runtime-api",
  "polkadot-node-network-protocol",
+ "polkadot-node-primitives",
  "polkadot-node-subsystem",
  "polkadot-node-subsystem-util",
  "polkadot-primitives",
@@ -5325,6 +5328,7 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-erasure-coding",
  "polkadot-node-network-protocol",
+ "polkadot-node-primitives",
  "polkadot-node-subsystem",
  "polkadot-node-subsystem-util",
  "polkadot-primitives",
@@ -5390,6 +5394,7 @@ version = "0.8.29"
 source = "git+https://github.com/paritytech/polkadot?branch=rococo-v1#f0d5c3d578689109aecb2660a98432e7cd10f53d"
 dependencies = [
  "parity-scale-codec",
+ "polkadot-node-primitives",
  "polkadot-primitives",
  "reed-solomon-novelpoly",
  "sp-core",
@@ -5407,7 +5412,10 @@ dependencies = [
  "polkadot-node-subsystem",
  "polkadot-node-subsystem-util",
  "polkadot-primitives",
- "rand 0.8.3",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-authority-discovery",
+ "sp-keystore",
  "tracing",
 ]
 
@@ -5425,6 +5433,7 @@ dependencies = [
  "polkadot-primitives",
  "sc-authority-discovery",
  "sc-network",
+ "sp-consensus",
  "strum",
  "tracing",
 ]
@@ -5455,7 +5464,6 @@ dependencies = [
  "futures 0.3.12",
  "futures-timer 3.0.2",
  "kvdb",
- "kvdb-rocksdb",
  "merlin",
  "parity-scale-codec",
  "polkadot-node-jaeger",
@@ -5469,6 +5477,7 @@ dependencies = [
  "schnorrkel",
  "sp-application-crypto",
  "sp-blockchain",
+ "sp-consensus",
  "sp-consensus-slots",
  "sp-runtime",
  "tracing",
@@ -5483,14 +5492,13 @@ dependencies = [
  "futures 0.3.12",
  "futures-timer 3.0.2",
  "kvdb",
- "kvdb-rocksdb",
  "parity-scale-codec",
  "polkadot-erasure-coding",
+ "polkadot-node-primitives",
  "polkadot-node-subsystem",
  "polkadot-node-subsystem-util",
  "polkadot-overseer",
  "polkadot-primitives",
- "sc-service",
  "thiserror",
  "tracing",
 ]
@@ -5640,6 +5648,7 @@ dependencies = [
  "mick-jaeger",
  "parity-scale-codec",
  "parking_lot 0.11.1",
+ "polkadot-node-primitives",
  "polkadot-primitives",
  "sc-network",
  "sp-core",
@@ -5668,15 +5677,18 @@ source = "git+https://github.com/paritytech/polkadot?branch=rococo-v1#f0d5c3d578
 dependencies = [
  "futures 0.3.12",
  "parity-scale-codec",
+ "polkadot-parachain",
  "polkadot-primitives",
  "polkadot-statement-table",
  "schnorrkel",
+ "serde",
  "sp-application-crypto",
  "sp-consensus-babe",
  "sp-consensus-vrf",
  "sp-core",
  "sp-runtime",
  "thiserror",
+ "zstd",
 ]
 
 [[package]]
@@ -5725,6 +5737,7 @@ dependencies = [
  "polkadot-node-primitives",
  "polkadot-node-subsystem",
  "polkadot-primitives",
+ "rand 0.8.3",
  "sc-network",
  "sp-application-crypto",
  "sp-core",
@@ -5805,7 +5818,6 @@ dependencies = [
  "sp-trie",
  "sp-version",
  "thiserror",
- "zstd",
 ]
 
 [[package]]
@@ -6000,6 +6012,8 @@ dependencies = [
  "futures 0.3.12",
  "hex-literal",
  "kusama-runtime",
+ "kvdb",
+ "kvdb-rocksdb",
  "pallet-babe",
  "pallet-im-online",
  "pallet-staking",
@@ -6022,6 +6036,7 @@ dependencies = [
  "polkadot-node-core-proposer",
  "polkadot-node-core-provisioner",
  "polkadot-node-core-runtime-api",
+ "polkadot-node-primitives",
  "polkadot-node-subsystem",
  "polkadot-node-subsystem-util",
  "polkadot-overseer",
@@ -7015,6 +7030,7 @@ dependencies = [
  "pallet-im-online",
  "pallet-indices",
  "pallet-offences",
+ "pallet-proxy",
  "pallet-session",
  "pallet-staking",
  "pallet-staking-reward-curve",
@@ -7022,6 +7038,7 @@ dependencies = [
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-utility",
  "parity-scale-codec",
  "polkadot-parachain",
  "polkadot-primitives",
@@ -11016,7 +11033,7 @@ dependencies = [
 
 [[package]]
 name = "zenlink-protocol"
-version = "0.2.1"
+version = "0.2.3"
 dependencies = [
  "cumulus-primitives-core",
  "frame-support",
@@ -11035,7 +11052,7 @@ dependencies = [
 
 [[package]]
 name = "zenlink-protocol-rpc"
-version = "0.2.1"
+version = "0.2.3"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",

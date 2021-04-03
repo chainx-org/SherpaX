@@ -164,6 +164,7 @@ impl frame_system::Config for Runtime {
     type BlockWeights = RuntimeBlockWeights;
     type BlockLength = RuntimeBlockLength;
     type SS58Prefix = SS58Prefix;
+    type OnSetCode = ParachainSystem;
 }
 
 parameter_types! {
@@ -213,7 +214,7 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
     type OnValidationData = ();
     type SelfParaId = ParachainInfo;
     type DownwardMessageHandlers = ZenlinkProtocol;
-    type HrmpMessageHandlers = ZenlinkProtocol;
+    type XcmpMessageHandlers = ZenlinkProtocol;
 }
 
 impl parachain_info::Config for Runtime {}

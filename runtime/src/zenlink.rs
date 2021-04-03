@@ -83,7 +83,7 @@ impl zenlink_protocol::Config for Runtime {
     type Event = Event;
     type XcmExecutor = XcmExecutor<XcmConfig>;
     type UpwardMessageSender = ParachainSystem;
-    type HrmpMessageSender = ParachainSystem;
+    type XcmpMessageSender = ParachainSystem;
     type AccountIdConverter = LocationConverter;
     type AccountId32Converter = AccountId32Converter;
     type ParaId = ParachainInfo;
