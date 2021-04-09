@@ -45,12 +45,26 @@ use frame_support::{
         DispatchClass, IdentityFee, Weight,
     },
 };
-use frame_system::limits::{BlockLength, BlockWeights};
+use frame_system::{
+    limits::{BlockLength, BlockWeights},
+    EnsureRoot,
+};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
-mod zenlink;
-use zenlink_protocol::{AssetId, PairInfo, TokenBalance, ZenlinkMultiAsset};
+// XCM imports
+use polkadot_parachain::primitives::Sibling;
+use xcm::v0::{Junction, MultiLocation, NetworkId};
+use xcm_builder::{
+    AccountId32Aliases, LocationInverter, ParentIsDefault, RelayChainAsNative,
+    SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
+    SovereignSignedViaLocation,
+};
+use xcm_executor::XcmExecutor;
 
+mod zenlink;
+use zenlink_protocol::{
+    AssetId, MultiAssetHandler, PairInfo, ParaChainWhiteList, TokenBalance, TransactorAdaptor,
+};
 // Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
@@ -164,7 +178,7 @@ impl frame_system::Config for Runtime {
     type BlockWeights = RuntimeBlockWeights;
     type BlockLength = RuntimeBlockLength;
     type SS58Prefix = SS58Prefix;
-    type OnSetCode = ParachainSystem;
+    type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
 }
 
 parameter_types! {
@@ -213,11 +227,58 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnValidationData = ();
     type SelfParaId = ParachainInfo;
-    type DownwardMessageHandlers = ZenlinkProtocol;
-    type XcmpMessageHandlers = ZenlinkProtocol;
+    type DownwardMessageHandlers = XcmHandler;
+    type XcmpMessageHandlers = XcmHandler;
 }
 
 impl parachain_info::Config for Runtime {}
+
+parameter_types! {
+    pub const RococoLocation: MultiLocation = MultiLocation::X1(Junction::Parent);
+    pub const RococoNetwork: NetworkId = NetworkId::Polkadot;
+    pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
+    pub Ancestry: MultiLocation = Junction::Parachain {
+        id: ParachainInfo::parachain_id().into()
+    }.into();
+}
+
+type LocationConverter = (
+    ParentIsDefault<AccountId>,
+    SiblingParachainConvertsVia<Sibling, AccountId>,
+    AccountId32Aliases<RococoNetwork, AccountId>,
+);
+
+pub type ZenlinkXcmTransactor =
+TransactorAdaptor<ZenlinkProtocol, LocationConverter, AccountId, ParachainInfo>;
+
+type LocalOriginConverter = (
+    SovereignSignedViaLocation<LocationConverter, Origin>,
+    RelayChainAsNative<RelayChainOrigin, Origin>,
+    SiblingParachainAsNative<cumulus_pallet_xcm_handler::Origin, Origin>,
+    SignedAccountId32AsNative<RococoNetwork, Origin>,
+);
+
+pub struct XcmConfig;
+
+impl xcm_executor::Config for XcmConfig {
+    type Call = Call;
+    type XcmSender = XcmHandler;
+    // How to withdraw and deposit an asset.
+    type AssetTransactor = ZenlinkXcmTransactor;
+    type OriginConverter = LocalOriginConverter;
+    type IsReserve = ParaChainWhiteList<zenlink::ZenlinkRegistedParaChains>;
+    type IsTeleporter = ();
+    type LocationInverter = LocationInverter<Ancestry>;
+}
+
+impl cumulus_pallet_xcm_handler::Config for Runtime {
+    type Event = Event;
+    type XcmExecutor = XcmExecutor<XcmConfig>;
+    type UpwardMessageSender = ParachainSystem;
+    type XcmpMessageSender = ParachainSystem;
+    type SendXcmOrigin = EnsureRoot<AccountId>;
+    type AccountIdConverter = LocationConverter;
+}
 
 construct_runtime! {
     pub enum Runtime where
@@ -233,7 +294,8 @@ construct_runtime! {
         ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event} = 5,
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 6,
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
-        ZenlinkProtocol: zenlink_protocol::{Pallet, Origin, Call, Storage, Event<T>} = 9,
+        XcmHandler: cumulus_pallet_xcm_handler::{Pallet, Event<T>, Origin, Call} = 8,
+        ZenlinkProtocol: zenlink_protocol::{Pallet, Call, Storage, Event<T>} = 9,
     }
 }
 
