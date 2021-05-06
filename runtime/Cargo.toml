@@ -10,8 +10,6 @@ codec = { package = 'parity-scale-codec', version = '2.0.0', default-features = 
 
 # dev collator
 dev-parachain-primitives = { path = '../primitives', default-features = false }
-zenlink-protocol = { path = '../../open-zenlink/zenlink-protocol', default-features = false }
-zenlink-protocol-runtime-api = { path = "../../open-zenlink/zenlink-protocol/rpc/runtime-api", default-features = false }
 
 # Substrate dependencies
 sp-std = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
@@ -40,13 +38,6 @@ pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/parityt
 cumulus-pallet-parachain-system = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 cumulus-primitives-core = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 parachain-info = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
-cumulus-pallet-xcm-handler = { git = "https://github.com/paritytech/cumulus", branch = "rococo-v1", default-features = false }
-
-# Polkadot dependencies
-polkadot-parachain = { git = 'https://github.com/paritytech/polkadot', branch = 'rococo-v1', default-features = false }
-xcm = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1", default-features = false }
-xcm-executor = { git = "https://github.com/paritytech/polkadot", branch = "rococo-v1", default-features = false }
-xcm-builder = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "rococo-v1" }
 
 [build-dependencies]
 substrate-wasm-builder = '3.0.0'
@@ -57,8 +48,6 @@ std = [
 	'codec/std',
 	'serde',
 	'dev-parachain-primitives/std',
-	'zenlink-protocol/std',
-	'zenlink-protocol-runtime-api/std',
 
 	'sp-std/std',
 	'sp-api/std',
@@ -84,10 +73,4 @@ std = [
 	'cumulus-pallet-parachain-system/std',
 	'cumulus-primitives-core/std',
 	'parachain-info/std',
-	'cumulus-pallet-xcm-handler/std',
-
-	"polkadot-parachain/std",
-	"xcm/std",
-	"xcm-executor/std",
-	"xcm-builder/std",
 ]

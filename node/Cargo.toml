@@ -24,8 +24,6 @@ serde = { version = '1.0.119', features = ['derive'] }
 dev-parachain-runtime = { path = '../runtime' }
 dev-parachain-primitives = { path = '../primitives' }
 
-zenlink-protocol-rpc = { path = "../../open-zenlink/zenlink-protocol/rpc" }
-
 # Substrate dependencies
 sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
 sp-io = { git = 'https://github.com/paritytech/substrate', branch = 'rococo-v1' }

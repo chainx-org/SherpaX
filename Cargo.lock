@@ -1411,21 +1411,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cumulus-pallet-xcm-handler"
-version = "0.1.0"
-source = "git+https://github.com/paritytech/cumulus?branch=rococo-v1#b225faf24d3c25228fd25df93ed82c90e004d698"
-dependencies = [
- "cumulus-primitives-core",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "sp-std",
- "xcm",
- "xcm-executor",
-]
-
-[[package]]
 name = "cumulus-primitives-core"
 version = "0.1.0"
 source = "git+https://github.com/paritytech/cumulus?branch=rococo-v1#b225faf24d3c25228fd25df93ed82c90e004d698"
@@ -1550,7 +1535,6 @@ name = "dev-parachain-runtime"
 version = "0.1.0"
 dependencies = [
  "cumulus-pallet-parachain-system",
- "cumulus-pallet-xcm-handler",
  "cumulus-primitives-core",
  "dev-parachain-primitives",
  "frame-executive",
@@ -1564,7 +1548,6 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "parachain-info",
  "parity-scale-codec",
- "polkadot-parachain",
  "serde",
  "sp-api",
  "sp-block-builder",
@@ -1578,11 +1561,6 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder 3.0.0",
- "xcm",
- "xcm-builder",
- "xcm-executor",
- "zenlink-protocol",
- "zenlink-protocol-runtime-api",
 ]
 
 [[package]]
@@ -8775,7 +8753,6 @@ dependencies = [
  "substrate-test-runtime-client",
  "tokio 0.2.25",
  "trie-root 0.15.2",
- "zenlink-protocol-rpc",
 ]
 
 [[package]]
@@ -11435,49 +11412,6 @@ dependencies = [
  "parking_lot 0.11.1",
  "rand 0.7.3",
  "static_assertions",
-]
-
-[[package]]
-name = "zenlink-protocol"
-version = "0.3.0"
-dependencies = [
- "cumulus-primitives-core",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-runtime",
- "sp-std",
- "xcm",
- "xcm-executor",
-]
-
-[[package]]
-name = "zenlink-protocol-rpc"
-version = "0.2.3"
-dependencies = [
- "jsonrpc-core",
- "jsonrpc-core-client",
- "jsonrpc-derive",
- "parity-scale-codec",
- "sp-api",
- "sp-blockchain",
- "sp-rpc",
- "sp-runtime",
- "zenlink-protocol",
- "zenlink-protocol-runtime-api",
-]
-
-[[package]]
-name = "zenlink-protocol-runtime-api"
-version = "0.2.1"
-dependencies = [
- "parity-scale-codec",
- "sp-api",
- "sp-std",
- "zenlink-protocol",
 ]
 
 [[package]]

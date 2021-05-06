@@ -24,13 +24,12 @@ use sp_api::impl_runtime_apis;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
-    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, Convert},
+    traits::{AccountIdLookup, BlakeTwo256, Block as BlockT},
     transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, ModuleId, Perbill,
+    ApplyExtrinsicResult, Perbill,
 };
 use sp_std::{
     prelude::{Box, Vec},
-    vec,
 };
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -47,24 +46,9 @@ use frame_support::{
 };
 use frame_system::{
     limits::{BlockLength, BlockWeights},
-    EnsureRoot,
 };
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
-// XCM imports
-use polkadot_parachain::primitives::Sibling;
-use xcm::v0::{Junction, MultiLocation, NetworkId};
-use xcm_builder::{
-    AccountId32Aliases, LocationInverter, ParentIsDefault, RelayChainAsNative,
-    SiblingParachainAsNative, SiblingParachainConvertsVia, SignedAccountId32AsNative,
-    SovereignSignedViaLocation,
-};
-use xcm_executor::XcmExecutor;
-
-mod zenlink;
-use zenlink_protocol::{
-    AssetId, MultiAssetHandler, PairInfo, ParaChainWhiteList, TokenBalance, TransactorAdaptor,
-};
 // Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
@@ -80,7 +64,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("chainx-parachain"),
     impl_name: create_runtime_str!("chainx-parachain"),
     authoring_version: 1,
-    spec_version: 1,
+    spec_version: 50,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -227,58 +211,11 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnValidationData = ();
     type SelfParaId = ParachainInfo;
-    type DownwardMessageHandlers = XcmHandler;
-    type XcmpMessageHandlers = XcmHandler;
+    type DownwardMessageHandlers = ();
+    type XcmpMessageHandlers = ();
 }
 
 impl parachain_info::Config for Runtime {}
-
-parameter_types! {
-    pub const RococoLocation: MultiLocation = MultiLocation::X1(Junction::Parent);
-    pub const RococoNetwork: NetworkId = NetworkId::Polkadot;
-    pub RelayChainOrigin: Origin = cumulus_pallet_xcm_handler::Origin::Relay.into();
-    pub Ancestry: MultiLocation = Junction::Parachain {
-        id: ParachainInfo::parachain_id().into()
-    }.into();
-}
-
-type LocationConverter = (
-    ParentIsDefault<AccountId>,
-    SiblingParachainConvertsVia<Sibling, AccountId>,
-    AccountId32Aliases<RococoNetwork, AccountId>,
-);
-
-pub type ZenlinkXcmTransactor =
-TransactorAdaptor<ZenlinkProtocol, LocationConverter, AccountId, ParachainInfo>;
-
-type LocalOriginConverter = (
-    SovereignSignedViaLocation<LocationConverter, Origin>,
-    RelayChainAsNative<RelayChainOrigin, Origin>,
-    SiblingParachainAsNative<cumulus_pallet_xcm_handler::Origin, Origin>,
-    SignedAccountId32AsNative<RococoNetwork, Origin>,
-);
-
-pub struct XcmConfig;
-
-impl xcm_executor::Config for XcmConfig {
-    type Call = Call;
-    type XcmSender = XcmHandler;
-    // How to withdraw and deposit an asset.
-    type AssetTransactor = ZenlinkXcmTransactor;
-    type OriginConverter = LocalOriginConverter;
-    type IsReserve = ParaChainWhiteList<zenlink::ZenlinkRegistedParaChains>;
-    type IsTeleporter = ();
-    type LocationInverter = LocationInverter<Ancestry>;
-}
-
-impl cumulus_pallet_xcm_handler::Config for Runtime {
-    type Event = Event;
-    type XcmExecutor = XcmExecutor<XcmConfig>;
-    type UpwardMessageSender = ParachainSystem;
-    type XcmpMessageSender = ParachainSystem;
-    type SendXcmOrigin = EnsureRoot<AccountId>;
-    type AccountIdConverter = LocationConverter;
-}
 
 construct_runtime! {
     pub enum Runtime where
@@ -294,8 +231,6 @@ construct_runtime! {
         ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event} = 5,
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 6,
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
-        XcmHandler: cumulus_pallet_xcm_handler::{Pallet, Event<T>, Origin, Call} = 8,
-        ZenlinkProtocol: zenlink_protocol::{Pallet, Call, Storage, Event<T>} = 9,
     }
 }
 
@@ -400,66 +335,6 @@ impl_runtime_apis! {
 
         fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
             SessionKeys::generate(seed)
-        }
-    }
-
-    impl zenlink_protocol_runtime_api::ZenlinkProtocolApi<Block, AccountId> for Runtime {
-        fn get_assets() -> Vec<AssetId> {
-            ZenlinkProtocol::assets_list()
-        }
-
-        fn get_balance(
-            asset_id: AssetId,
-            owner: AccountId
-        ) -> TokenBalance {
-            ZenlinkProtocol::multi_asset_balance_of(&asset_id, &owner)
-        }
-
-        fn get_sovereigns_info(
-            asset_id: AssetId
-        ) -> Vec<(u32, AccountId, TokenBalance)> {
-            ZenlinkProtocol::get_sovereigns_info(&asset_id)
-        }
-
-        fn get_all_pairs() -> Vec<PairInfo<AccountId, TokenBalance>> {
-            ZenlinkProtocol::get_all_pairs()
-        }
-
-        fn get_owner_pairs(
-            owner: AccountId
-        ) -> Vec<PairInfo<AccountId, TokenBalance>> {
-            ZenlinkProtocol::get_owner_pairs(&owner)
-        }
-
-        fn get_amount_in_price(
-            supply: TokenBalance,
-            path: Vec<AssetId>
-        ) -> TokenBalance {
-            ZenlinkProtocol::desired_in_amount(supply, path)
-        }
-
-        fn get_amount_out_price(
-            supply: TokenBalance,
-            path: Vec<AssetId>
-        ) -> TokenBalance {
-            ZenlinkProtocol::supply_out_amount(supply, path)
-        }
-
-        fn get_estimate_lptoken(
-            token_0: AssetId,
-            token_1: AssetId,
-            amount_0_desired: TokenBalance,
-            amount_1_desired: TokenBalance,
-            amount_0_min: TokenBalance,
-            amount_1_min: TokenBalance,
-        ) -> TokenBalance{
-            ZenlinkProtocol::get_estimate_lptoken(
-                token_0,
-                token_1,
-                amount_0_desired,
-                amount_1_desired,
-                amount_0_min,
-                amount_1_min)
         }
     }
 
