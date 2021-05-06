@@ -207,6 +207,12 @@ impl pallet_sudo::Config for Runtime {
     type Event = Event;
 }
 
+impl pallet_utility::Config for Runtime {
+    type Event = Event;
+    type Call = Call;
+    type WeightInfo = ();
+}
+
 impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnValidationData = ();
@@ -231,6 +237,7 @@ construct_runtime! {
         ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event} = 5,
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 6,
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
+        Utility: pallet_utility::{Pallet, Call, Event} = 8,
     }
 }
 
