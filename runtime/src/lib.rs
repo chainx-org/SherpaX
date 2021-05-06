@@ -213,12 +213,18 @@ impl pallet_utility::Config for Runtime {
     type WeightInfo = ();
 }
 
+parameter_types! {
+	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+}
+
 impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnValidationData = ();
-    type SelfParaId = ParachainInfo;
+    type SelfParaId = parachain_info::Module<Runtime>;
     type DownwardMessageHandlers = ();
-    type XcmpMessageHandlers = ();
+    type OutboundXcmpMessageSource = ();
+    type XcmpMessageHandler = ();
+    type ReservedXcmpWeight = ReservedXcmpWeight;
 }
 
 impl parachain_info::Config for Runtime {}
@@ -234,7 +240,7 @@ construct_runtime! {
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 2,
         Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 3,
         RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Call, Storage} = 4,
-        ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event} = 5,
+        ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event<T>} = 5,
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 6,
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
         Utility: pallet_utility::{Pallet, Call, Event} = 8,

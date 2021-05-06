@@ -72,7 +72,7 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
     Ok(ChainSpec::from_genesis(
         "SherpaX PC1",
         "sherpax",
-        ChainType::Live,
+        ChainType::Local,
         move || {
             testnet_genesis(
                 hex!["18ec21f2ee09b23cc0be299d316fe0688b42c3904500f0690bae24328433a025"].into(),
