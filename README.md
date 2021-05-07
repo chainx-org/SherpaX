@@ -40,54 +40,64 @@ cargo build --release
 
 ```json
 {
-	"relaychain": {
-		"bin": "../polkadot/target/release/polkadot",
-		"chain": "rococo-local",
-		"nodes": [
-			{
-				"name": "alice",
-				"wsPort": 9944,
-				"port": 30444
-			},
-			{
-				"name": "bob",
-				"wsPort": 9955,
-				"port": 30555
-			},
-			{
-				"name": "charlie",
-				"wsPort": 9966,
-				"port": 30666
-			}
-		],
-		"runtime_genesis_config": {
-			"parachainsConfiguration": {
-				"config": {
-					"validation_upgrade_frequency": 10,
-					"validation_upgrade_delay": 5
-				}
-			}
-		}
-	},
-	"parachains": [
-		{
-			"bin": "./target/release/sherpax",
-			"id": "1059",
-			"balance": "1000000000000000000000",
-			"nodes": [
-				{
-					"wsPort": 9977,
-					"port": 31200,
-					"flags": ["--execution=nativeelsewasm","-lexecutor=trace", "--discover-local", "--rpc-port=11111", "--", "--execution=wasm"]
+    "relaychain":{
+        "bin":"../polkadot/target/release/polkadot",
+        "chain":"rococo-local",
+        "nodes":[
+            {
+                "name":"alice",
+                "wsPort":9944,
+                "port":30444
+            },
+            {
+                "name":"bob",
+                "wsPort":9955,
+                "port":30555
+            },
+            {
+                "name":"charlie",
+                "wsPort":9966,
+                "port":30666
+            }
+        ],
+        "runtime_genesis_config":{
+            "parachainsConfiguration":{
+                "config":{
+                    "validation_upgrade_frequency":10,
+                    "validation_upgrade_delay":5
                 }
-			]
-		}
-	],
-	"hrmpChannels": [],
-	"types": {},
-	"finalization": false
-}
+            }
+        }
+    },
+    "parachains":[
+        {
+            "bin":"./target/release/sherpax",
+            "id":"1059",
+            "balance":"1000000000000000000000",
+            "nodes":[
+                {
+                    "wsPort":9977,
+                    "port":31200,
+                    "flags":[
+                        "--execution=nativeelsewasm",
+                        "-lexecutor=trace",
+                        "--discover-local",
+                        "--rpc-port=11111",
+                        "--",
+                        "--execution=wasm"
+                    ]
+                }
+            ]
+        }
+    ],
+    "hrmpChannels":[
 
+    ],
+    "types":{
+
+    },
+    "finalization":false
+}
 ```
 
 
@@ -137,7 +147,7 @@ cargo build --release
 #### Register the parachain
 ![image](https://user-images.githubusercontent.com/2915325/99548884-1be13580-2987-11eb-9a8b-20be658d34f9.png)
 
-### custom type
+### 5. custom type
 
 ```json
 {
