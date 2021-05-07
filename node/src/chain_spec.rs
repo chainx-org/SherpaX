@@ -122,5 +122,8 @@ fn testnet_genesis(
         },
         pallet_sudo: SudoConfig { key: root_key },
         parachain_info: ParachainInfoConfig { parachain_id: id },
+        // FIXME: initialize them properly
+        xpallet_assets_registrar: Default::default(),
+        xpallet_assets: Default::default(),
     }
 }

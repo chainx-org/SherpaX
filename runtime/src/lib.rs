@@ -234,6 +234,29 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 
 impl parachain_info::Config for Runtime {}
 
+parameter_types! {
+    pub const PcxAssetId: u32 = 0;
+}
+
+impl xpallet_assets_registrar::Config for Runtime {
+    type Event = Event;
+    type NativeAssetId = PcxAssetId;
+    type RegistrarHandler = ();
+    type WeightInfo = xpallet_assets_registrar::weights::SubstrateWeight<Runtime>;
+}
+
+pub type Amount = i128;
+
+impl xpallet_assets::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type Amount = Amount;
+    type TreasuryAccount = ();
+    type OnCreatedAccount = frame_system::Provider<Runtime>;
+    type OnAssetChanged = ();
+    type WeightInfo = xpallet_assets::weights::SubstrateWeight<Runtime>;
+}
+
 construct_runtime! {
     pub enum Runtime where
         Block = Block,
@@ -250,6 +273,9 @@ construct_runtime! {
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
         Utility: pallet_utility::{Pallet, Call, Event} = 8,
         Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 9,
+
+        XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config} = 10,
+        XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
     }
 }
 
