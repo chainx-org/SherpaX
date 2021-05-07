@@ -4,7 +4,6 @@ How to use/test locally
 
 It should at least work until the following commits
 
--   rustc 1.52.0-nightly (d1206f950 2021-02-15)
 -   polkadot.js.org (apps v0.86.3-54)
 -   Polkadot rococo-v1 @ `127eb17a25bbe2a9f2731ff11a65d7f8170f2373`
 -   Cumulus rococo-v1 @ `da4c3bac6e9584e65740ef5db4dbd2c31c1a91db`
