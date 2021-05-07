@@ -1,0 +1,49 @@
+[package]
+name = "xpallet-bridge"
+version = "0.1.0"
+authors = ["Alan WANG <alan1995wang@outlook.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.101", optional = true, features = ["derive"] }
+# Substrate
+sp-arithmetic = { version = "3.0.0", default-features = false }
+sp-core = { version = "3.0.0", default-features = false }
+sp-io = { version = "3.0.0", default-features = false }
+sp-inherents = { version = "3.0.0", default-features = false }
+sp-runtime = { version = "3.0.0", default-features = false }
+sp-std = { version = "3.0.0", default-features = false }
+sp-version = { version = "3.0.0", default-features = false }
+frame-support = { version = "3.0.0", default-features = false }
+frame-system = { version = "3.0.0", default-features = false }
+#ChainX
+chainx-primitives = { git = "https://github.com/chainx-org/ChainX", branch = "develop", default-features = false }
+xp-assets-registrar = { git = "https://github.com/chainx-org/ChainX", branch = "develop", default-features = false }
+light-bitcoin = { git = "https://github.com/chainx-org/light-bitcoin", branch = "master", default-features = false }
+
+[dev-dependencies]
+pallet-balances = "3.0.0"
+
+[features]
+default = ["std"]
+std = [
+  "serde",
+  "codec/std",
+  # Substrate
+  "sp-arithmetic/std",
+  "sp-core/std",
+  "sp-io/std",
+  "sp-inherents/std",
+  "sp-runtime/std",
+  "sp-std/std",
+  "sp-version/std",
+  "frame-support/std",
+  "frame-system/std",
+  #ChainX
+  "chainx-primitives/std",
+  "xp-assets-registrar/std",
+  "light-bitcoin/std",
+]
