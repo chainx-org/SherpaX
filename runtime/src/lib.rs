@@ -170,7 +170,7 @@ impl pallet_timestamp::Config for Runtime {
 
 parameter_types! {
     pub const TransactionByteFee: Balance = 10 * MILLICENTS;
-    pub const ExistentialDeposit: Balance = 100 * CENTS;
+    pub const ExistentialDeposit: Balance = 100 * MILLICENTS;
 	pub const MaxLocks: u32 = 50;
 }
 
