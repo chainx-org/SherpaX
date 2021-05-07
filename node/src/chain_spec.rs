@@ -19,6 +19,7 @@ use cumulus_primitives_core::ParaId;
 use dev_parachain_primitives::{AccountId, Signature};
 use dev_parachain_runtime::{
     BalancesConfig, GenesisConfig, ParachainInfoConfig, SudoConfig, SystemConfig,
+    constants::currency::DOTS
 };
 use hex_literal::hex;
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
@@ -99,6 +100,9 @@ fn testnet_genesis(
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
 ) -> GenesisConfig {
+    const ENDOWMENT: u128 = 1_000_000 * DOTS;
+    const STASH: u128 = 100 * DOTS;
+
     GenesisConfig {
         frame_system: SystemConfig {
             code: dev_parachain_runtime::WASM_BINARY
@@ -111,8 +115,8 @@ fn testnet_genesis(
                 .iter()
                 .cloned()
                 .map(|k| match k {
-                    k if k == root_key => (k, 1 << 62),
-                    k => (k, 1 << 30),
+                    k if k == root_key => (k, ENDOWMENT),
+                    k => (k, STASH),
                 })
                 .collect(),
         },
