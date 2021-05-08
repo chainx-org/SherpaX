@@ -5,8 +5,8 @@ use super::{
 
 
 pub trait MultiAsset<AccountId> {
-    type AssetId: Copy + Parameter + Member + MaybeSerializeDeserialize + Debug;
-    type AssetBalance: Default + BaseArithmetic + Copy + Parameter + Member + MaybeSerializeDeserialize + Debug;
+    type AssetId: Copy + Parameter + Member + MaybeSerializeDeserialize + Debug + Ord;
+    type AssetBalance: Default + BaseArithmetic + Copy + Parameter + Member + MaybeSerializeDeserialize + Debug + Ord;
 
     fn balance_of(
         asset_id: &Self::AssetId,

@@ -54,7 +54,7 @@ pub mod pallet {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
         /// The assets interface beyond native currency and xpallet_assets.
         type MultiAssets: MultiAsset<Self::AccountId>;
-        /// The Zenlink Protocol Module Id.
+        /// This pallet Id.
         type PalletId: Get<PalletId>;
     }
 
@@ -82,7 +82,7 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
-
+        PairAlreadyExists
     }
 
     #[pallet::hooks]
@@ -99,11 +99,13 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            // TODO: deduplicated (asset_0, asset_1)
+            let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
 
             let pair_account = Self::pair_account_id(asset_0, asset_1);
 
             SwapMetadata::<T>::try_mutate((asset_0, asset_1), |meta|{
+                ensure!(meta.is_none(), Error::<T>::PairAlreadyExists);
+
                 *meta = Some(
                     (pair_account, Default::default())
                 );
@@ -177,7 +179,18 @@ pub mod pallet {
 impl<T: Config> Pallet<T> {
     /// The account ID of a pair account
     pub fn pair_account_id(asset_0: AssetIdOf<T>, asset_1: AssetIdOf<T>) -> T::AccountId {
-        // TODO: deduplicated (asset_0, asset_1)
+        let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
+
         T::PalletId::get().into_sub_account((asset_0, asset_1))
     }
+
+    /// Sorted the asset id of assets pair
+    pub fn sort_asset_id(asset_0: AssetIdOf<T>, asset_1: AssetIdOf<T>) -> (AssetIdOf<T>, AssetIdOf<T>) {
+        if asset_0 < asset_1 {
+            (asset_0, asset_1)
+        } else {
+            (asset_1, asset_0)
+        }
+    }
+
 }
