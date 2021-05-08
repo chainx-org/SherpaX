@@ -223,7 +223,7 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
             let recipient = T::Lookup::lookup(recipient)?;
             let now = frame_system::Pallet::<T>::block_number();
-
+            let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
             ensure!(deadline > now, Error::<T>::Deadline);
 
             Self::inner_remove_liquidity(
@@ -359,7 +359,7 @@ impl<T: Config> Pallet<T> {
                 ensure!(mint_liquidity > Zero::zero(), Error::<T>::Overflow);
 
                 *total_liquidity = total_liquidity.checked_add(mint_liquidity).ok_or(Error::<T>::Overflow)?;
-                Self::mint_liquidity(asset_0, asset_1, who, mint_liquidity)?;
+                Self::mutate_liquidity(asset_0, asset_1, who, mint_liquidity, true)?;
 
                 T::MultiAssets::transfer(asset_0, &who, &pair_account, amount_0)?;
                 T::MultiAssets::transfer(asset_1, &who, &pair_account, amount_1)?;
@@ -379,7 +379,37 @@ impl<T: Config> Pallet<T> {
         amount_token_1_min: AssetBalance,
         recipient: &T::AccountId,
     ) -> DispatchResult {
-        Ok(())
+        ensure!(
+            Self::swap_ledger(((asset_0, asset_1), who)) >= remove_liquidity,
+            Error::<T>::InsufficientLiquidity
+        );
+
+        SwapMetadata::<T>::try_mutate((asset_0, asset_1), |meta|{
+            ensure!(meta.is_some(), Error::<T>::PairNotExists);
+
+            if let Some((pair_account,  total_liquidity)) = meta {
+                let reserve_0 = T::MultiAssets::balance_of(asset_0, &pair_account);
+                let reserve_1 = T::MultiAssets::balance_of(asset_1, &pair_account);
+
+                let amount_0 =
+                    Self::calculate_share_amount(remove_liquidity, *total_liquidity, reserve_0);
+                let amount_1 =
+                    Self::calculate_share_amount(remove_liquidity, *total_liquidity, reserve_1);
+
+                ensure!(
+                    amount_0 >= amount_token_0_min && amount_1 >= amount_token_1_min,
+                    Error::<T>::InsufficientTargetAmount
+                );
+
+                *total_liquidity = total_liquidity.checked_sub(remove_liquidity).ok_or(Error::<T>::InsufficientLiquidity)?;
+                Self::mutate_liquidity(asset_0, asset_1, who, remove_liquidity, false)?;
+
+                T::MultiAssets::transfer(asset_0, &pair_account, recipient, amount_0)?;
+                T::MultiAssets::transfer(asset_1, &pair_account, recipient, amount_1)?;
+            }
+
+            Ok(())
+        })
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -457,14 +487,19 @@ impl<T: Config> Pallet<T> {
         Ok((amount_0_optimal, amount_1_desired))
     }
 
-    fn mint_liquidity(
+    fn mutate_liquidity(
         asset_0: AssetId,
         asset_1: AssetId,
         who: &T::AccountId,
-        mint_liquidity: AssetBalance,
+        amount: AssetBalance,
+        is_mint: bool
     ) -> DispatchResult {
-        SwapLedger::<T>::try_mutate(((asset_0, asset_1), who), |asset_balance|{
-            asset_balance.checked_add(mint_liquidity).ok_or(Error::<T>::Overflow)?;
+        SwapLedger::<T>::try_mutate(((asset_0, asset_1), who), |liquidity|{
+            if is_mint {
+                *liquidity = liquidity.checked_add(amount).ok_or(Error::<T>::Overflow)?;
+            } else {
+                *liquidity = liquidity.checked_sub(amount).ok_or(Error::<T>::InsufficientLiquidity)?;;
+            }
 
             Ok(())
         })
