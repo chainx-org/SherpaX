@@ -1,4 +1,23 @@
-How to use/test locally
+# SherpaX
+
+[![Continuous integration](https://github.com/chainx-org/SherpaX/actions/workflows/ci.yml/badge.svg)](https://github.com/chainx-org/SherpaX/actions/workflows/ci.yml)
+
+<!-- TOC GFM -->
+
+* [How to use/test locally](#how-to-usetest-locally)
+    * [1. Supported Polkadot dependencies](#1-supported-polkadot-dependencies)
+    * [2. How to use](#2-how-to-use)
+    * [3. Launch a local setup including a Relay Chain and a Parachain by polkadot-launch](#3-launch-a-local-setup-including-a-relay-chain-and-a-parachain-by-polkadot-launch)
+    * [4. Launch a local setup including a Relay Chain and a Parachain by cmd](#4-launch-a-local-setup-including-a-relay-chain-and-a-parachain-by-cmd)
+        * [Launch the Relay Chain](#launch-the-relay-chain)
+        * [Launch the Parachain](#launch-the-parachain)
+        * [Register the parachain](#register-the-parachain)
+    * [5. custom type](#5-custom-type)
+* [License](#license)
+
+<!-- /TOC -->
+
+## How to use/test locally
 
 ### 1. Supported Polkadot dependencies
 
@@ -155,3 +174,7 @@ cargo build --release
   "LookupSource": "MultiAddress"
 }
 ```
+
+## License
+
+[GPL-v3](LICENSE)
