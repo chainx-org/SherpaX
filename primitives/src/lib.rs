@@ -28,10 +28,13 @@ use sp_runtime::{
 
 /// Opaque block header type.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+
 /// Opaque block type.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+
 /// Opaque block identifier type.
 pub type BlockId = generic::BlockId<Block>;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -51,6 +54,9 @@ pub type AccountIndex = u32;
 
 /// Balance of an account.
 pub type Balance = u128;
+
+/// Signed balance of an account.
+pub type Amount = i128;
 
 /// Index of a transaction in the chain.
 pub type Index = u32;

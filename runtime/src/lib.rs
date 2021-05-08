@@ -19,7 +19,6 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-use dev_parachain_primitives::*;
 use sp_api::impl_runtime_apis;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
@@ -44,6 +43,8 @@ use frame_support::{
 };
 use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
+
+use dev_parachain_primitives::*;
 
 /// Constant values used within the runtime.
 pub mod constants;
@@ -243,8 +244,6 @@ impl xpallet_assets_registrar::Config for Runtime {
     type RegistrarHandler = ();
     type WeightInfo = xpallet_assets_registrar::weights::SubstrateWeight<Runtime>;
 }
-
-pub type Amount = i128;
 
 impl xpallet_assets::Config for Runtime {
     type Event = Event;
