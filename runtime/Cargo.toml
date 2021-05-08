@@ -44,6 +44,9 @@ parachain-info = { git = 'https://github.com/paritytech/cumulus',  default-featu
 xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 
+pallet-swap = { path = "../pallets/swap", default-features = false }
+orml-traits = { version = "0.4.0", default-features = false }
+
 [build-dependencies]
 substrate-wasm-builder = '3.0.0'
 
@@ -83,4 +86,7 @@ std = [
 
 	'xpallet-assets/std',
 	'xpallet-assets-registrar/std',
+
+	'pallet-swap/std',
+	'orml-traits/std',
 ]

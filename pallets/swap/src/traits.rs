@@ -1,12 +1,12 @@
 
 use super::{
-    DispatchError, BaseArithmetic, MaybeSerializeDeserialize, FullCodec, Debug
+    DispatchError, BaseArithmetic, MaybeSerializeDeserialize, Debug, Parameter, Member
 };
 
 
 pub trait MultiAsset<AccountId> {
-    type AssetId: Copy + FullCodec + Eq + PartialEq + MaybeSerializeDeserialize + Debug;
-    type AssetBalance: Default + BaseArithmetic + Copy + FullCodec + Eq + PartialEq + MaybeSerializeDeserialize + Debug;
+    type AssetId: Copy + Parameter + Member + MaybeSerializeDeserialize + Debug;
+    type AssetBalance: Default + BaseArithmetic + Copy + Parameter + Member + MaybeSerializeDeserialize + Debug;
 
     fn balance_of(
         asset_id: &Self::AssetId,

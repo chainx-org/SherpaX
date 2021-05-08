@@ -27,6 +27,7 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, Perbill,
 };
+use sp_std::marker::PhantomData;
 use sp_std::prelude::{Box, Vec};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -34,12 +35,15 @@ use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
 use frame_support::{
-    construct_runtime, parameter_types,
-    traits::Randomness,
+    construct_runtime, parameter_types, PalletId,
+    traits::{
+        Randomness, ReservableCurrency,
+    },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight,
     },
+    pallet_prelude::DispatchError,
 };
 use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
@@ -49,6 +53,7 @@ use dev_parachain_primitives::*;
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
+use pallet_swap::MultiAsset;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -255,6 +260,50 @@ impl xpallet_assets::Config for Runtime {
     type WeightInfo = xpallet_assets::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+    pub const SwapPalletId: PalletId = PalletId(*b"//swap//");
+}
+
+pub struct MultiAssetsAdaptor<Balances, XAssets>(
+    PhantomData<(Balances, XAssets)>,
+);
+
+impl <Balances, XAssets> pallet_swap::MultiAsset<AccountId>
+for MultiAssetsAdaptor<Balances, XAssets>
+    where
+        Balances: ReservableCurrency<AccountId>,
+        XAssets: orml_traits::MultiCurrency<AccountId>,
+{
+    type AssetId = u32;
+    type AssetBalance = Balance;
+
+    fn balance_of(asset_id: &Self::AssetId, who: &AccountId) -> Self::AssetBalance {
+        unimplemented!()
+    }
+
+    fn total_supply(asset_id: &Self::AssetId) -> Self::AssetBalance {
+        unimplemented!()
+    }
+
+    fn transfer(asset_id: &Self::AssetId, origin: &AccountId, target: &AccountId, amount: &Self::AssetBalance) -> Result<Self::AssetBalance, DispatchError> {
+        unimplemented!()
+    }
+
+    fn deposit(asset_id: &Self::AssetId, target: &AccountId, amount: &Self::AssetBalance) -> Result<Self::AssetBalance, DispatchError> {
+        unimplemented!()
+    }
+
+    fn withdraw(asset_id: &Self::AssetId, origin: &AccountId, amount: &Self::AssetBalance) -> Result<Self::AssetBalance, DispatchError> {
+        unimplemented!()
+    }
+}
+
+impl pallet_swap::Config for Runtime {
+    type Event = Event;
+    type MultiAssets = MultiAssetsAdaptor<Balances, XAssets>;
+    type PalletId = SwapPalletId;
+}
+
 construct_runtime! {
     pub enum Runtime where
         Block = Block,
@@ -274,6 +323,8 @@ construct_runtime! {
 
         XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config} = 10,
         XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
+
+        Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
     }
 }
 

@@ -13,7 +13,7 @@ pub use pallet::*;
 
 // mod types;
 mod traits;
-use traits::MultiAsset;
+pub use traits::MultiAsset;
 
 use frame_support::{
     inherent::Vec,
