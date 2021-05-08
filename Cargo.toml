@@ -7,3 +7,12 @@ members = [
 	"primitives",
 	"runtime"
 ]
+
+[patch.crates-io]
+sp-application-crypto = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
+
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }

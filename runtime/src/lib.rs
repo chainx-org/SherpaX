@@ -19,7 +19,6 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-use dev_parachain_primitives::*;
 use sp_api::impl_runtime_apis;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
@@ -44,6 +43,8 @@ use frame_support::{
 };
 use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
+
+use dev_parachain_primitives::*;
 
 /// Constant values used within the runtime.
 pub mod constants;
@@ -233,6 +234,27 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 
 impl parachain_info::Config for Runtime {}
 
+parameter_types! {
+    pub const PcxAssetId: u32 = 0;
+}
+
+impl xpallet_assets_registrar::Config for Runtime {
+    type Event = Event;
+    type NativeAssetId = PcxAssetId;
+    type RegistrarHandler = ();
+    type WeightInfo = xpallet_assets_registrar::weights::SubstrateWeight<Runtime>;
+}
+
+impl xpallet_assets::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type Amount = Amount;
+    type TreasuryAccount = ();
+    type OnCreatedAccount = frame_system::Provider<Runtime>;
+    type OnAssetChanged = ();
+    type WeightInfo = xpallet_assets::weights::SubstrateWeight<Runtime>;
+}
+
 construct_runtime! {
     pub enum Runtime where
         Block = Block,
@@ -249,6 +271,9 @@ construct_runtime! {
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
         Utility: pallet_utility::{Pallet, Call, Event} = 8,
         Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 9,
+
+        XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config} = 10,
+        XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
     }
 }
 
