@@ -22,7 +22,7 @@ use frame_support::{
 use codec::{Encode, Decode, FullCodec};
 use sp_runtime::{
     traits::{
-        StaticLookup, AccountIdConversion, Saturating, Zero, IntegerSquareRoot
+        StaticLookup, AccountIdConversion, Saturating, Zero, One, IntegerSquareRoot
     },
 };
 
@@ -358,7 +358,7 @@ impl<T: Config> Pallet<T> {
                 );
                 ensure!(mint_liquidity > Zero::zero(), Error::<T>::Overflow);
 
-                *total_liquidity = total_liquidity.checked_add(mint_liquidity).ok_or(Error::<T>::Overflow)?;
+                total_liquidity.checked_add(mint_liquidity).ok_or(Error::<T>::Overflow)?;
                 Self::mutate_liquidity(asset_0, asset_1, who, mint_liquidity, true)?;
 
                 T::MultiAssets::transfer(asset_0, &who, &pair_account, amount_0)?;
@@ -401,7 +401,7 @@ impl<T: Config> Pallet<T> {
                     Error::<T>::InsufficientTargetAmount
                 );
 
-                *total_liquidity = total_liquidity.checked_sub(remove_liquidity).ok_or(Error::<T>::InsufficientLiquidity)?;
+                total_liquidity.checked_sub(remove_liquidity).ok_or(Error::<T>::InsufficientLiquidity)?;
                 Self::mutate_liquidity(asset_0, asset_1, who, remove_liquidity, false)?;
 
                 T::MultiAssets::transfer(asset_0, &pair_account, recipient, amount_0)?;
@@ -496,12 +496,110 @@ impl<T: Config> Pallet<T> {
     ) -> DispatchResult {
         SwapLedger::<T>::try_mutate(((asset_0, asset_1), who), |liquidity|{
             if is_mint {
-                *liquidity = liquidity.checked_add(amount).ok_or(Error::<T>::Overflow)?;
+                liquidity.checked_add(amount).ok_or(Error::<T>::Overflow)?;
             } else {
-                *liquidity = liquidity.checked_sub(amount).ok_or(Error::<T>::InsufficientLiquidity)?;;
+                liquidity.checked_sub(amount).ok_or(Error::<T>::InsufficientLiquidity)?;;
             }
 
             Ok(())
         })
+    }
+
+    fn get_amount_in(
+        output_amount: AssetBalance,
+        input_reserve: AssetBalance,
+        output_reserve: AssetBalance,
+    ) -> AssetBalance {
+        let numerator = U256::from(input_reserve)
+            .saturating_mul(U256::from(output_amount))
+            .saturating_mul(U256::from(1000));
+
+        let denominator = (U256::from(output_reserve).saturating_sub(U256::from(output_amount)))
+            .saturating_mul(U256::from(997));
+
+        numerator
+            .checked_div(denominator)
+            .and_then(|r| r.checked_add(U256::one()))
+            .and_then(|n| TryInto::<AssetBalance>::try_into(n).ok())
+            .unwrap_or_else(Zero::zero)
+    }
+
+    fn get_amount_out(
+        input_amount: AssetBalance,
+        input_reserve: AssetBalance,
+        output_reserve: AssetBalance,
+    ) -> AssetBalance {
+        let input_amount_with_fee = U256::from(input_amount).saturating_mul(U256::from(997));
+
+        let numerator = input_amount_with_fee.saturating_mul(U256::from(output_reserve));
+
+        let denominator = U256::from(input_reserve)
+            .saturating_mul(U256::from(1000))
+            .saturating_add(input_amount_with_fee);
+
+        numerator
+            .checked_div(denominator)
+            .and_then(|n| TryInto::<AssetBalance>::try_into(n).ok())
+            .unwrap_or_else(Zero::zero)
+    }
+
+    fn get_amount_in_by_path(
+        amount_out: AssetBalance,
+        path: &[AssetId],
+    ) -> Result<Vec<AssetBalance>, DispatchError> {
+        let len = path.len();
+        ensure!(len > 1, Error::<T>::InvalidPath);
+
+        let mut i = len - 1;
+        let mut out_vec = Vec::new();
+        out_vec.push(amount_out);
+
+        while i > 0 {
+            let pair_account = Self::pair_account_id(path[i], path[i - 1]);
+            let reserve_0 = T::MultiAssets::balance_of(path[i], &pair_account);
+            let reserve_1 = T::MultiAssets::balance_of(path[i - 1], &pair_account);
+
+            ensure!(
+                reserve_1 > Zero::zero() && reserve_0 > Zero::zero(),
+                Error::<T>::InvalidPath
+            );
+
+            let amount = Self::get_amount_in(out_vec[len - 1 - i], reserve_1, reserve_0);
+            ensure!(amount > One::one(), Error::<T>::InvalidPath);
+
+            out_vec.push(amount);
+            i -= 1;
+        }
+
+        out_vec.reverse();
+        Ok(out_vec)
+    }
+
+    fn get_amount_out_by_path(
+        amount_in: AssetBalance,
+        path: &[AssetId],
+    ) -> Result<Vec<AssetBalance>, DispatchError> {
+        ensure!(path.len() > 1, Error::<T>::InvalidPath);
+
+        let len = path.len() - 1;
+        let mut out_vec = Vec::new();
+        out_vec.push(amount_in);
+
+        for i in 0..len {
+            let pair_account = Self::pair_account_id(path[i], path[i + 1]);
+            let reserve_0 = T::MultiAssets::balance_of(path[i], &pair_account);
+            let reserve_1 = T::MultiAssets::balance_of(path[i + 1], &pair_account);
+
+            ensure!(
+                reserve_1 > Zero::zero() && reserve_0 > Zero::zero(),
+                Error::<T>::InvalidPath
+            );
+
+            let amount = Self::get_amount_out(out_vec[i], reserve_0, reserve_1);
+            ensure!(amount > Zero::zero(), Error::<T>::InvalidPath);
+            out_vec.push(amount);
+        }
+
+        Ok(out_vec)
     }
 }
