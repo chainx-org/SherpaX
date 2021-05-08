@@ -21,13 +21,6 @@ jobs:
         include:
           - os: ubuntu-latest
             sccache-path: /home/runner/.cache/sccache
-          - os: macos-latest
-            sccache-path: /Users/runner/Library/Caches/Mozilla.sccache
-        exclude:
-          - os: macos-latest
-            rust: nightly
-            task:
-              name: Clippy
     env:
       RUST_BACKTRACE: full
       RUSTC_WRAPPER: sccache
@@ -39,7 +32,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install sccache (ubuntu-latest)
-        if: matrix.os == 'ubuntu-latest'
         env:
           LINK: https://github.com/mozilla/sccache/releases/download
           SCCACHE_VERSION: 0.2.13
@@ -49,12 +41,6 @@ jobs:
           curl -L "$LINK/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz" | tar xz
           mv -f $SCCACHE_FILE/sccache $HOME/.local/bin/sccache
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Install sccache (macos-latest)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew update
-          brew install sccache
 
       - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
