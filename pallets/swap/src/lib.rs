@@ -22,11 +22,14 @@ use frame_support::{
 use codec::{Encode, Decode, FullCodec};
 use sp_runtime::{
     traits::{
-        StaticLookup, AccountIdConversion, MaybeSerializeDeserialize
+        StaticLookup, AccountIdConversion, Saturating, Zero, IntegerSquareRoot
     },
 };
-use sp_arithmetic::traits::BaseArithmetic;
-use sp_std::fmt::Debug;
+
+use sp_std::{
+    fmt::Debug, convert::TryInto
+};
+use sp_core::U256;
 use frame_support::{
     pallet_prelude::*,
     PalletId,
@@ -35,11 +38,8 @@ use frame_support::{
 #[cfg(feature = "std")]
 use serde::{Serialize, Deserialize};
 
-pub type AssetIdOf<T> =
-<<T as Config>::MultiAssets as MultiAsset<<T as frame_system::Config>::AccountId>>::AssetId;
-
-pub type AssetBalanceOf<T> =
-<<T as Config>::MultiAssets as MultiAsset<<T as frame_system::Config>::AccountId>>::AssetBalance;
+pub type AssetId = u32;
+pub type AssetBalance = u128;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -66,29 +66,31 @@ pub mod pallet {
     #[pallet::getter(fn swap_metadata)]
     /// TWOX-NOTE: `AssetId` is trusted, so this is safe.
     /// (AssetId, AssetId) -> (PairAccountId, TotalSupply)
-    pub type SwapMetadata<T: Config> = StorageMap<_, Twox64Concat, (AssetIdOf<T>, AssetIdOf<T>), (T::AccountId, AssetBalanceOf<T>)>;
+    pub type SwapMetadata<T: Config> = StorageMap<_, Twox64Concat, (AssetId, AssetId), (T::AccountId, AssetBalance)>;
 
     #[pallet::storage]
     #[pallet::getter(fn swap_ledger)]
     /// ((AssetId, AssetId), AccountId) -> AssetBalance
-    pub type SwapLedger<T: Config> = StorageMap<_, Blake2_128Concat, ((AssetIdOf<T>, AssetIdOf<T>), T::AccountId), AssetBalanceOf<T>, ValueQuery>;
+    pub type SwapLedger<T: Config> = StorageMap<_, Blake2_128Concat, ((AssetId, AssetId), T::AccountId), AssetBalance, ValueQuery>;
 
     #[pallet::event]
-    #[pallet::metadata(T::AccountId = "AccountId", AssetIdOf<T> = "AssetId", AssetBalanceOf<T> = "AssetBalance")]
+    #[pallet::metadata(T::AccountId = "AccountId")]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// Create a trading pair. \[creator, asset_id, asset_id\]
-        PairCreated(T::AccountId, AssetIdOf<T>, AssetIdOf<T>),
+        PairCreated(T::AccountId, AssetId, AssetId),
         /// Add liquidity. \[owner, asset_id, asset_id\]
-        LiquidityAdded(T::AccountId, AssetIdOf<T>, AssetIdOf<T>),
+        LiquidityAdded(T::AccountId, AssetId, AssetId),
         /// Remove liquidity. \[owner, recipient, asset_id, asset_id, amount\]
-        LiquidityRemoved(T::AccountId, T::AccountId, AssetIdOf<T>, AssetIdOf<T>, AssetBalanceOf<T>),
+        LiquidityRemoved(T::AccountId, T::AccountId, AssetId, AssetId, AssetBalance),
         /// Transact in trading \[owner, recipient, swap_path\]
-        TokenSwap(T::AccountId, T::AccountId, Vec<AssetIdOf<T>>),
+        TokenSwap(T::AccountId, T::AccountId, Vec<AssetId>),
     }
 
     #[pallet::error]
     pub enum Error<T> {
+        /// Account balance must be greater than or equal to the transfer amount.
+        InsufficientAssetBalance,
         /// Trading pair can't be created.
         DeniedCreatePair,
         /// Trading pair already exists.
@@ -130,8 +132,8 @@ pub mod pallet {
         #[pallet::weight(1000_000)]
         pub fn create_pair(
             origin: OriginFor<T>,
-            asset_0: AssetIdOf<T>,
-            asset_1: AssetIdOf<T>
+            asset_0: AssetId,
+            asset_1: AssetId
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(asset_0 != asset_1, Error::<T>::DeniedCreatePair);
@@ -171,20 +173,21 @@ pub mod pallet {
         #[allow(clippy::too_many_arguments)]
         pub fn add_liquidity(
             origin: OriginFor<T>,
-            asset_0: AssetIdOf<T>,
-            asset_1: AssetIdOf<T>,
-            #[pallet::compact] amount_0_desired : AssetBalanceOf<T>,
-            #[pallet::compact] amount_1_desired : AssetBalanceOf<T>,
-            #[pallet::compact] amount_0_min : AssetBalanceOf<T>,
-            #[pallet::compact] amount_1_min : AssetBalanceOf<T>,
+            asset_0: AssetId,
+            asset_1: AssetId,
+            #[pallet::compact] amount_0_desired : AssetBalance,
+            #[pallet::compact] amount_1_desired : AssetBalance,
+            #[pallet::compact] amount_0_min : AssetBalance,
+            #[pallet::compact] amount_1_min : AssetBalance,
             #[pallet::compact] deadline: T::BlockNumber,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
             let now = frame_system::Pallet::<T>::block_number();
+            let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
             ensure!(deadline > now, Error::<T>::Deadline);
 
             Self::inner_add_liquidity(
-                &who, &asset_0, &asset_1, amount_0_desired, amount_1_desired, amount_0_min, amount_1_min
+                &who, asset_0, asset_1, amount_0_desired, amount_1_desired, amount_0_min, amount_1_min
             )?;
 
             Self::deposit_event(Event::LiquidityAdded(who, asset_0, asset_1));
@@ -209,21 +212,22 @@ pub mod pallet {
         #[allow(clippy::too_many_arguments)]
         pub fn remove_liquidity(
             origin: OriginFor<T>,
-            asset_0: AssetIdOf<T>,
-            asset_1: AssetIdOf<T>,
-            #[pallet::compact] liquidity: AssetBalanceOf<T>,
-            #[pallet::compact] amount_asset_0_min : AssetBalanceOf<T>,
-            #[pallet::compact] amount_asset_1_min : AssetBalanceOf<T>,
+            asset_0: AssetId,
+            asset_1: AssetId,
+            #[pallet::compact] liquidity: AssetBalance,
+            #[pallet::compact] amount_asset_0_min : AssetBalance,
+            #[pallet::compact] amount_asset_1_min : AssetBalance,
             recipient: <T::Lookup as StaticLookup>::Source,
             #[pallet::compact] deadline: T::BlockNumber,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
             let recipient = T::Lookup::lookup(recipient)?;
             let now = frame_system::Pallet::<T>::block_number();
+
             ensure!(deadline > now, Error::<T>::Deadline);
 
             Self::inner_remove_liquidity(
-                &who, &asset_0, &asset_1, liquidity, amount_asset_0_min, amount_asset_1_min, &recipient
+                &who, asset_0, asset_1, liquidity, amount_asset_0_min, amount_asset_1_min, &recipient
             )?;
 
             Self::deposit_event(Event::LiquidityRemoved(who, recipient, asset_0, asset_1, liquidity));
@@ -244,9 +248,9 @@ pub mod pallet {
         #[frame_support::transactional]
         pub fn swap_exact_tokens_for_tokens(
             origin: OriginFor<T>,
-            #[pallet::compact] amount_in: AssetBalanceOf<T>,
-            #[pallet::compact] amount_out_min: AssetBalanceOf<T>,
-            path: Vec<AssetIdOf<T>>,
+            #[pallet::compact] amount_in: AssetBalance,
+            #[pallet::compact] amount_out_min: AssetBalance,
+            path: Vec<AssetId>,
             recipient: <T::Lookup as StaticLookup>::Source,
             #[pallet::compact] deadline: T::BlockNumber,
         ) -> DispatchResult {
@@ -277,9 +281,9 @@ pub mod pallet {
         #[frame_support::transactional]
         pub fn swap_tokens_for_exact_tokens(
             origin: OriginFor<T>,
-            #[pallet::compact] amount_out: AssetBalanceOf<T>,
-            #[pallet::compact] amount_in_max: AssetBalanceOf<T>,
-            path: Vec<AssetIdOf<T>>,
+            #[pallet::compact] amount_out: AssetBalance,
+            #[pallet::compact] amount_in_max: AssetBalance,
+            path: Vec<AssetId>,
             recipient: <T::Lookup as StaticLookup>::Source,
             #[pallet::compact] deadline: T::BlockNumber,
         ) -> DispatchResult {
@@ -301,14 +305,14 @@ pub mod pallet {
 
 impl<T: Config> Pallet<T> {
     /// The account ID of a pair account
-    fn pair_account_id(asset_0: AssetIdOf<T>, asset_1: AssetIdOf<T>) -> T::AccountId {
+    fn pair_account_id(asset_0: AssetId, asset_1: AssetId) -> T::AccountId {
         let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
 
         T::PalletId::get().into_sub_account((asset_0, asset_1))
     }
 
     /// Sorted the asset id of assets pair
-    fn sort_asset_id(asset_0: AssetIdOf<T>, asset_1: AssetIdOf<T>) -> (AssetIdOf<T>, AssetIdOf<T>) {
+    fn sort_asset_id(asset_0: AssetId, asset_1: AssetId) -> (AssetId, AssetId) {
         if asset_0 < asset_1 {
             (asset_0, asset_1)
         } else {
@@ -319,24 +323,60 @@ impl<T: Config> Pallet<T> {
     #[allow(clippy::too_many_arguments)]
     fn inner_add_liquidity(
         who: &T::AccountId,
-        asset_0: &AssetIdOf<T>,
-        asset_1: &AssetIdOf<T>,
-        amount_0_desired: AssetBalanceOf<T>,
-        amount_1_desired: AssetBalanceOf<T>,
-        amount_0_min: AssetBalanceOf<T>,
-        amount_1_min: AssetBalanceOf<T>,
+        asset_0: AssetId,
+        asset_1: AssetId,
+        amount_0_desired: AssetBalance,
+        amount_1_desired: AssetBalance,
+        amount_0_min: AssetBalance,
+        amount_1_min: AssetBalance,
     ) -> DispatchResult {
-        Ok(())
+        SwapMetadata::<T>::try_mutate((asset_0, asset_1), |meta|{
+            ensure!(meta.is_some(), Error::<T>::PairNotExists);
+
+            if let Some((pair_account,  total_liquidity)) = meta {
+                let reserve_0 = T::MultiAssets::balance_of(asset_0, pair_account);
+                let reserve_1 = T::MultiAssets::balance_of(asset_1, pair_account);
+
+                let (amount_0, amount_1) = Self::calculate_added_amount(
+                    amount_0_desired,
+                    amount_1_desired,
+                    amount_0_min,
+                    amount_1_min,
+                    reserve_0,
+                    reserve_1,
+                )?;
+
+                let balance_asset_0 = T::MultiAssets::balance_of(asset_0, who);
+                let balance_asset_1 = T::MultiAssets::balance_of(asset_1, who);
+                ensure!(
+                    balance_asset_0 >= amount_0 && balance_asset_1 >= amount_1,
+                    Error::<T>::InsufficientAssetBalance
+                );
+
+                let mint_liquidity = Self::calculate_liquidity(
+                    amount_0, amount_1, reserve_0, reserve_1, *total_liquidity
+                );
+                ensure!(mint_liquidity > Zero::zero(), Error::<T>::Overflow);
+
+                *total_liquidity = total_liquidity.checked_add(mint_liquidity).ok_or(Error::<T>::Overflow)?;
+                Self::mint_liquidity(asset_0, asset_1, who, mint_liquidity)?;
+
+                T::MultiAssets::transfer(asset_0, &who, &pair_account, amount_0)?;
+                T::MultiAssets::transfer(asset_1, &who, &pair_account, amount_1)?;
+            }
+
+            Ok(())
+        })
     }
 
     #[allow(clippy::too_many_arguments)]
     fn inner_remove_liquidity(
         who: &T::AccountId,
-        asset_0: &AssetIdOf<T>,
-        asset_1: &AssetIdOf<T>,
-        remove_liquidity: AssetBalanceOf<T>,
-        amount_token_0_min: AssetBalanceOf<T>,
-        amount_token_1_min: AssetBalanceOf<T>,
+        asset_0: AssetId,
+        asset_1: AssetId,
+        remove_liquidity: AssetBalance,
+        amount_token_0_min: AssetBalance,
+        amount_token_1_min: AssetBalance,
         recipient: &T::AccountId,
     ) -> DispatchResult {
         Ok(())
@@ -345,21 +385,88 @@ impl<T: Config> Pallet<T> {
     #[allow(clippy::too_many_arguments)]
     fn inner_swap_exact_tokens_for_tokens(
         who: &T::AccountId,
-        amount_in: AssetBalanceOf<T>,
-        amount_out_min: AssetBalanceOf<T>,
-        path: &[AssetIdOf<T>],
+        amount_in: AssetBalance,
+        amount_out_min: AssetBalance,
+        path: &[AssetId],
         recipient: &T::AccountId,
     ) -> DispatchResult {
         Ok(())
     }
 
-    pub fn inner_swap_tokens_for_exact_tokens(
+    #[allow(clippy::too_many_arguments)]
+    fn inner_swap_tokens_for_exact_tokens(
         who: &T::AccountId,
-        amount_out: AssetBalanceOf<T>,
-        amount_in_max: AssetBalanceOf<T>,
-        path: &[AssetIdOf<T>],
+        amount_out: AssetBalance,
+        amount_in_max: AssetBalance,
+        path: &[AssetId],
         recipient: &T::AccountId,
     ) -> DispatchResult {
         Ok(())
+    }
+
+    fn calculate_share_amount(
+        amount_0: AssetBalance,
+        reserve_0: AssetBalance,
+        reserve_1: AssetBalance,
+    ) -> AssetBalance {
+        U256::from(amount_0)
+            .saturating_mul(U256::from(reserve_1))
+            .checked_div(U256::from(reserve_0))
+            .and_then(|n| TryInto::<AssetBalance>::try_into(n).ok())
+            .unwrap_or_else(Zero::zero)
+    }
+
+    fn calculate_liquidity(
+        amount_0: AssetBalance,
+        amount_1: AssetBalance,
+        reserve_0: AssetBalance,
+        reserve_1: AssetBalance,
+        total_liquidity: AssetBalance,
+    ) -> AssetBalance {
+        if total_liquidity == Zero::zero() {
+            amount_0.saturating_mul(amount_1).integer_sqrt()
+        } else {
+            core::cmp::min(
+                Self::calculate_share_amount(amount_0, reserve_0, total_liquidity),
+                Self::calculate_share_amount(amount_1, reserve_1, total_liquidity),
+            )
+        }
+    }
+
+    fn calculate_added_amount(
+        amount_0_desired: AssetBalance,
+        amount_1_desired: AssetBalance,
+        amount_0_min: AssetBalance,
+        amount_1_min: AssetBalance,
+        reserve_0: AssetBalance,
+        reserve_1: AssetBalance,
+    ) -> Result<(AssetBalance, AssetBalance), DispatchError> {
+        if reserve_0 == Zero::zero() || reserve_1 == Zero::zero() {
+            return Ok((amount_0_desired, amount_1_desired));
+        }
+        let amount_1_optimal = Self::calculate_share_amount(amount_0_desired, reserve_0, reserve_1);
+        if amount_1_optimal <= amount_1_desired {
+            ensure!(amount_1_optimal >= amount_1_min, Error::<T>::IncorrectAssetAmountRange);
+            return Ok((amount_0_desired, amount_1_optimal));
+        }
+        let amount_0_optimal = Self::calculate_share_amount(amount_1_desired, reserve_1, reserve_0);
+        ensure!(
+            amount_0_optimal >= amount_0_min && amount_0_optimal <= amount_0_desired,
+            Error::<T>::IncorrectAssetAmountRange
+        );
+        Ok((amount_0_optimal, amount_1_desired))
+    }
+
+    fn mint_liquidity(
+        asset_0: AssetId,
+        asset_1: AssetId,
+        who: &T::AccountId,
+        mint_liquidity: AssetBalance,
+    ) -> DispatchResult {
+        SwapLedger::<T>::try_mutate(((asset_0, asset_1), who), |asset_balance|{
+            asset_balance.checked_add(mint_liquidity).ok_or(Error::<T>::Overflow)?;
+
+            Ok(())
+        })
     }
 }

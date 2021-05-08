@@ -1,28 +1,25 @@
 
 use super::{
-    DispatchError, BaseArithmetic, MaybeSerializeDeserialize, Debug, Parameter, Member
+    DispatchError, AssetId, AssetBalance
 };
 
 
 pub trait MultiAsset<AccountId> {
-    type AssetId: Copy + Parameter + Member + MaybeSerializeDeserialize + Debug + Ord;
-    type AssetBalance: Default + BaseArithmetic + Copy + Parameter + Member + MaybeSerializeDeserialize + Debug + Ord;
-
     fn balance_of(
-        asset_id: &Self::AssetId,
+        asset_id: AssetId,
         who: &AccountId
-    ) -> Self::AssetBalance;
+    ) -> AssetBalance;
 
     fn total_supply(
-        asset_id: &Self::AssetId
-    ) -> Self::AssetBalance;
+        asset_id: AssetId
+    ) -> AssetBalance;
 
     fn transfer(
-        asset_id: &Self::AssetId,
+        asset_id: AssetId,
         origin: &AccountId,
         target: &AccountId,
-        amount: &Self::AssetBalance
-    ) -> Result<Self::AssetBalance, DispatchError> {
+        amount: AssetBalance
+    ) -> Result<AssetBalance, DispatchError> {
         let withdrawn = Self::withdraw(asset_id, origin, amount)?;
         Self::deposit(asset_id, target, amount)?;
 
@@ -30,14 +27,14 @@ pub trait MultiAsset<AccountId> {
     }
 
     fn deposit(
-        asset_id: &Self::AssetId,
+        asset_id: AssetId,
         target: &AccountId,
-        amount: &Self::AssetBalance
-    ) -> Result<Self::AssetBalance, DispatchError>;
+        amount: AssetBalance
+    ) -> Result<AssetBalance, DispatchError>;
 
     fn withdraw(
-        asset_id: &Self::AssetId,
+        asset_id: AssetId,
         origin: &AccountId,
-        amount: &Self::AssetBalance
-    ) -> Result<Self::AssetBalance, DispatchError>;
+        amount: AssetBalance
+    ) -> Result<AssetBalance, DispatchError>;
 }

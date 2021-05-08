@@ -53,7 +53,9 @@ use dev_parachain_primitives::*;
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
-use pallet_swap::MultiAsset;
+use pallet_swap::{
+    MultiAsset, AssetId, AssetBalance
+};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -274,26 +276,23 @@ for MultiAssetsAdaptor<Balances, XAssets>
         Balances: ReservableCurrency<AccountId>,
         XAssets: orml_traits::MultiCurrency<AccountId>,
 {
-    type AssetId = u32;
-    type AssetBalance = Balance;
-
-    fn balance_of(asset_id: &Self::AssetId, who: &AccountId) -> Self::AssetBalance {
+    fn balance_of(asset_id: AssetId, who: &AccountId) -> AssetBalance {
         unimplemented!()
     }
 
-    fn total_supply(asset_id: &Self::AssetId) -> Self::AssetBalance {
+    fn total_supply(asset_id: AssetId) -> AssetBalance {
         unimplemented!()
     }
 
-    fn transfer(asset_id: &Self::AssetId, origin: &AccountId, target: &AccountId, amount: &Self::AssetBalance) -> Result<Self::AssetBalance, DispatchError> {
+    fn transfer(asset_id: AssetId, origin: &AccountId, target: &AccountId, amount: AssetBalance) -> Result<AssetBalance, DispatchError> {
         unimplemented!()
     }
 
-    fn deposit(asset_id: &Self::AssetId, target: &AccountId, amount: &Self::AssetBalance) -> Result<Self::AssetBalance, DispatchError> {
+    fn deposit(asset_id: AssetId, target: &AccountId, amount: AssetBalance) -> Result<AssetBalance, DispatchError> {
         unimplemented!()
     }
 
-    fn withdraw(asset_id: &Self::AssetId, origin: &AccountId, amount: &Self::AssetBalance) -> Result<Self::AssetBalance, DispatchError> {
+    fn withdraw(asset_id: AssetId, origin: &AccountId, amount: AssetBalance) -> Result<AssetBalance, DispatchError> {
         unimplemented!()
     }
 }
