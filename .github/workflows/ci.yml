@@ -13,14 +13,11 @@ jobs:
         rust: [nightly]
         task:
           - name: Rustfmt
-            command: "cargo fmt"
-            args: "--all -- --check"
+            cargo_command: "cargo fmt --all -- --check"
           - name: Clippy
-            command: "cargo clippy"
-            args: "--"
+            cargo_command: "cargo clippy"
           - name: Test Suite
-            command: "cargo test"
-            args: "--workspace"
+            cargo_command: "cargo test --workspace --all"
         include:
           - os: ubuntu-latest
             sccache-path: /home/runner/.cache/sccache
@@ -92,7 +89,7 @@ jobs:
         run: sccache --start-server
 
       - name: ${{ matrix.task.name }}
-        run: ${{ matrix.task.command }} ${{ matrix.task.args }}
+        run: ${{ matrix.task.cargo_command }}
 
       - name: Print sccache stats
         run: sccache --show-stats
