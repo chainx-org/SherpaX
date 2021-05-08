@@ -14,8 +14,8 @@ jobs:
         task:
           - name: Rustfmt
             cargo_command: "cargo fmt --all -- --check"
-          - name: Clippy
-            cargo_command: "cargo clippy"
+          # - name: Clippy
+            # cargo_command: "cargo clippy"
           - name: Test Suite
             cargo_command: "cargo test --workspace --all"
         include:
