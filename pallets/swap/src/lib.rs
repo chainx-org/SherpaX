@@ -74,15 +74,43 @@ pub mod pallet {
     pub type SwapLedger<T: Config> = StorageMap<_, Blake2_128Concat, ((AssetIdOf<T>, AssetIdOf<T>), T::AccountId), AssetBalanceOf<T>, ValueQuery>;
 
     #[pallet::event]
-    #[pallet::metadata(T::AccountId = "AccountId", AssetIdOf<T> = "AssetId")]
+    #[pallet::metadata(T::AccountId = "AccountId", AssetIdOf<T> = "AssetId", AssetBalanceOf<T> = "AssetBalance")]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
-        PairCreated(T::AccountId, AssetIdOf<T>, AssetIdOf<T>)
+        /// Create a trading pair. \[creator, asset_id, asset_id\]
+        PairCreated(T::AccountId, AssetIdOf<T>, AssetIdOf<T>),
+        /// Add liquidity. \[owner, asset_id, asset_id\]
+        LiquidityAdded(T::AccountId, AssetIdOf<T>, AssetIdOf<T>),
+        /// Remove liquidity. \[owner, recipient, asset_id, asset_id, amount\]
+        LiquidityRemoved(T::AccountId, T::AccountId, AssetIdOf<T>, AssetIdOf<T>, AssetBalanceOf<T>),
+        /// Transact in trading \[owner, recipient, swap_path\]
+        TokenSwap(T::AccountId, T::AccountId, Vec<AssetIdOf<T>>),
     }
 
     #[pallet::error]
     pub enum Error<T> {
-        PairAlreadyExists
+        /// Trading pair can't be created.
+        DeniedCreatePair,
+        /// Trading pair already exists.
+        PairAlreadyExists,
+        /// Trading pair does not exist.
+        PairNotExists,
+        /// Liquidity is not enough.
+        InsufficientLiquidity,
+        /// Trading pair does have enough asset.
+        InsufficientPairReserve,
+        /// Get target amount is less than exception.
+        InsufficientTargetAmount,
+        /// Sold amount is more than exception.
+        ExcessiveSoldAmount,
+        /// Can't find pair though trading path.
+        InvalidPath,
+        /// Incorrect asset amount range.
+        IncorrectAssetAmountRange,
+        /// Overflow.
+        Overflow,
+        /// Transaction block number is larger than the end block number.
+        Deadline,
     }
 
     #[pallet::hooks]
@@ -91,6 +119,14 @@ pub mod pallet {
     #[pallet::call]
     impl<T:Config> Pallet<T> {
 
+        /// Create pair by two assets.
+        ///
+        /// The order of asset dot effect result.
+        ///
+        /// # Arguments
+        ///
+        /// - `asset_0`: Asset which make up Pair
+        /// - `asset_1`: Asset which make up Pair
         #[pallet::weight(1000_000)]
         pub fn create_pair(
             origin: OriginFor<T>,
@@ -98,6 +134,7 @@ pub mod pallet {
             asset_1: AssetIdOf<T>
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(asset_0 != asset_1, Error::<T>::DeniedCreatePair);
 
             let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
 
@@ -116,6 +153,19 @@ pub mod pallet {
             })
         }
 
+        /// Provide liquidity to a pair.
+        ///
+        /// The order of asset dot effect result.
+        ///
+        /// # Arguments
+        ///
+        /// - `asset_0`: Asset which make up pair
+        /// - `asset_1`: Asset which make up pair
+        /// - `amount_0_desired`: Maximum amount of asset_0 added to the pair
+        /// - `amount_1_desired`: Maximum amount of asset_1 added to the pair
+        /// - `amount_0_min`: Minimum amount of asset_0 added to the pair
+        /// - `amount_1_min`: Minimum amount of asset_1 added to the pair
+        /// - `deadline`: Height of the cutoff block of this transaction
         #[pallet::weight(1000_000)]
         #[frame_support::transactional]
         #[allow(clippy::too_many_arguments)]
@@ -129,9 +179,31 @@ pub mod pallet {
             #[pallet::compact] amount_1_min : AssetBalanceOf<T>,
             #[pallet::compact] deadline: T::BlockNumber,
         ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            let now = frame_system::Pallet::<T>::block_number();
+            ensure!(deadline > now, Error::<T>::Deadline);
+
+            Self::inner_add_liquidity(
+                &who, &asset_0, &asset_1, amount_0_desired, amount_1_desired, amount_0_min, amount_1_min
+            )?;
+
+            Self::deposit_event(Event::LiquidityAdded(who, asset_0, asset_1));
+
             Ok(())
         }
 
+        /// Extract liquidity.
+        ///
+        /// The order of asset dot effect result.
+        ///
+        /// # Arguments
+        ///
+        /// - `asset_0`: Asset which make up pair
+        /// - `asset_1`: Asset which make up pair
+        /// - `amount_asset_0_min`: Minimum amount of asset_0 to exact
+        /// - `amount_asset_1_min`: Minimum amount of asset_1 to exact
+        /// - `recipient`: Account that accepts withdrawal of assets
+        /// - `deadline`: Height of the cutoff block of this transaction
         #[pallet::weight(1000_000)]
         #[frame_support::transactional]
         #[allow(clippy::too_many_arguments)]
@@ -145,9 +217,29 @@ pub mod pallet {
             recipient: <T::Lookup as StaticLookup>::Source,
             #[pallet::compact] deadline: T::BlockNumber,
         ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            let recipient = T::Lookup::lookup(recipient)?;
+            let now = frame_system::Pallet::<T>::block_number();
+            ensure!(deadline > now, Error::<T>::Deadline);
+
+            Self::inner_remove_liquidity(
+                &who, &asset_0, &asset_1, liquidity, amount_asset_0_min, amount_asset_1_min, &recipient
+            )?;
+
+            Self::deposit_event(Event::LiquidityRemoved(who, recipient, asset_0, asset_1, liquidity));
+
             Ok(())
         }
 
+        /// Sell amount of asset by path.
+        ///
+        /// # Arguments
+        ///
+        /// - `amount_in`: Amount of the asset will be sold
+        /// - `amount_out_min`: Minimum amount of target asset
+        /// - `path`: path can convert to pairs.
+        /// - `recipient`: Account that receive the target asset
+        /// - `deadline`: Height of the cutoff block of this transaction
         #[pallet::weight(1000_000)]
         #[frame_support::transactional]
         pub fn swap_exact_tokens_for_tokens(
@@ -158,9 +250,29 @@ pub mod pallet {
             recipient: <T::Lookup as StaticLookup>::Source,
             #[pallet::compact] deadline: T::BlockNumber,
         ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            let recipient = T::Lookup::lookup(recipient)?;
+            let now = frame_system::Pallet::<T>::block_number();
+            ensure!(deadline > now, Error::<T>::Deadline);
+
+            Self::inner_swap_exact_tokens_for_tokens(
+                &who, amount_in, amount_out_min, &path, &recipient
+            )?;
+
+            Self::deposit_event(Event::TokenSwap(who, recipient, path));
+
             Ok(())
         }
 
+        /// Buy amount of asset by path.
+        ///
+        /// # Arguments
+        ///
+        /// - `amount_out`: Amount of the asset will be bought
+        /// - `amount_in_max`: Maximum amount of sold asset
+        /// - `path`: path can convert to pairs.
+        /// - `recipient`: Account that receive the target asset
+        /// - `deadline`: Height of the cutoff block of this transaction
         #[pallet::weight(1000_000)]
         #[frame_support::transactional]
         pub fn swap_tokens_for_exact_tokens(
@@ -171,6 +283,17 @@ pub mod pallet {
             recipient: <T::Lookup as StaticLookup>::Source,
             #[pallet::compact] deadline: T::BlockNumber,
         ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            let recipient = T::Lookup::lookup(recipient)?;
+            let now = frame_system::Pallet::<T>::block_number();
+            ensure!(deadline > now, Error::<T>::Deadline);
+
+            Self::inner_swap_tokens_for_exact_tokens(
+                &who, amount_out, amount_in_max, &path, &recipient
+            )?;
+
+            Self::deposit_event(Event::TokenSwap(who, recipient, path));
+
             Ok(())
         }
     }
@@ -178,14 +301,14 @@ pub mod pallet {
 
 impl<T: Config> Pallet<T> {
     /// The account ID of a pair account
-    pub fn pair_account_id(asset_0: AssetIdOf<T>, asset_1: AssetIdOf<T>) -> T::AccountId {
+    fn pair_account_id(asset_0: AssetIdOf<T>, asset_1: AssetIdOf<T>) -> T::AccountId {
         let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
 
         T::PalletId::get().into_sub_account((asset_0, asset_1))
     }
 
     /// Sorted the asset id of assets pair
-    pub fn sort_asset_id(asset_0: AssetIdOf<T>, asset_1: AssetIdOf<T>) -> (AssetIdOf<T>, AssetIdOf<T>) {
+    fn sort_asset_id(asset_0: AssetIdOf<T>, asset_1: AssetIdOf<T>) -> (AssetIdOf<T>, AssetIdOf<T>) {
         if asset_0 < asset_1 {
             (asset_0, asset_1)
         } else {
@@ -193,4 +316,50 @@ impl<T: Config> Pallet<T> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn inner_add_liquidity(
+        who: &T::AccountId,
+        asset_0: &AssetIdOf<T>,
+        asset_1: &AssetIdOf<T>,
+        amount_0_desired: AssetBalanceOf<T>,
+        amount_1_desired: AssetBalanceOf<T>,
+        amount_0_min: AssetBalanceOf<T>,
+        amount_1_min: AssetBalanceOf<T>,
+    ) -> DispatchResult {
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn inner_remove_liquidity(
+        who: &T::AccountId,
+        asset_0: &AssetIdOf<T>,
+        asset_1: &AssetIdOf<T>,
+        remove_liquidity: AssetBalanceOf<T>,
+        amount_token_0_min: AssetBalanceOf<T>,
+        amount_token_1_min: AssetBalanceOf<T>,
+        recipient: &T::AccountId,
+    ) -> DispatchResult {
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn inner_swap_exact_tokens_for_tokens(
+        who: &T::AccountId,
+        amount_in: AssetBalanceOf<T>,
+        amount_out_min: AssetBalanceOf<T>,
+        path: &[AssetIdOf<T>],
+        recipient: &T::AccountId,
+    ) -> DispatchResult {
+        Ok(())
+    }
+
+    pub fn inner_swap_tokens_for_exact_tokens(
+        who: &T::AccountId,
+        amount_out: AssetBalanceOf<T>,
+        amount_in_max: AssetBalanceOf<T>,
+        path: &[AssetIdOf<T>],
+        recipient: &T::AccountId,
+    ) -> DispatchResult {
+        Ok(())
+    }
 }
