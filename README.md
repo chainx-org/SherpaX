@@ -11,8 +11,8 @@
     * [4. Launch a local setup including a Relay Chain and a Parachain by cmd](#4-launch-a-local-setup-including-a-relay-chain-and-a-parachain-by-cmd)
         * [Launch the Relay Chain](#launch-the-relay-chain)
         * [Launch the Parachain](#launch-the-parachain)
-        * [Register the parachain](#register-the-parachain)
-    * [5. custom type](#5-custom-type)
+        * [Register the Parachain](#register-the-parachain)
+    * [5. Custom type](#5-custom-type)
 * [License](#license)
 
 <!-- /TOC -->
@@ -42,15 +42,16 @@ Please check out the workshop for explanations.
 
 - [install polkadot-launch](https://github.com/paritytech/polkadot-launch)
 
-- polkadot & sherpax
+- Polkadot & SherpaX
+
 ```bash
 # Compile Polkadot
-git clone https://github.com/paritytech/polkadot
-git checkout 127eb17a25bbe2a9f2731ff11a65d7f8170f2373
-cargo build --release
+$ git clone https://github.com/paritytech/polkadot
+$ git checkout 127eb17a25bbe2a9f2731ff11a65d7f8170f2373
+$ cargo build --release
 
 # Compile SherpaX
-cargo build --release
+$ cargo build --release
 ```
 
 - run `polkadot-launch ./config.json`
@@ -126,47 +127,48 @@ cargo build --release
 
 ```bash
 # Compile Polkadot
-git clone https://github.com/paritytech/polkadot
-git checkout 127eb17a25bbe2a9f2731ff11a65d7f8170f2373
-cargo build --release
+$ git clone https://github.com/paritytech/polkadot
+$ git checkout 127eb17a25bbe2a9f2731ff11a65d7f8170f2373
+$ cargo build --release
 
 # Generate a raw chain spec
-./target/release/polkadot build-spec --chain rococo-local --disable-default-bootnode > rococo-custom-local.json
-./target/release/polkadot build-spec --chain rococo-custom-local.json --disable-default-bootnode --raw > rococo-local-raw.json
+$ ./target/release/polkadot build-spec --chain rococo-local --disable-default-bootnode > rococo-custom-local.json
+$ ./target/release/polkadot build-spec --chain rococo-custom-local.json --disable-default-bootnode --raw > rococo-local-raw.json
 
 # Alice
-./target/release/polkadot --chain rococo-local-raw.json --alice --tmp
+$ ./target/release/polkadot --chain rococo-local-raw.json --alice --tmp
 
 # Bob (In a separate terminal)
-./target/release/polkadot --chain rococo-local-raw.json --bob --tmp --port 30334
+$ ./target/release/polkadot --chain rococo-local-raw.json --bob --tmp --port 30334
 ```
 
 #### Launch the Parachain
-`parachain-id` is u32 type. 
-e.g `parachain-id=1059`
+
+`parachain-id` is `u32` type, e.g `parachain-id=1059`.
 
 ```bash
 # Compile
-cargo build --release
+$ cargo build --release
 
 # Export genesis state
 # --parachain-id 1059 as an example that can be chosen freely. Make sure to everywhere use the same parachain id
-./target/release/sherpax export-genesis-state --parachain-id 1059 > genesis-state
+$ ./target/release/sherpax export-genesis-state --parachain-id 1059 > genesis-state
 
 # Export genesis wasm
-./target/release/sherpax export-genesis-wasm > genesis-wasm
+$ ./target/release/sherpax export-genesis-wasm > genesis-wasm
 
 # Collator
-./target/release/sherpax --validator --tmp --parachain-id 1059 --port 40335 --ws-port 9977 -- --execution wasm --chain ../polkadot/rococo-local-raw.json --port 30335
+$ ./target/release/sherpax --validator --tmp --parachain-id 1059 --port 40335 --ws-port 9977 -- --execution wasm --chain ../polkadot/rococo-local-raw.json --port 30335
 
 # Parachain Full Node
-./target/release/sherpax --tmp --parachain-id 1059 --port 40337 --ws-port 9988 -- --execution wasm --chain ../polkadot/rococo-local-raw.json --port 30337
+$ ./target/release/sherpax --tmp --parachain-id 1059 --port 40337 --ws-port 9988 -- --execution wasm --chain ../polkadot/rococo-local-raw.json --port 30337
 ```
 
-#### Register the parachain
+#### Register the Parachain
+
 ![image](https://user-images.githubusercontent.com/2915325/99548884-1be13580-2987-11eb-9a8b-20be658d34f9.png)
 
-### 5. custom type
+### 5. Custom type
 
 ```json
 {
