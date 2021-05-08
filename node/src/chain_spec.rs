@@ -105,16 +105,13 @@ type AssetId = u32;
 
 const PCX: AssetId = 0;
 const PCX_DECIMALS: u8 = 8;
+
 fn pcx_restrictions() -> AssetRestrictions {
     AssetRestrictions::DEPOSIT
         | AssetRestrictions::WITHDRAW
         | AssetRestrictions::DESTROY_WITHDRAWAL
         | AssetRestrictions::DESTROY_USABLE
 }
-
-const X_BTC: AssetId = 1;
-const BTC_DECIMALS: u8 = 8;
-const X_BTC_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
 
 fn pcx_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
@@ -126,6 +123,10 @@ fn pcx_asset_info() -> AssetInfo {
     )
     .unwrap()
 }
+
+const X_BTC: AssetId = 1;
+const BTC_DECIMALS: u8 = 8;
+const X_BTC_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
 
 fn xbtc_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
