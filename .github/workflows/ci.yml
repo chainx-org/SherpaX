@@ -66,6 +66,7 @@ jobs:
           profile: minimal
           target: wasm32-unknown-unknown
           override: true
+          components: rustfmt, clippy, rust-src
 
       - name: Cache cargo registry
         uses: actions/cache@v2
