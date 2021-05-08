@@ -9,34 +9,28 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub use pallet::*;
-
-// mod types;
-mod traits;
-pub use traits::MultiAsset;
-
-use frame_support::{
-    inherent::Vec,
-    RuntimeDebug,
-};
-use codec::{Encode, Decode, FullCodec};
-use sp_runtime::{
-    traits::{
-        StaticLookup, AccountIdConversion, Saturating, Zero, One, IntegerSquareRoot
-    },
-};
-
-use sp_std::{
-    fmt::Debug, convert::TryInto
-};
-use sp_core::U256;
-use frame_support::{
-    pallet_prelude::*,
-    PalletId,
-};
-
 #[cfg(feature = "std")]
 use serde::{Serialize, Deserialize};
+
+pub use pallet::*;
+
+use frame_support::{
+    RuntimeDebug, inherent::Vec,
+};
+use codec::{Encode, Decode};
+use sp_runtime::{
+    traits::{
+        StaticLookup, AccountIdConversion, Zero, One, IntegerSquareRoot
+    },
+};
+use sp_std::{convert::TryInto};
+use sp_core::U256;
+use frame_support::{
+    PalletId, pallet_prelude::*,
+};
+
+mod traits;
+pub use traits::MultiAsset;
 
 pub type AssetId = u32;
 pub type AssetBalance = u128;
@@ -311,6 +305,13 @@ impl<T: Config> Pallet<T> {
         T::PalletId::get().into_sub_account((asset_0, asset_1))
     }
 
+    /// The account ID of a pair account from storage
+    fn get_pair_account_id(asset_0: AssetId, asset_1: AssetId) -> Option<T::AccountId> {
+        let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
+
+        Self::swap_metadata((asset_0, asset_1)).map(|(pair_account, _)| pair_account)
+    }
+
     /// Sorted the asset id of assets pair
     fn sort_asset_id(asset_0: AssetId, asset_1: AssetId) -> (AssetId, AssetId) {
         if asset_0 < asset_1 {
@@ -420,6 +421,14 @@ impl<T: Config> Pallet<T> {
         path: &[AssetId],
         recipient: &T::AccountId,
     ) -> DispatchResult {
+        let amounts = Self::get_amount_out_by_path(amount_in, &path)?;
+        ensure!(amounts[amounts.len() - 1] >= amount_out_min, Error::<T>::InsufficientTargetAmount);
+
+        let pair_account = Self::get_pair_account_id(path[0], path[1]).ok_or(Error::<T>::PairNotExists)?;
+
+        T::MultiAssets::transfer(path[0], who, &pair_account, amount_in)?;
+        Self::swap(&amounts, &path, &recipient)?;
+
         Ok(())
     }
 
@@ -431,6 +440,15 @@ impl<T: Config> Pallet<T> {
         path: &[AssetId],
         recipient: &T::AccountId,
     ) -> DispatchResult {
+        let amounts = Self::get_amount_in_by_path(amount_out, &path)?;
+
+        ensure!(amounts[0] <= amount_in_max, Error::<T>::ExcessiveSoldAmount);
+
+        let pair_account = Self::get_pair_account_id(path[0], path[1]).ok_or(Error::<T>::PairNotExists)?;
+
+        T::MultiAssets::transfer(path[0], who, &pair_account, amounts[0])?;
+        Self::swap(&amounts, &path, recipient)?;
+
         Ok(())
     }
 
@@ -498,7 +516,7 @@ impl<T: Config> Pallet<T> {
             if is_mint {
                 liquidity.checked_add(amount).ok_or(Error::<T>::Overflow)?;
             } else {
-                liquidity.checked_sub(amount).ok_or(Error::<T>::InsufficientLiquidity)?;;
+                liquidity.checked_sub(amount).ok_or(Error::<T>::InsufficientLiquidity)?;
             }
 
             Ok(())
@@ -601,5 +619,57 @@ impl<T: Config> Pallet<T> {
         }
 
         Ok(out_vec)
+    }
+
+    fn swap(amounts: &[AssetBalance], path: &[AssetId], recipient: &T::AccountId) -> DispatchResult {
+        for i in 0..(amounts.len() - 1) {
+            let input = path[i];
+            let output = path[i + 1];
+            let mut amount0_out: AssetBalance = AssetBalance::default();
+            let mut amount1_out = amounts[i + 1];
+
+            let (asset_0, asset_1) = Self::sort_asset_id(input, output);
+            if input != asset_0 {
+                amount0_out = amounts[i + 1];
+                amount1_out = AssetBalance::default();
+            }
+            let pair_account = Self::get_pair_account_id(asset_0, asset_1).ok_or(Error::<T>::PairNotExists)?;
+
+            if i < (amounts.len() - 2) {
+                let mid_account = Self::get_pair_account_id(output, path[i + 2])
+                    .ok_or(Error::<T>::PairNotExists)?;
+                Self::pair_swap(asset_0, asset_1, &pair_account, amount0_out, amount1_out, &mid_account)?;
+            } else {
+                Self::pair_swap(asset_0, asset_1, &pair_account, amount0_out, amount1_out, &recipient)?;
+            };
+        }
+        Ok(())
+    }
+
+    fn pair_swap(
+        asset_0: AssetId,
+        asset_1: AssetId,
+        pair_account: &T::AccountId,
+        amount_0: AssetBalance,
+        amount_1: AssetBalance,
+        recipient: &T::AccountId,
+    ) -> DispatchResult {
+        let reserve_0 = T::MultiAssets::balance_of(asset_0, &pair_account);
+        let reserve_1 = T::MultiAssets::balance_of(asset_1, &pair_account);
+
+        ensure!(
+            amount_0 <= reserve_0 && amount_1 <= reserve_1,
+            Error::<T>::InsufficientPairReserve
+        );
+
+        if amount_0 > Zero::zero() {
+            T::MultiAssets::transfer(asset_0, &pair_account, recipient, amount_0)?;
+        }
+
+        if amount_1 > Zero::zero() {
+            T::MultiAssets::transfer(asset_1, &pair_account, recipient, amount_1)?;
+        }
+
+        Ok(())
     }
 }
