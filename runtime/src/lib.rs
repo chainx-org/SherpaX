@@ -48,7 +48,6 @@ use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
-mod weights;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -145,7 +144,7 @@ impl frame_system::Config for Runtime {
     type OnKilledAccount = ();
     type DbWeight = ();
     type BaseCallFilter = ();
-    type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
+    type SystemWeightInfo = frame_system::weights::SubstrateWeight<Runtime>;
     type BlockWeights = RuntimeBlockWeights;
     type BlockLength = RuntimeBlockLength;
     type SS58Prefix = SS58Prefix;
@@ -161,7 +160,7 @@ impl pallet_timestamp::Config for Runtime {
     type Moment = u64;
     type OnTimestampSet = ();
     type MinimumPeriod = MinimumPeriod;
-    type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
+    type WeightInfo = pallet_timestamp::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -178,7 +177,7 @@ impl pallet_balances::Config for Runtime {
     type DustRemoval = ();
     type ExistentialDeposit = ExistentialDeposit;
     type AccountStore = System;
-    type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
+    type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
     type MaxLocks = MaxLocks;
 }
 
@@ -197,7 +196,7 @@ impl pallet_sudo::Config for Runtime {
 impl pallet_utility::Config for Runtime {
     type Event = Event;
     type Call = Call;
-    type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
+    type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -215,7 +214,7 @@ impl pallet_multisig::Config for Runtime {
     type DepositBase = DepositBase;
     type DepositFactor = DepositFactor;
     type MaxSignatories = MaxSignatories;
-    type WeightInfo = weights::pallet_multisig::WeightInfo<Runtime>;
+    type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
