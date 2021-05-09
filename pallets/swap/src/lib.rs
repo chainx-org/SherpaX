@@ -24,7 +24,7 @@ use sp_std::convert::TryInto;
 
 mod multiasset;
 
-pub use self::multiasset::{SimpleMultiAsset, MultiAsset};
+pub use self::multiasset::{MultiAsset, SimpleMultiAsset};
 pub use pallet::*;
 
 pub type AssetId = u32;
