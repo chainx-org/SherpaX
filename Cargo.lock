@@ -5060,6 +5060,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
+ "orml-traits",
  "parity-scale-codec",
  "serde",
  "sp-arithmetic",

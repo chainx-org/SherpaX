@@ -27,26 +27,28 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, Perbill,
 };
-use sp_std::marker::PhantomData;
-use sp_std::prelude::{Box, Vec};
+use sp_std::{
+    marker::PhantomData,
+    prelude::{Box, Vec},
+};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
 use frame_support::{
-    construct_runtime, parameter_types, PalletId,
+    construct_runtime,
+    pallet_prelude::DispatchError,
+    parameter_types,
     traits::{
+        ExistenceRequirement::{AllowDeath, KeepAlive},
         Randomness, ReservableCurrency, WithdrawReasons,
-        ExistenceRequirement::{
-            KeepAlive, AllowDeath
-        }
     },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight,
     },
-    pallet_prelude::DispatchError,
+    PalletId,
 };
 use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
@@ -56,10 +58,8 @@ use dev_parachain_primitives::*;
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
-use pallet_swap::{
-    MultiAsset, AssetId, AssetBalance
-};
 use frame_support::sp_runtime::traits::Convert;
+use pallet_swap::{AssetId, MultiAsset};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -270,73 +270,10 @@ parameter_types! {
     pub const SwapPalletId: PalletId = PalletId(*b"//swap//");
 }
 
-pub struct MultiAssetsAdaptor<Balances, XAssets>(
-    PhantomData<(Balances, XAssets)>,
-);
-
-impl <Balances, XAssets> pallet_swap::MultiAsset<AccountId>
-for MultiAssetsAdaptor<Balances, XAssets>
-    where
-        Balances: ReservableCurrency<AccountId>,
-        XAssets: orml_traits::MultiCurrency<AccountId>,
-{
-    fn balance_of(asset_id: AssetId, who: &AccountId) -> AssetBalance {
-        // if asset_id == 0 {
-        //     Balances::free_balance(who)
-        // } else {
-        //     XAssets::free_balance(AssetId::convert(asset_id), who).into()
-        // }
-        unimplemented!()
-    }
-
-    fn total_supply(asset_id: AssetId) -> AssetBalance {
-        // if asset_id == 0 {
-        //     Balances::total_issuance()
-        // } else {
-        //     XAssets::total_issuance(asset_id)
-        // }
-        unimplemented!()
-    }
-
-    fn transfer(asset_id: AssetId, origin: &AccountId, target: &AccountId, amount: AssetBalance) -> Result<AssetBalance, DispatchError> {
-        // if asset_id == 0 {
-        //     Balances::transfer(origin, target, amount, KeepAlive)
-        // } else {
-        //     XAssets::transfer(asset_id,origin, target, amount)
-        // }
-
-        // Ok(amount)
-        unimplemented!()
-    }
-
-    fn deposit(asset_id: AssetId, target: &AccountId, amount: AssetBalance) -> Result<AssetBalance, DispatchError> {
-        // if asset_id == 0 {
-        //     Balances::deposit_creating(target, amount)
-        // } else {
-        //     XAssets::deposit(asset_id, target, amount)
-        // }
-        //
-        // Ok(amount)
-
-        unimplemented!()
-    }
-
-    fn withdraw(asset_id: AssetId, origin: &AccountId, amount: AssetBalance) -> Result<AssetBalance, DispatchError> {
-        // if asset_id == 0 {
-        //     Balances::withdraw(origin, amount, WithdrawReasons::TRANSFER, AllowDeath)?;
-        // } else {
-        //     XAssets::withdraw(asset_id, origin, amount);
-        // }
-        //
-        // Ok(amount)
-
-        unimplemented!()
-    }
-}
-
 impl pallet_swap::Config for Runtime {
     type Event = Event;
-    type MultiAssets = MultiAssetsAdaptor<Balances, XAssets>;
+    type NativeAssetId = PcxAssetId;
+    type MultiAsset = pallet_swap::SimpleMultiAsset<Self>;
     type PalletId = SwapPalletId;
 }
 
