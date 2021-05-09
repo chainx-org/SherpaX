@@ -17,8 +17,8 @@ use frame_support::{
 };
 use sp_core::U256;
 use sp_runtime::traits::{
-    AccountIdConversion, CheckedAdd, CheckedMul, CheckedSub, IntegerSquareRoot, One, Saturating,
-    StaticLookup, Zero,
+    AccountIdConversion, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, IntegerSquareRoot, One,
+    Saturating, StaticLookup, Zero,
 };
 use sp_std::convert::TryInto;
 
@@ -586,21 +586,13 @@ impl<T: Config> Pallet<T> {
         input_reserve: BalanceOf<T>,
         output_reserve: BalanceOf<T>,
     ) -> BalanceOf<T> {
-        // See primitives/arithmetic/fuzzer/src/multiply_by_rational.rs
-        todo!("No need to use U256 here")
+        let input_amount_with_fee = input_amount.saturating_mul(997u32.into());
+        let numerator = input_amount_with_fee.saturating_mul(output_reserve);
 
-        // let input_amount_with_fee = U256::from(input_amount).saturating_mul(U256::from(997));
+        let denominator =
+            input_reserve.saturating_mul(1000u32.into()).saturating_add(input_amount_with_fee);
 
-        // let numerator = input_amount_with_fee.saturating_mul(U256::from(output_reserve));
-
-        // let denominator = U256::from(input_reserve)
-        // .saturating_mul(U256::from(1000))
-        // .saturating_add(input_amount_with_fee);
-
-        // numerator.checked_div(denominator).unwrap_or_default() as BalanceOf<T>
-
-        // .and_then(|n| TryInto::<BalanceOf<T>>::try_into(n).ok())
-        // .unwrap_or_else(Zero::zero)
+        numerator.checked_div(&denominator).unwrap_or_default()
     }
 
     fn get_amount_in_by_path(
