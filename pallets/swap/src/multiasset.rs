@@ -1,9 +1,9 @@
 use sp_std::marker::PhantomData;
 
 use frame_support::traits::{
+    Currency,
     ExistenceRequirement::{AllowDeath, KeepAlive},
-    WithdrawReasons,
-    Currency, Get, ReservableCurrency
+    Get, ReservableCurrency, WithdrawReasons,
 };
 
 use crate::{AssetId, BalanceOf, Config, DispatchError, Pallet};
@@ -33,7 +33,7 @@ impl<T: Config> MultiAsset<T::AccountId, BalanceOf<T>> for SimpleMultiAsset<T> {
     }
 
     fn total_supply(asset_id: AssetId) -> BalanceOf<T> {
-     if <T as Config>::NativeAssetId::get() == asset_id {
+        if <T as Config>::NativeAssetId::get() == asset_id {
             <T as xpallet_assets::Config>::Currency::total_issuance()
         } else {
             <xpallet_assets::Module<T>>::total_issuance(&asset_id)
@@ -50,10 +50,9 @@ impl<T: Config> MultiAsset<T::AccountId, BalanceOf<T>> for SimpleMultiAsset<T> {
             <T as xpallet_assets::Config>::Currency::transfer(from, to, amount, KeepAlive)?;
         } else {
             <xpallet_assets::Module<T>>::can_transfer(&asset_id)?;
-            <xpallet_assets::Module<T>>::move_usable_balance(&asset_id, from, to,amount).
-                map_err(|_| DispatchError::Other("Unexpected error from XAssets Module"))?;
+            <xpallet_assets::Module<T>>::move_usable_balance(&asset_id, from, to, amount)
+                .map_err(|_| DispatchError::Other("Unexpected error from XAssets Module"))?;
         }
         Ok(amount)
     }
-
 }

@@ -393,7 +393,8 @@ impl<T: Config> Pallet<T> {
                 );
                 ensure!(mint_liquidity > Zero::zero(), Error::<T>::Overflow);
 
-                *total_liquidity = total_liquidity.checked_add(&mint_liquidity).ok_or(Error::<T>::Overflow)?;
+                *total_liquidity =
+                    total_liquidity.checked_add(&mint_liquidity).ok_or(Error::<T>::Overflow)?;
                 Self::mutate_liquidity(asset_0, asset_1, who, mint_liquidity, true)?;
 
                 T::MultiAsset::transfer(asset_0, &who, &pair_account, amount_0)?;
@@ -436,7 +437,8 @@ impl<T: Config> Pallet<T> {
                     Error::<T>::InsufficientTargetAmount
                 );
 
-                *total_liquidity = total_liquidity.checked_sub(&remove_liquidity)
+                *total_liquidity = total_liquidity
+                    .checked_sub(&remove_liquidity)
                     .ok_or(Error::<T>::InsufficientLiquidity)?;
                 Self::mutate_liquidity(asset_0, asset_1, who, remove_liquidity, false)?;
 
@@ -494,10 +496,7 @@ impl<T: Config> Pallet<T> {
         reserve_0: BalanceOf<T>,
         reserve_1: BalanceOf<T>,
     ) -> BalanceOf<T> {
-        amount_0
-            .saturating_mul(reserve_1)
-            .checked_div(&reserve_0)
-            .unwrap_or_default()
+        amount_0.saturating_mul(reserve_1).checked_div(&reserve_0).unwrap_or_default()
     }
 
     fn calculate_liquidity(
@@ -553,7 +552,8 @@ impl<T: Config> Pallet<T> {
                 *liquidity = liquidity.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
                 // liquidity.saturating_add(amount).ok_or(Error::<T>::Overflow)?;
             } else {
-                *liquidity = liquidity.checked_sub(&amount).ok_or(Error::<T>::InsufficientLiquidity)?;
+                *liquidity =
+                    liquidity.checked_sub(&amount).ok_or(Error::<T>::InsufficientLiquidity)?;
             }
             Ok(())
         })
@@ -566,11 +566,10 @@ impl<T: Config> Pallet<T> {
     ) -> BalanceOf<T> {
         // See primitives/arithmetic/fuzzer/src/multiply_by_rational.rs
 
-        let numerator = input_reserve.saturating_mul(output_amount)
-            .saturating_mul(1000u32.into());
+        let numerator = input_reserve.saturating_mul(output_amount).saturating_mul(1000u32.into());
 
-        let denominator = output_reserve.saturating_sub(output_amount)
-            .saturating_mul(997u32.into());
+        let denominator =
+            output_reserve.saturating_sub(output_amount).saturating_mul(997u32.into());
 
         numerator.checked_div(&denominator).unwrap_or_default()
     }

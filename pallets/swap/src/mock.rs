@@ -1,12 +1,9 @@
 use crate as pallet_swap;
+use frame_support::{parameter_types, sp_io, PalletId};
 use sp_core::H256;
-use frame_support::{
-	parameter_types,
-	sp_io,
-	PalletId
-};
 use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup}, testing::Header,
+    testing::Header,
+    traits::{BlakeTwo256, IdentityLookup},
 };
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -14,48 +11,48 @@ type Block = frame_system::mocking::MockBlock<Test>;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
-	pub enum Test where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config},
-		XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>},
-		Swap: pallet_swap::{Pallet, Call, Storage, Event<T>},
-	}
+    pub enum Test where
+        Block = Block,
+        NodeBlock = Block,
+        UncheckedExtrinsic = UncheckedExtrinsic,
+    {
+        System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
+        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+        XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config},
+        XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>},
+        Swap: pallet_swap::{Pallet, Call, Storage, Event<T>},
+    }
 );
 
 parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-	pub const SS58Prefix: u8 = 42;
+    pub const BlockHashCount: u64 = 250;
+    pub const SS58Prefix: u8 = 42;
 }
 
 impl frame_system::Config for Test {
-	type BaseCallFilter = ();
-	type BlockWeights = ();
-	type BlockLength = ();
-	type DbWeight = ();
-	type Origin = Origin;
-	type Call = Call;
-	type Index = u64;
-	type BlockNumber = u64;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
-	type AccountId = u64;
-	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = Header;
-	type Event = Event;
-	type BlockHashCount = BlockHashCount;
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u128>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type SS58Prefix = SS58Prefix;
-	type OnSetCode = ();
+    type BaseCallFilter = ();
+    type BlockWeights = ();
+    type BlockLength = ();
+    type DbWeight = ();
+    type Origin = Origin;
+    type Call = Call;
+    type Index = u64;
+    type BlockNumber = u64;
+    type Hash = H256;
+    type Hashing = BlakeTwo256;
+    type AccountId = u64;
+    type Lookup = IdentityLookup<Self::AccountId>;
+    type Header = Header;
+    type Event = Event;
+    type BlockHashCount = BlockHashCount;
+    type Version = ();
+    type PalletInfo = PalletInfo;
+    type AccountData = pallet_balances::AccountData<u128>;
+    type OnNewAccount = ();
+    type OnKilledAccount = ();
+    type SystemWeightInfo = ();
+    type SS58Prefix = SS58Prefix;
+    type OnSetCode = ();
 }
 
 parameter_types! {
@@ -77,7 +74,7 @@ impl pallet_balances::Config for Test {
 }
 
 parameter_types! {
-	pub const PcxAssetId: u32 = 0;
+    pub const PcxAssetId: u32 = 0;
 }
 
 impl xpallet_assets_registrar::Config for Test {
@@ -98,11 +95,11 @@ impl xpallet_assets::Config for Test {
 }
 
 parameter_types! {
-	pub const SwapPalletId: PalletId = PalletId(*b"//swap//");
+    pub const SwapPalletId: PalletId = PalletId(*b"//swap//");
 }
 
 impl pallet_swap::Config for Test {
-	type Event = Event;
+    type Event = Event;
     type NativeAssetId = PcxAssetId;
     type MultiAsset = pallet_swap::SimpleMultiAsset<Self>;
     type PalletId = SwapPalletId;
@@ -120,8 +117,8 @@ pub const BOB: AccountId = 2;
 pub const CHARLIE: AccountId = 3;
 pub const DAVE: AccountId = 4;
 
-use xpallet_assets::{AssetInfo, AssetRestrictions, Chain};
 use std::collections::BTreeMap;
+use xpallet_assets::{AssetInfo, AssetRestrictions, Chain};
 
 pub(crate) fn btc() -> (AssetId, AssetInfo, AssetRestrictions) {
     (
@@ -146,11 +143,9 @@ impl ExtBuilder {
         self,
         assets: Vec<(AssetId, AssetInfo, AssetRestrictions, bool, bool)>,
         endowed: BTreeMap<AssetId, Vec<(AccountId, Balance)>>,
-        balances: Vec<(AccountId, Balance)>
+        balances: Vec<(AccountId, Balance)>,
     ) -> sp_io::TestExternalities {
-        let mut storage = frame_system::GenesisConfig::default()
-            .build_storage::<Test>()
-            .unwrap();
+        let mut storage = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
         let mut init_assets = vec![];
         let mut assets_restrictions = vec![];
@@ -159,21 +154,14 @@ impl ExtBuilder {
             assets_restrictions.push((a, c))
         }
 
-        let _ = xpallet_assets_registrar::GenesisConfig {
-            assets: init_assets,
-        }
-        .assimilate_storage::<Test>(&mut storage);
+        let _ = xpallet_assets_registrar::GenesisConfig { assets: init_assets }
+            .assimilate_storage::<Test>(&mut storage);
 
-        let _ = xpallet_assets::GenesisConfig::<Test> {
-            assets_restrictions,
-            endowed,
-        }
-        .assimilate_storage(&mut storage);
+        let _ = xpallet_assets::GenesisConfig::<Test> { assets_restrictions, endowed }
+            .assimilate_storage(&mut storage);
 
-        let _ = pallet_balances::GenesisConfig::<Test> {
-            balances
-        }
-        .assimilate_storage(&mut storage);
+        let _ =
+            pallet_balances::GenesisConfig::<Test> { balances }.assimilate_storage(&mut storage);
 
         let ext = sp_io::TestExternalities::new(storage);
         ext
@@ -182,10 +170,11 @@ impl ExtBuilder {
         let btc_assets = btc();
         let assets = vec![(btc_assets.0, btc_assets.1, btc_assets.2, true, true)];
         let mut endowed = BTreeMap::new();
-        let endowed_info = vec![(ALICE, 100_000), (BOB, 200_000), (CHARLIE, 300_000), (DAVE, 400_000)];
+        let endowed_info =
+            vec![(ALICE, 100_000), (BOB, 200_000), (CHARLIE, 300_000), (DAVE, 400_000)];
         endowed.insert(btc_assets.0, endowed_info);
-        let balances = vec![(ALICE, 10_000_000), (BOB, 20_000_000), (CHARLIE, 30_000_000), (DAVE, 40_000_000)];
+        let balances =
+            vec![(ALICE, 10_000_000), (BOB, 20_000_000), (CHARLIE, 30_000_000), (DAVE, 40_000_000)];
         self.build(assets, endowed, balances)
     }
 }
-
