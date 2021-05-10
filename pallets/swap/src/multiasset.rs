@@ -1,6 +1,10 @@
 use sp_std::marker::PhantomData;
 
-use frame_support::traits::{Currency, Get, ReservableCurrency};
+use frame_support::traits::{
+    ExistenceRequirement::{AllowDeath, KeepAlive},
+    WithdrawReasons,
+    Currency, Get, ReservableCurrency
+};
 
 use crate::{AssetId, BalanceOf, Config, DispatchError, Pallet};
 
@@ -41,15 +45,15 @@ impl<T: Config> MultiAsset<T::AccountId, BalanceOf<T>> for SimpleMultiAsset<T> {
         if <T as Config>::NativeAssetId::get() == asset_id {
             <T as xpallet_assets::Config>::Currency::free_balance(who)
         } else {
-            todo!("XAssets::free_balance(AssetId::convert(asset_id), who).into()")
+            <xpallet_assets::Module<T>>::usable_balance(who, &asset_id)
         }
     }
 
     fn total_supply(asset_id: AssetId) -> BalanceOf<T> {
-        if <T as Config>::NativeAssetId::get() == asset_id {
-            todo!("Balances::total_issuance(who)")
+     if <T as Config>::NativeAssetId::get() == asset_id {
+            <T as xpallet_assets::Config>::Currency::total_issuance()
         } else {
-            todo!("XAssets::total_issuance(AssetId::convert(asset_id), who)")
+            <xpallet_assets::Module<T>>::total_issuance(&asset_id)
         }
     }
 
@@ -60,10 +64,13 @@ impl<T: Config> MultiAsset<T::AccountId, BalanceOf<T>> for SimpleMultiAsset<T> {
         amount: BalanceOf<T>,
     ) -> Result<BalanceOf<T>, DispatchError> {
         if <T as Config>::NativeAssetId::get() == asset_id {
-            todo!("Balances::transfer(from, to, amount, KeepAlive)")
+            <T as xpallet_assets::Config>::Currency::transfer(from, to, amount, KeepAlive)?;
         } else {
-            todo!("XAssets::transfer(asset_id, from, to, amount)")
+            <xpallet_assets::Module<T>>::can_transfer(&asset_id)?;
+            <xpallet_assets::Module<T>>::move_usable_balance(&asset_id, from, to,amount).
+                map_err(|_| DispatchError::Other("Unexpected error from XAssets Module"))?;
         }
+        Ok(amount)
     }
 
     fn deposit(
@@ -72,10 +79,11 @@ impl<T: Config> MultiAsset<T::AccountId, BalanceOf<T>> for SimpleMultiAsset<T> {
         amount: BalanceOf<T>,
     ) -> Result<BalanceOf<T>, DispatchError> {
         if <T as Config>::NativeAssetId::get() == asset_id {
-            todo!("Balances::deposit_creating(who)")
+            <T as xpallet_assets::Config>::Currency::deposit_creating(who, amount);
         } else {
-            todo!("XAssets::issue(asset_id, who)")
+            <xpallet_assets::Module<T>>::issue(&asset_id, who, amount)?;
         }
+        Ok(amount)
     }
 
     fn withdraw(
@@ -84,9 +92,10 @@ impl<T: Config> MultiAsset<T::AccountId, BalanceOf<T>> for SimpleMultiAsset<T> {
         amount: BalanceOf<T>,
     ) -> Result<BalanceOf<T>, DispatchError> {
         if <T as Config>::NativeAssetId::get() == asset_id {
-            todo!("Balances::withdraw(origin, amount, WithdrawReasons::TRANSFER, AllowDeath)")
+            <T as xpallet_assets::Config>::Currency::withdraw(who, amount, WithdrawReasons::TRANSFER, AllowDeath)?;
         } else {
-            todo!("XAssets::withdraw(asset_id, who)")
+            <xpallet_assets::Module<T>>::destroy_reserved_withdrawal(&asset_id, who, amount)?;
         }
+        Ok(amount)
     }
 }

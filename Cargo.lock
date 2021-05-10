@@ -5061,6 +5061,7 @@ dependencies = [
  "frame-system",
  "log",
  "orml-traits",
+ "pallet-balances",
  "parity-scale-codec",
  "serde",
  "sp-arithmetic",
@@ -5068,6 +5069,7 @@ dependencies = [
  "sp-runtime",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "xpallet-assets",
+ "xpallet-assets-registrar",
 ]
 
 [[package]]

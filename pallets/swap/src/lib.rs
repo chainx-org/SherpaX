@@ -9,6 +9,11 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 use frame_support::{
     inherent::Vec,
     pallet_prelude::*,
@@ -144,7 +149,6 @@ pub mod pallet {
 
             SwapMetadata::<T>::try_mutate((asset_0, asset_1), |meta| {
                 ensure!(meta.is_none(), Error::<T>::PairAlreadyExists);
-
                 *meta = Some((pair_account, Default::default()));
 
                 Self::deposit_event(Event::PairCreated(who, asset_0, asset_1));
@@ -389,7 +393,7 @@ impl<T: Config> Pallet<T> {
                 );
                 ensure!(mint_liquidity > Zero::zero(), Error::<T>::Overflow);
 
-                total_liquidity.checked_add(&mint_liquidity).ok_or(Error::<T>::Overflow)?;
+                *total_liquidity = total_liquidity.checked_add(&mint_liquidity).ok_or(Error::<T>::Overflow)?;
                 Self::mutate_liquidity(asset_0, asset_1, who, mint_liquidity, true)?;
 
                 T::MultiAsset::transfer(asset_0, &who, &pair_account, amount_0)?;
@@ -432,8 +436,7 @@ impl<T: Config> Pallet<T> {
                     Error::<T>::InsufficientTargetAmount
                 );
 
-                total_liquidity
-                    .checked_sub(&remove_liquidity)
+                *total_liquidity = total_liquidity.checked_sub(&remove_liquidity)
                     .ok_or(Error::<T>::InsufficientLiquidity)?;
                 Self::mutate_liquidity(asset_0, asset_1, who, remove_liquidity, false)?;
 
@@ -491,12 +494,10 @@ impl<T: Config> Pallet<T> {
         reserve_0: BalanceOf<T>,
         reserve_1: BalanceOf<T>,
     ) -> BalanceOf<T> {
-        todo!("See how U256 is handled")
-        // U256::from(amount_0)
-        // .saturating_mul(U256::from(reserve_1))
-        // .checked_div(U256::from(reserve_0))
-        // .and_then(|n| TryInto::<BalanceOf<T>>::try_into(n).ok())
-        // .unwrap_or_else(Zero::zero)
+        amount_0
+            .saturating_mul(reserve_1)
+            .checked_div(&reserve_0)
+            .unwrap_or_default()
     }
 
     fn calculate_liquidity(
@@ -549,12 +550,11 @@ impl<T: Config> Pallet<T> {
     ) -> DispatchResult {
         SwapLedger::<T>::try_mutate(((asset_0, asset_1), who), |liquidity| {
             if is_mint {
-                liquidity.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
+                *liquidity = liquidity.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
                 // liquidity.saturating_add(amount).ok_or(Error::<T>::Overflow)?;
             } else {
-                liquidity.checked_sub(&amount).ok_or(Error::<T>::InsufficientLiquidity)?;
+                *liquidity = liquidity.checked_sub(&amount).ok_or(Error::<T>::InsufficientLiquidity)?;
             }
-
             Ok(())
         })
     }
@@ -565,20 +565,14 @@ impl<T: Config> Pallet<T> {
         output_reserve: BalanceOf<T>,
     ) -> BalanceOf<T> {
         // See primitives/arithmetic/fuzzer/src/multiply_by_rational.rs
-        todo!("No need to use U256 here")
 
-        // let numerator = U256::from(input_reserve)
-        // .saturating_mul(U256::from(output_amount))
-        // .saturating_mul(U256::from(1000));
+        let numerator = input_reserve.saturating_mul(output_amount)
+            .saturating_mul(1000u32.into());
 
-        // let denominator = (U256::from(output_reserve).saturating_sub(U256::from(output_amount)))
-        // .saturating_mul(U256::from(997));
+        let denominator = output_reserve.saturating_sub(output_amount)
+            .saturating_mul(997u32.into());
 
-        // numerator
-        // .checked_div(denominator)
-        // .and_then(|r| r.checked_add(U256::one()))
-        // .and_then(|n| TryInto::<BalanceOf<T>>::try_into(n).ok())
-        // .unwrap_or_else(Zero::zero)
+        numerator.checked_div(&denominator).unwrap_or_default()
     }
 
     fn get_amount_out(
