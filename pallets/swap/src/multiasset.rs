@@ -18,23 +18,6 @@ pub trait MultiAsset<AccountId, Balance: Copy> {
         origin: &AccountId,
         target: &AccountId,
         amount: Balance,
-    ) -> Result<Balance, DispatchError> {
-        let withdrawn = Self::withdraw(asset_id, origin, amount)?;
-        Self::deposit(asset_id, target, amount)?;
-
-        Ok(withdrawn)
-    }
-
-    fn deposit(
-        asset_id: AssetId,
-        target: &AccountId,
-        amount: Balance,
-    ) -> Result<Balance, DispatchError>;
-
-    fn withdraw(
-        asset_id: AssetId,
-        origin: &AccountId,
-        amount: Balance,
     ) -> Result<Balance, DispatchError>;
 }
 
@@ -73,29 +56,4 @@ impl<T: Config> MultiAsset<T::AccountId, BalanceOf<T>> for SimpleMultiAsset<T> {
         Ok(amount)
     }
 
-    fn deposit(
-        asset_id: AssetId,
-        who: &T::AccountId,
-        amount: BalanceOf<T>,
-    ) -> Result<BalanceOf<T>, DispatchError> {
-        if <T as Config>::NativeAssetId::get() == asset_id {
-            <T as xpallet_assets::Config>::Currency::deposit_creating(who, amount);
-        } else {
-            <xpallet_assets::Module<T>>::issue(&asset_id, who, amount)?;
-        }
-        Ok(amount)
-    }
-
-    fn withdraw(
-        asset_id: AssetId,
-        who: &T::AccountId,
-        amount: BalanceOf<T>,
-    ) -> Result<BalanceOf<T>, DispatchError> {
-        if <T as Config>::NativeAssetId::get() == asset_id {
-            <T as xpallet_assets::Config>::Currency::withdraw(who, amount, WithdrawReasons::TRANSFER, AllowDeath)?;
-        } else {
-            <xpallet_assets::Module<T>>::destroy_reserved_withdrawal(&asset_id, who, amount)?;
-        }
-        Ok(amount)
-    }
 }
