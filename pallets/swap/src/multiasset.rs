@@ -1,8 +1,6 @@
 use sp_std::marker::PhantomData;
 
-use frame_support::traits::{
-    Currency, Get, ExistenceRequirement::KeepAlive,
-};
+use frame_support::traits::{Currency, ExistenceRequirement::KeepAlive, Get};
 
 use crate::{AssetId, BalanceOf, Config, DispatchError};
 

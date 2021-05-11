@@ -48,15 +48,14 @@ impl<C, M> Swap<C, M> {
     }
 }
 
-impl<C, Block, AccountId> SwapApi<<Block as BlockT>::Hash, AccountId>
-for Swap<C, Block>
-    where
-        Block: BlockT,
-        AccountId: Codec,
-        C: Send + Sync + 'static,
-        C: ProvideRuntimeApi<Block>,
-        C: HeaderBackend<Block>,
-        C::Api: SwapRuntimeApi<Block, AccountId>,
+impl<C, Block, AccountId> SwapApi<<Block as BlockT>::Hash, AccountId> for Swap<C, Block>
+where
+    Block: BlockT,
+    AccountId: Codec,
+    C: Send + Sync + 'static,
+    C: ProvideRuntimeApi<Block>,
+    C: HeaderBackend<Block>,
+    C::Api: SwapRuntimeApi<Block, AccountId>,
 {
     //buy amount token price
     fn get_amount_in_price(

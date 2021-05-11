@@ -22,8 +22,8 @@ use frame_support::{
 };
 
 use sp_runtime::traits::{
-    AccountIdConversion, CheckedAdd, CheckedDiv, CheckedSub, IntegerSquareRoot, One,
-    Saturating, StaticLookup, Zero,
+    AccountIdConversion, CheckedAdd, CheckedDiv, CheckedSub, IntegerSquareRoot, One, Saturating,
+    StaticLookup, Zero,
 };
 
 mod multiasset;

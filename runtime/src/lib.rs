@@ -61,7 +61,7 @@ use xpallet_gateway_bitcoin_v2::pallet as xpallet_gateway_bitcoin_v2_pallet;
 pub mod constants;
 use constants::{currency::*, time::*};
 
-use pallet_swap::{AssetId};
+use pallet_swap::AssetId;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]

@@ -266,8 +266,8 @@ pub async fn start_node(
     start_node_impl(parachain_config, collator_key, polkadot_config, id, validator, |client| {
         let mut io = jsonrpc_core::IoHandler::default();
 
-        use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
         use pallet_swap_rpc::{Swap, SwapApi};
+        use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 
         io.extend_with(SwapApi::to_delegate(Swap::new(client.clone())));
 
