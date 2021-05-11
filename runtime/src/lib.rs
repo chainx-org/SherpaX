@@ -28,7 +28,6 @@ use sp_runtime::{
     ApplyExtrinsicResult, Perbill,
 };
 use sp_std::{
-    marker::PhantomData,
     prelude::{Box, Vec},
 };
 #[cfg(feature = "std")]
@@ -38,12 +37,8 @@ use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 use frame_support::{
     construct_runtime,
-    pallet_prelude::DispatchError,
     parameter_types,
-    traits::{
-        ExistenceRequirement::{AllowDeath, KeepAlive},
-        Randomness, ReservableCurrency, WithdrawReasons,
-    },
+    traits::Randomness,
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight,
@@ -58,8 +53,7 @@ use dev_parachain_primitives::*;
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
-use frame_support::sp_runtime::traits::Convert;
-use pallet_swap::{AssetId, MultiAsset};
+use pallet_swap::{AssetId};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -415,6 +409,25 @@ impl_runtime_apis! {
         }
         fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
             TransactionPayment::query_fee_details(uxt, len)
+        }
+    }
+
+    impl pallet_swap_rpc_runtime_api::SwapApi<
+        Block,
+        AccountId,
+    > for Runtime {
+        fn get_amount_in_price(
+            supply: u128,
+            path: Vec<AssetId>
+        ) -> u128 {
+            Swap::desired_in_amount(supply, path)
+        }
+
+        fn get_amount_out_price(
+            supply: u128,
+            path: Vec<AssetId>
+        ) -> u128 {
+            Swap::supply_out_amount(supply, path)
         }
     }
 }
