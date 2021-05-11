@@ -139,11 +139,12 @@ fn xbtc_asset_info() -> AssetInfo {
     .unwrap()
 }
 use std::collections::BTreeMap;
-fn xbtc_asset_endowed() -> BTreeMap<u32, Vec<(AccountId, u128)>>{
+fn xbtc_asset_endowed() -> BTreeMap<u32, Vec<(AccountId, u128)>> {
     let mut endowed = BTreeMap::new();
-    let endowed_info =
-            vec![(get_account_id_from_seed::<sr25519::Public>("Alice"), 100_000_000_000),
-                 (get_account_id_from_seed::<sr25519::Public>("Bob"), 200_000_000_000)];
+    let endowed_info = vec![
+        (get_account_id_from_seed::<sr25519::Public>("Alice"), 100_000_000_000),
+        (get_account_id_from_seed::<sr25519::Public>("Bob"), 200_000_000_000),
+    ];
     endowed.insert(X_BTC, endowed_info);
     endowed
 }
@@ -183,7 +184,7 @@ fn testnet_genesis(
         },
         xpallet_assets: XAssetsConfig {
             assets_restrictions: vec![(PCX, pcx_restrictions()), (X_BTC, X_BTC_ASSETRESTRICTIONS)],
-            endowed: xbtc_asset_endowed()
+            endowed: xbtc_asset_endowed(),
         },
     }
 }

@@ -27,17 +27,14 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, Perbill,
 };
-use sp_std::{
-    prelude::{Box, Vec},
-};
+use sp_std::prelude::{Box, Vec};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
 use frame_support::{
-    construct_runtime,
-    parameter_types,
+    construct_runtime, parameter_types,
     traits::Randomness,
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
@@ -53,7 +50,7 @@ use dev_parachain_primitives::*;
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
-use pallet_swap::{AssetId};
+use pallet_swap::AssetId;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
