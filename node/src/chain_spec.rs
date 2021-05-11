@@ -82,7 +82,7 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
         ChainType::Local,
         move || {
             testnet_genesis(
-                hex!["18ec21f2ee09b23cc0be299d316fe0688b42c3904500f0690bae24328433a025"].into(),
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
@@ -138,6 +138,15 @@ fn xbtc_asset_info() -> AssetInfo {
     )
     .unwrap()
 }
+use std::collections::BTreeMap;
+fn xbtc_asset_endowed() -> BTreeMap<u32, Vec<(AccountId, u128)>>{
+    let mut endowed = BTreeMap::new();
+    let endowed_info =
+            vec![(get_account_id_from_seed::<sr25519::Public>("Alice"), 100_000_000_000),
+                 (get_account_id_from_seed::<sr25519::Public>("Bob"), 200_000_000_000)];
+    endowed.insert(X_BTC, endowed_info);
+    endowed
+}
 
 fn testnet_genesis(
     root_key: AccountId,
@@ -174,7 +183,7 @@ fn testnet_genesis(
         },
         xpallet_assets: XAssetsConfig {
             assets_restrictions: vec![(PCX, pcx_restrictions()), (X_BTC, X_BTC_ASSETRESTRICTIONS)],
-            endowed: Default::default(), // FIXME: maybe issue some asset balances?
+            endowed: xbtc_asset_endowed()
         },
     }
 }
