@@ -27,19 +27,28 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, Perbill,
 };
-use sp_std::prelude::{Box, Vec};
+use sp_std::{
+    marker::PhantomData,
+    prelude::{Box, Vec},
+};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
 use frame_support::{
-    construct_runtime, parameter_types,
-    traits::Randomness,
+    construct_runtime,
+    pallet_prelude::DispatchError,
+    parameter_types,
+    traits::{
+        ExistenceRequirement::{AllowDeath, KeepAlive},
+        Randomness, ReservableCurrency, WithdrawReasons,
+    },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight,
     },
+    PalletId,
 };
 use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
@@ -49,6 +58,8 @@ use dev_parachain_primitives::*;
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
+use frame_support::sp_runtime::traits::Convert;
+use pallet_swap::{AssetId, MultiAsset};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -255,6 +266,17 @@ impl xpallet_assets::Config for Runtime {
     type WeightInfo = xpallet_assets::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+    pub const SwapPalletId: PalletId = PalletId(*b"//swap//");
+}
+
+impl pallet_swap::Config for Runtime {
+    type Event = Event;
+    type NativeAssetId = PcxAssetId;
+    type MultiAsset = pallet_swap::SimpleMultiAsset<Self>;
+    type PalletId = SwapPalletId;
+}
+
 construct_runtime! {
     pub enum Runtime where
         Block = Block,
@@ -274,6 +296,8 @@ construct_runtime! {
 
         XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config} = 10,
         XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
+
+        Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
     }
 }
 
