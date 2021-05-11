@@ -1636,6 +1636,7 @@ dependencies = [
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-swap",
+ "pallet-swap-rpc-runtime-api",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
@@ -5368,6 +5369,34 @@ dependencies = [
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "xpallet-assets",
  "xpallet-assets-registrar",
+]
+
+[[package]]
+name = "pallet-swap-rpc"
+version = "0.1.0"
+dependencies = [
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "pallet-swap",
+ "pallet-swap-rpc-runtime-api",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-rpc",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-swap-rpc-runtime-api"
+version = "0.1.0"
+dependencies = [
+ "pallet-swap",
+ "parity-scale-codec",
+ "serde_json",
+ "sp-api",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
 [[package]]
@@ -9137,6 +9166,7 @@ dependencies = [
  "log",
  "nix",
  "pallet-sudo",
+ "pallet-swap-rpc",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "parking_lot 0.9.0",

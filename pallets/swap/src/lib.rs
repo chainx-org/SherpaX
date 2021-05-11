@@ -20,14 +20,14 @@ use frame_support::{
     traits::{Currency, Get},
     PalletId,
 };
-use sp_core::U256;
+
 use sp_runtime::traits::{
-    AccountIdConversion, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, IntegerSquareRoot, One,
+    AccountIdConversion, CheckedAdd, CheckedDiv, CheckedSub, IntegerSquareRoot, One,
     Saturating, StaticLookup, Zero,
 };
-use sp_std::convert::TryInto;
 
 mod multiasset;
+mod rpc;
 
 pub use self::multiasset::{MultiAsset, SimpleMultiAsset};
 pub use pallet::*;
