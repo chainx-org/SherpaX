@@ -1,0 +1,47 @@
+[package]
+name = "pallet-swap"
+version = "0.1.0"
+authors = ["The ChainX Authors"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = { version = "0.4.14", default-features = false }
+serde = { version = "1.0.119", optional = true }
+# alias "parity-scale-code" to "codec"
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
+# Substrate
+sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
+frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
+frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+
+orml-traits = { version = "0.4.0", default-features = false }
+
+# ChainX
+xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+
+[dev-dependencies]
+pallet-balances = { git = 'https://github.com/paritytech/substrate',  branch = 'rococo-v1' }
+xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+
+[features]
+default = ["std"]
+std = [
+    "log/std",
+    "serde",
+    "codec/std",
+    "sp-core/std",
+    "frame-support/std",
+    "frame-system/std",
+    "sp-runtime/std",
+    "sp-std/std",
+    "sp-arithmetic/std",
+
+    "orml-traits/std",
+
+    "xpallet-assets/std",
+]

@@ -1575,10 +1575,12 @@ dependencies = [
  "frame-executive",
  "frame-support",
  "frame-system",
+ "orml-traits",
  "pallet-balances",
  "pallet-multisig",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
+ "pallet-swap",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
@@ -5049,6 +5051,25 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+]
+
+[[package]]
+name = "pallet-swap"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-traits",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-runtime",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "xpallet-assets",
+ "xpallet-assets-registrar",
 ]
 
 [[package]]
