@@ -111,7 +111,6 @@ pub(crate) type Balance = u128;
 pub(crate) type BlockNumber = u32;
 pub const PCX: AssetId = 0;
 pub const X_BTC: AssetId = 1;
-pub const X_ETH: AssetId = 60;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CHARLIE: AccountId = 3;
@@ -119,6 +118,21 @@ pub const DAVE: AccountId = 4;
 
 use std::collections::BTreeMap;
 use xpallet_assets::{AssetInfo, AssetRestrictions, Chain};
+
+pub(crate) fn pcx() -> (AssetId, AssetInfo, AssetRestrictions) {
+    (
+        PCX,
+        AssetInfo::new::<Test>(
+            b"PCX".to_vec(),
+            b"PCX".to_vec(),
+            Chain::ChainX,
+            8,
+            b"ChainX's PCX".to_vec(),
+        )
+        .unwrap(),
+        AssetRestrictions::DESTROY_USABLE,
+    )
+}
 
 pub(crate) fn btc() -> (AssetId, AssetInfo, AssetRestrictions) {
     (
@@ -153,7 +167,8 @@ impl ExtBuilder {
             init_assets.push((a, b, d, e));
             assets_restrictions.push((a, c))
         }
-
+        let init_pcx = pcx();
+        init_assets.push((init_pcx.0, init_pcx.1, true, true));
         let _ = xpallet_assets_registrar::GenesisConfig { assets: init_assets }
             .assimilate_storage::<Test>(&mut storage);
 

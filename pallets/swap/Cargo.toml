@@ -23,10 +23,10 @@ orml-traits = { version = "0.4.0", default-features = false }
 
 # ChainX
 xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 
 [dev-dependencies]
 pallet-balances = { git = 'https://github.com/paritytech/substrate',  branch = 'rococo-v1' }
-xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 
 [features]
 default = ["std"]

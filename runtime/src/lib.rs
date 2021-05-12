@@ -61,7 +61,7 @@ use xpallet_gateway_bitcoin_v2::pallet as xpallet_gateway_bitcoin_v2_pallet;
 pub mod constants;
 use constants::{currency::*, time::*};
 
-use pallet_swap::AssetId;
+use pallet_swap::{rpc::Token, AssetId};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -548,6 +548,10 @@ impl_runtime_apis! {
             path: Vec<AssetId>
         ) -> u128 {
             Swap::supply_out_amount(supply, path)
+        }
+
+        fn get_token_list() -> Vec<Token>{
+            Swap::get_token_list()
         }
     }
 }

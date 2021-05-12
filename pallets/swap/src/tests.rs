@@ -1,10 +1,8 @@
-use crate::{mock::*, Error};
-use frame_support::{assert_noop, assert_ok};
+use crate::mock::*;
+use frame_support::assert_ok;
 
 #[test]
 fn test_normal_case() {
-    let asset_id1: u32 = 1;
-    let asset_id2: u32 = 2;
     ExtBuilder::default().build_default().execute_with(|| {
         let amount_pcx_desired = 500_000;
         let amount_btc_desired = 50_000;
@@ -62,5 +60,7 @@ fn test_normal_case() {
             ALICE.into(),
             deadline.into()
         ));
+
+        Swap::get_token_list();
     });
 }
