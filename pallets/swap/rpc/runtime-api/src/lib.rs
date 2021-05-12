@@ -5,7 +5,7 @@
 #![allow(clippy::unnecessary_mut_passed)]
 
 use codec::Codec;
-use pallet_swap::AssetId;
+use pallet_swap::{rpc::Token, AssetId};
 use sp_std::vec::Vec;
 
 sp_api::decl_runtime_apis! {
@@ -19,5 +19,6 @@ sp_api::decl_runtime_apis! {
         //sell amount token price
         fn get_amount_out_price(supply: u128, path: Vec<AssetId>) -> u128;
 
+        fn get_token_list() -> Vec<Token>;
      }
 }

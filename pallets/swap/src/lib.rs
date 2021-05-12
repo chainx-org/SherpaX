@@ -27,7 +27,7 @@ use sp_runtime::traits::{
 };
 
 mod multiasset;
-mod rpc;
+pub mod rpc;
 
 pub use self::multiasset::{MultiAsset, SimpleMultiAsset};
 pub use pallet::*;
