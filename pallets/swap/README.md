@@ -1,12 +1,5 @@
 # Uniswap接口文档
 
-## 类型映射
-
-> | Balance     | u128 |
-> | :---------- | :--- |
-> | AssetId     | u32  |
-> | BlockNumber | u32  |
-
 ## RPC
 
 #### getAmountInPrice
@@ -28,7 +21,7 @@
 ###### 请求参数
 > | 参数       | 必选 | 类型         | 说明                                 |
 > | :--------- | :--- | :----------- | ------------------------------------ |
-> | amount_out | ture | Balance      | 输出量（swap操作右边固定，查询左边） |
+> | amount_out | ture | u128         | 输出量（swap操作右边固定，查询左边） |
 > | path       | true | Vec<AssetId> | 兑换路径                             |
 
 ###### 返回字段
@@ -81,7 +74,7 @@
 
 > | 参数      | 必选 | 类型         | 说明                               |
 > | :-------- | :--- | :----------- | ---------------------------------- |
-> | amount_in | ture | Balance      | 输入量（swap操作左固定，查询右边） |
+> | amount_in | ture | u128         | 输入量（swap操作左固定，查询右边） |
 > | path      | true | Vec<AssetId> | 兑换路径                           |
 
 ###### 返回字段
@@ -191,6 +184,114 @@
 > }
 > ```
 
+#### Rpc Calls
+
+~~~json
+{
+  "swap": {
+    "getAmountInPrice": {
+      "description": "Return amount in price by amount out",
+      "params": [
+        {
+          "name": "amount_out",
+          "type": "u128"
+        },
+        {
+          "name": "path",
+          "type": "Vec<AssetId>"
+        },
+        {
+          "name": "at",
+          "type": "Hash",
+          "isOptional": true
+        }
+      ],
+      "type": "string"
+    },
+    "getAmountOutPrice": {
+      "description": "Return amount out price by amount in",
+      "params": [
+        {
+          "name": "amount_in",
+          "type": "u128"
+        },
+        {
+          "name": "path",
+          "type": "Vec<AssetId>"
+        },
+        {
+          "name": "at",
+          "type": "Hash",
+          "isOptional": true
+        }
+      ],
+      "type": "string"
+    },
+    "getTokenList":{
+            "description": "Return all token list info",
+            "params": [
+        {
+          "name": "at",
+          "type": "Hash",
+          "isOptional": true
+        }
+      ],
+      "type": "Vec<TokenInfo>"
+        },
+    "getBalance": {
+      "description": "Return balance of (asset_id, who)",
+      "params": [
+        {
+          "name": "asset_id",
+          "type": "AssetId"
+        },
+        {
+          "name": "account",
+          "type": "AccountId"
+        },
+        {
+          "name": "at",
+          "type": "Hash",
+          "isOptional": true
+        }
+      ],
+      "type": "string"
+    }
+  }
+}
+~~~
+
+#### Types
+
+~~~json
+{
+  "AssetId": "u32",
+  "TokenInfo": {
+    "assert_id": "AssetId",
+    "assert_info": "AssetInfo"
+  },
+  "AssetInfo": {
+        "token": "String",
+        "tokenName": "String",
+        "chain": "Chain",
+        "decimals": "Decimals",
+        "desc": "String"
+    },
+  "Chain": {
+        "_enum": [
+            "ChainX",
+            "Bitcoin",
+            "Ethereum",
+            "Polkadot"
+        ]
+    },
+  "String": "Vec<u8>",
+  "Decimals": "u8"
+}
+~~~
+
+
+
 ## Extrinsics
 
 #### createPair
@@ -216,8 +317,8 @@
 
 > | 参数           | 类型         | 类型                                   |
 > | :------------- | :----------- | :------------------------------------- |
-> | amount_in      | Balance      | 输入的量                               |
-> | amount_out_min | Balance      | 执行交易时，输出量最小值，小于交易失败 |
+> | amount_in      | u128         | 输入的量                               |
+> | amount_out_min | u128         | 执行交易时，输出量最小值，小于交易失败 |
 > | path           | Vec<AssetId> | 兑换路径                               |
 > | recipient      | Account      | 接收账户                               |
 > | deadline       | BlockNumber  | 执行交易时，最大块高度，超过交易失败   |
@@ -232,8 +333,8 @@
 
 > | 参数          | 类型         | 类型                                   |
 > | :------------ | :----------- | :------------------------------------- |
-> | amount_out    | Balance      | 输出的量                               |
-> | amount_in_max | Balance      | 执行交易时，输入量最大值，超过交易失败 |
+> | amount_out    | u128         | 输出的量                               |
+> | amount_in_max | u128         | 执行交易时，输入量最大值，超过交易失败 |
 > | path          | Vec<AssetId> | 兑换路径                               |
 > | recipient     | Account      | 接收账户                               |
 > | deadline      | BlockNumber  | 执行交易时，最大块高度，超过交易失败   |
@@ -250,10 +351,10 @@
 > | :--------------- | :---------- | :----------------------------------- |
 > | asset_0          | AssetId     | 第一种资产id                         |
 > | asset_1          | AssetId     | 第二种资产id                         |
-> | amount_0_desired | Balance     | 第一种资产提供量                     |
-> | amount_1_desired | Balance     | 第二种资产提供量                     |
-> | amount_0_min     | Balance     | 第一种资产最小值                     |
-> | amount_1_min     | Balance     | 第二种资产最小值                     |
+> | amount_0_desired | u128        | 第一种资产提供量                     |
+> | amount_1_desired | u128        | 第二种资产提供量                     |
+> | amount_0_min     | u128        | 第一种资产最小值                     |
+> | amount_1_min     | u128        | 第二种资产最小值                     |
 > | deadline         | BlockNumber | 执行交易时，最大块高度，超过交易失败 |
 
 #### removeLiquidity
@@ -264,13 +365,13 @@
 
 ###### 参数
 
-> | 参数               | 类型        | 类型             |
+> | 参数               | 类型        | 说明             |
 > | :----------------- | :---------- | :--------------- |
 > | asset_0            | AssetId     | 第一种资产id     |
 > | asset_1            | AssetId     | 第二种资产id     |
-> | liquidity          | Balance     | 流动性减少量     |
-> | amount_asset_0_min | Balance     | 第一种资产最小值 |
-> | amount_asset_1_min | Balance     | 第二种资产最小值 |
-> | recipient          | Account     | 接收账户         |
+> | liquidity          | u128        | 流动性减少量     |
+> | amount_asset_0_min | u128        | 第一种资产最小值 |
+> | amount_asset_1_min | u128        | 第二种资产最小值 |
+> | recipient          | AccountId   | 接收账户         |
 > | deadline           | BlockNumber | 最大块高度       |
 

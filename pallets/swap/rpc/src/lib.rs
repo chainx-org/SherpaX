@@ -13,29 +13,40 @@ use sp_rpc::number::NumberOrHex;
 use sp_runtime::{generic::BlockId, traits::Block as BlockT};
 use std::sync::Arc;
 
-use pallet_swap::{rpc::Token, AssetId};
+use pallet_swap::{rpc::TokenInfo, AssetId};
 use pallet_swap_rpc_runtime_api::SwapApi as SwapRuntimeApi;
 
 #[rpc]
 pub trait SwapApi<BlockHash, AccountId> {
-    #[rpc(name = "getAmountInPrice")]
+    /// Return amount in price by amount out
+    #[rpc(name = "swap_getAmountInPrice")]
     fn get_amount_in_price(
         &self,
-        supply: u128,
+        amount_out: u128,
         path: Vec<AssetId>,
         at: Option<BlockHash>,
     ) -> Result<NumberOrHex>;
 
-    #[rpc(name = "getAmountOutPrice")]
+    /// Return amount out price by amount in
+    #[rpc(name = "swap_getAmountOutPrice")]
     fn get_amount_out_price(
         &self,
-        supply: u128,
+        amount_in: u128,
         path: Vec<AssetId>,
         at: Option<BlockHash>,
     ) -> Result<NumberOrHex>;
 
-    #[rpc(name = "getTokenList")]
-    fn get_token_list(&self, at: Option<BlockHash>) -> Result<Vec<Token>>;
+    /// Return all token list info
+    #[rpc(name = "swap_getTokenList")]
+    fn get_token_list(&self, at: Option<BlockHash>) -> Result<Vec<TokenInfo>>;
+
+    /// Return balance of (asset_id, who)
+    #[rpc(name = "swap_getBalance")]
+    fn get_balance(
+        &self,
+        asset_id: AssetId,
+        account: AccountId,
+        at: Option<BlockHash>) -> Result<NumberOrHex>;
 }
 
 const RUNTIME_ERROR: i64 = 1;
@@ -63,14 +74,14 @@ where
     //buy amount token price
     fn get_amount_in_price(
         &self,
-        supply: u128,
+        amount_out: u128,
         path: Vec<AssetId>,
         at: Option<<Block as BlockT>::Hash>,
     ) -> Result<NumberOrHex> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
 
-        api.get_amount_in_price(&at, supply, path)
+        api.get_amount_in_price(&at, amount_out, path)
             .map(|price| price.into())
             .map_err(runtime_error_into_rpc_err)
     }
@@ -78,22 +89,36 @@ where
     //sell amount token price
     fn get_amount_out_price(
         &self,
-        supply: u128,
+        amount_in: u128,
         path: Vec<AssetId>,
         at: Option<<Block as BlockT>::Hash>,
     ) -> Result<NumberOrHex> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
 
-        api.get_amount_out_price(&at, supply, path)
+        api.get_amount_out_price(&at, amount_in, path)
             .map(|price| price.into())
             .map_err(runtime_error_into_rpc_err)
     }
 
-    fn get_token_list(&self, at: Option<<Block as BlockT>::Hash>) -> Result<Vec<Token>> {
+    fn get_token_list(&self, at: Option<<Block as BlockT>::Hash>) -> Result<Vec<TokenInfo>> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
         api.get_token_list(&at).map_err(runtime_error_into_rpc_err)
+    }
+
+    fn get_balance(
+        &self,
+        asset_id: AssetId,
+        account: AccountId,
+        at: Option<<Block as BlockT>::Hash>,
+    ) -> Result<NumberOrHex> {
+        let api = self.client.runtime_api();
+        let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
+
+        api.get_balance(&at, asset_id, account)
+            .map(|balance| balance.into())
+            .map_err(runtime_error_into_rpc_err)
     }
 }
 
