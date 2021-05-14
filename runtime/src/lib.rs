@@ -49,7 +49,7 @@ use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo
 
 use dev_parachain_primitives::*;
 use xgateway_bitcoin_bridge::pallet as xgateway_bitcoin_bridge_pallet;
-use xgateway_bitcoin_node::pallet as xgateway_bitcoin_node_pallet;
+// use xgateway_bitcoin_node::pallet as xgateway_bitcoin_node_pallet;
 
 /// Constant values used within the runtime.
 pub mod constants;
@@ -276,27 +276,27 @@ impl xgateway_bitcoin_bridge::pallet::Config<Instance2> for Runtime {
     type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
 }
 
-impl xgateway_bitcoin_node::Config<Instance1> for Runtime {
-    type Event = Event;
-    type UnixTime = Timestamp;
-    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
-    type TrusteeSessionProvider = ();
-    type TrusteeOrigin = ();
-    type ReferralBinding = ();
-    type AddressBinding = ();
-    type WeightInfo = xgateway_bitcoin_node::weights::SubstrateWeight<Runtime>;
-}
-
-impl xgateway_bitcoin_node::Config<Instance2> for Runtime {
-    type Event = Event;
-    type UnixTime = Timestamp;
-    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
-    type TrusteeSessionProvider = ();
-    type TrusteeOrigin = ();
-    type ReferralBinding = ();
-    type AddressBinding = ();
-    type WeightInfo = xgateway_bitcoin_node::weights::SubstrateWeight<Runtime>;
-}
+// impl xgateway_bitcoin_node::Config<Instance1> for Runtime {
+//     type Event = Event;
+//     type UnixTime = Timestamp;
+//     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+//     type TrusteeSessionProvider = ();
+//     type TrusteeOrigin = ();
+//     type ReferralBinding = ();
+//     type AddressBinding = ();
+//     type WeightInfo = xgateway_bitcoin_node::weights::SubstrateWeight<Runtime>;
+// }
+//
+// impl xgateway_bitcoin_node::Config<Instance2> for Runtime {
+//     type Event = Event;
+//     type UnixTime = Timestamp;
+//     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+//     type TrusteeSessionProvider = ();
+//     type TrusteeOrigin = ();
+//     type ReferralBinding = ();
+//     type AddressBinding = ();
+//     type WeightInfo = xgateway_bitcoin_node::weights::SubstrateWeight<Runtime>;
+// }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
@@ -363,8 +363,8 @@ construct_runtime! {
         XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
 
         Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
-        XGatewayBitcoin: xgateway_bitcoin_node_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13
-        XGatewayDogecoin: xgateway_bitcoin_node_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14
+        // XGatewayBitcoin: xgateway_bitcoin_node_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13
+        // XGatewayDogecoin: xgateway_bitcoin_node_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14
         XGatewayBitcoinBridge: xgateway_bitcoin_bridge_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
         XGatewayDogecoinBridge: xgateway_bitcoin_bridge_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
     }

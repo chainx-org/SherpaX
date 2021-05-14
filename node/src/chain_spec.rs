@@ -25,14 +25,12 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 
 use cumulus_primitives_core::ParaId;
 
+use xgateway_bitcoin_bridge::types::TradingPrice;
 use xpallet_assets::AssetRestrictions;
 use xpallet_assets_registrar::{AssetInfo, Chain};
 
 use dev_parachain_primitives::{AccountId, Signature};
-use dev_parachain_runtime::{
-    constants::currency::DOTS, BalancesConfig, GenesisConfig, ParachainInfoConfig, Runtime,
-    SudoConfig, SystemConfig, XAssetsConfig, XAssetsRegistrarConfig,
-};
+use dev_parachain_runtime::{constants::currency::DOTS, *};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<dev_parachain_runtime::GenesisConfig, Extensions>;
@@ -175,6 +173,17 @@ fn testnet_genesis(
         xpallet_assets: XAssetsConfig {
             assets_restrictions: vec![(PCX, pcx_restrictions()), (X_BTC, X_BTC_ASSETRESTRICTIONS)],
             endowed: Default::default(), // FIXME: maybe issue some asset balances?
+        },
+
+        xgateway_bitcoin_bridge_pallet_Instance1: XGatewayBitcoinBridgeConfig {
+            exchange_rate: TradingPrice { price: 1, decimal: 2 },
+            issue_griefing_fee: 10,
+            ..Default::default()
+        },
+        xgateway_bitcoin_bridge_pallet_Instance2: XGatewayDogecoinBridgeConfig {
+            exchange_rate: TradingPrice { price: 1222222233, decimal: 2 },
+            issue_griefing_fee: 10,
+            ..Default::default()
         },
     }
 }
