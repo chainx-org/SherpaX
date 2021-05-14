@@ -884,7 +884,7 @@ dependencies = [
 [[package]]
 name = "chainx-primitives"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "frame-system",
  "parity-scale-codec",
@@ -1439,7 +1439,7 @@ dependencies = [
  "polkadot-parachain",
  "serde",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-inherents 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-io",
  "sp-runtime",
@@ -1587,6 +1587,7 @@ dependencies = [
 name = "dev-parachain-runtime"
 version = "0.1.0"
 dependencies = [
+ "chainx-primitives",
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
  "dev-parachain-primitives",
@@ -1618,8 +1619,11 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "substrate-wasm-builder 3.0.0",
+ "xp-gateway-bitcoin",
+ "xp-protocol",
  "xpallet-assets",
  "xpallet-assets-registrar",
+ "xpallet-gateway-bitcoin",
  "xpallet-gateway-bitcoin-v2",
 ]
 
@@ -2075,9 +2079,9 @@ dependencies = [
  "sp-api",
  "sp-io",
  "sp-runtime",
- "sp-runtime-interface",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-storage",
+ "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
 [[package]]
@@ -2096,7 +2100,7 @@ dependencies = [
  "sc-service",
  "serde",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-keystore",
  "sp-runtime",
  "sp-state-machine",
@@ -2128,7 +2132,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
 [[package]]
@@ -2165,7 +2169,7 @@ dependencies = [
  "sp-staking",
  "sp-state-machine",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
 [[package]]
@@ -3947,13 +3951,27 @@ name = "light-bitcoin"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
- "light-bitcoin-chain",
- "light-bitcoin-crypto",
- "light-bitcoin-keys",
- "light-bitcoin-merkle",
- "light-bitcoin-primitives",
- "light-bitcoin-script",
- "light-bitcoin-serialization",
+ "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-keys 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-merkle 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-script 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+]
+
+[[package]]
+name = "light-bitcoin"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
+dependencies = [
+ "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-keys 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-merkle 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-script 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
 ]
 
 [[package]]
@@ -3962,9 +3980,22 @@ version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
  "hex",
- "light-bitcoin-crypto",
- "light-bitcoin-primitives",
- "light-bitcoin-serialization",
+ "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "parity-scale-codec",
+ "serde",
+]
+
+[[package]]
+name = "light-bitcoin-chain"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
+dependencies = [
+ "hex",
+ "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
  "parity-scale-codec",
  "serde",
 ]
@@ -3975,7 +4006,20 @@ version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
  "digest 0.9.0",
- "light-bitcoin-primitives",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "ripemd160",
+ "sha-1 0.9.6",
+ "sha2 0.9.5",
+ "siphasher",
+]
+
+[[package]]
+name = "light-bitcoin-crypto"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
+dependencies = [
+ "digest 0.9.0",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
  "ripemd160",
  "sha-1 0.9.6",
  "sha2 0.9.5",
@@ -3990,9 +4034,24 @@ dependencies = [
  "bs58 0.4.0",
  "hex",
  "libsecp256k1",
- "light-bitcoin-crypto",
- "light-bitcoin-primitives",
- "light-bitcoin-serialization",
+ "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "parity-scale-codec",
+ "serde",
+]
+
+[[package]]
+name = "light-bitcoin-keys"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
+dependencies = [
+ "bs58 0.4.0",
+ "hex",
+ "libsecp256k1",
+ "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
  "parity-scale-codec",
  "serde",
 ]
@@ -4002,9 +4061,20 @@ name = "light-bitcoin-merkle"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
- "light-bitcoin-chain",
- "light-bitcoin-primitives",
- "light-bitcoin-serialization",
+ "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "parity-scale-codec",
+]
+
+[[package]]
+name = "light-bitcoin-merkle"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
+dependencies = [
+ "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
  "parity-scale-codec",
 ]
 
@@ -4023,16 +4093,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "light-bitcoin-primitives"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
+dependencies = [
+ "byteorder",
+ "fixed-hash",
+ "hex",
+ "impl-codec",
+ "impl-serde",
+ "primitive-types",
+ "serde",
+]
+
+[[package]]
 name = "light-bitcoin-script"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
  "hex",
- "light-bitcoin-chain",
- "light-bitcoin-crypto",
- "light-bitcoin-keys",
- "light-bitcoin-primitives",
- "light-bitcoin-serialization",
+ "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-keys 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+]
+
+[[package]]
+name = "light-bitcoin-script"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
+dependencies = [
+ "hex",
+ "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-keys 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
 ]
 
 [[package]]
@@ -4040,14 +4137,33 @@ name = "light-bitcoin-serialization"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
- "light-bitcoin-primitives",
- "light-bitcoin-serialization-derive",
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin-serialization-derive 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+]
+
+[[package]]
+name = "light-bitcoin-serialization"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
+dependencies = [
+ "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "light-bitcoin-serialization-derive 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
 ]
 
 [[package]]
 name = "light-bitcoin-serialization-derive"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+dependencies = [
+ "proc-macro2 1.0.26",
+ "quote 1.0.9",
+ "syn 1.0.72",
+]
+
+[[package]]
+name = "light-bitcoin-serialization-derive"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
 dependencies = [
  "proc-macro2 1.0.26",
  "quote 1.0.9",
@@ -6162,9 +6278,9 @@ dependencies = [
  "sc-executor-wasmtime",
  "slotmap",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-io",
- "sp-wasm-interface",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "tracing",
 ]
 
@@ -6633,7 +6749,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-state-machine",
- "sp-storage",
+ "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-transaction-pool",
  "sp-trie",
  "substrate-prometheus-endpoint",
@@ -7904,13 +8020,13 @@ dependencies = [
  "sp-consensus",
  "sp-core",
  "sp-database",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-inherents 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-keystore",
  "sp-runtime",
  "sp-state-machine",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-storage",
+ "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-transaction-pool",
  "sp-trie",
  "sp-utils",
@@ -8102,16 +8218,16 @@ dependencies = [
  "sc-executor-wasmtime",
  "sp-api",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-io",
  "sp-maybe-compressed-blob",
  "sp-panic-handler",
- "sp-runtime-interface",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-serializer",
  "sp-tasks",
  "sp-trie",
  "sp-version 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-wasm-interface",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "wasmi",
 ]
 
@@ -8127,7 +8243,7 @@ dependencies = [
  "sp-allocator",
  "sp-core",
  "sp-serializer",
- "sp-wasm-interface",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "thiserror",
  "wasmi",
 ]
@@ -8142,8 +8258,8 @@ dependencies = [
  "sc-executor-common",
  "sp-allocator",
  "sp-core",
- "sp-runtime-interface",
- "sp-wasm-interface",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "wasmi",
 ]
 
@@ -8160,8 +8276,8 @@ dependencies = [
  "scoped-tls",
  "sp-allocator",
  "sp-core",
- "sp-runtime-interface",
- "sp-wasm-interface",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "wasmtime",
 ]
 
@@ -8302,7 +8418,7 @@ dependencies = [
  "sp-api",
  "sp-blockchain",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-runtime",
  "sp-state-machine",
 ]
@@ -8547,14 +8663,14 @@ dependencies = [
  "sp-blockchain",
  "sp-consensus",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-inherents 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-io",
  "sp-keystore",
  "sp-runtime",
  "sp-session",
  "sp-state-machine",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-transaction-pool",
  "sp-trie",
  "sp-utils",
@@ -8639,7 +8755,7 @@ dependencies = [
  "sc-tracing-proc-macro",
  "serde",
  "serde_json",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "thiserror",
  "tracing",
  "tracing-core",
@@ -8700,7 +8816,7 @@ dependencies = [
  "sp-blockchain",
  "sp-core",
  "sp-runtime",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-transaction-pool",
  "sp-utils",
  "substrate-prometheus-endpoint",
@@ -9186,7 +9302,7 @@ dependencies = [
  "log",
  "sp-core",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-wasm-interface",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "thiserror",
 ]
 
@@ -9240,7 +9356,7 @@ dependencies = [
  "num-traits",
  "parity-scale-codec",
  "serde",
- "sp-debug-derive",
+ "sp-debug-derive 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "static_assertions",
 ]
@@ -9423,11 +9539,11 @@ dependencies = [
  "secrecy",
  "serde",
  "sha2 0.9.5",
- "sp-debug-derive",
- "sp-externalities",
- "sp-runtime-interface",
+ "sp-debug-derive 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-storage",
+ "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "substrate-bip39",
  "thiserror",
  "tiny-bip39",
@@ -9449,6 +9565,17 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e80275f23b4e7ba8f54dec5f90f016530e7307d2ee9445f617ab986cbe97f31e"
+dependencies = [
+ "proc-macro2 1.0.26",
+ "quote 1.0.9",
+ "syn 1.0.72",
+]
+
+[[package]]
+name = "sp-debug-derive"
+version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
 dependencies = [
  "proc-macro2 1.0.26",
@@ -9459,12 +9586,24 @@ dependencies = [
 [[package]]
 name = "sp-externalities"
 version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fdc625f8c7b13b9a136d334888b21b5743d2081cb666cb03efca1dc9b8f74d1"
+dependencies = [
+ "environmental",
+ "parity-scale-codec",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-storage 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "sp-externalities"
+version = "0.9.0"
 source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
 dependencies = [
  "environmental",
  "parity-scale-codec",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-storage",
+ "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
 [[package]]
@@ -9487,18 +9626,6 @@ dependencies = [
 [[package]]
 name = "sp-inherents"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
-dependencies = [
- "parity-scale-codec",
- "parking_lot 0.11.1",
- "sp-core",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "thiserror",
-]
-
-[[package]]
-name = "sp-inherents"
-version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2542380b535c6941502a0a3069a657eb5abb70fd67b11afa164d4a4b038ba73a"
 dependencies = [
@@ -9506,6 +9633,18 @@ dependencies = [
  "parking_lot 0.11.1",
  "sp-core",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "thiserror",
+]
+
+[[package]]
+name = "sp-inherents"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
+dependencies = [
+ "parity-scale-codec",
+ "parking_lot 0.11.1",
+ "sp-core",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "thiserror",
 ]
 
@@ -9521,14 +9660,14 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.11.1",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-keystore",
- "sp-runtime-interface",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-state-machine",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-trie",
- "sp-wasm-interface",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "tracing",
  "tracing-core",
 ]
@@ -9558,7 +9697,7 @@ dependencies = [
  "schnorrkel",
  "serde",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
 [[package]]
@@ -9645,18 +9784,49 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface"
 version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2e5c88b4bc8d607e4e2ff767a85db58cf7101f3dd6064f06929342ea67fe8fb"
+dependencies = [
+ "impl-trait-for-tuples 0.2.1",
+ "parity-scale-codec",
+ "primitive-types",
+ "sp-externalities 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-runtime-interface-proc-macro 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-storage 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-tracing 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-wasm-interface 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "static_assertions",
+]
+
+[[package]]
+name = "sp-runtime-interface"
+version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
 dependencies = [
  "impl-trait-for-tuples 0.2.1",
  "parity-scale-codec",
  "primitive-types",
- "sp-externalities",
- "sp-runtime-interface-proc-macro",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "sp-runtime-interface-proc-macro 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "sp-storage",
- "sp-tracing",
- "sp-wasm-interface",
+ "sp-storage 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "sp-tracing 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "sp-wasm-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "static_assertions",
+]
+
+[[package]]
+name = "sp-runtime-interface-proc-macro"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19a6c7c2251512c9e533d15db8a863b06ece1cbee778130dd9adbe44b6b39aa9"
+dependencies = [
+ "Inflector",
+ "proc-macro-crate 0.1.5",
+ "proc-macro2 1.0.26",
+ "quote 1.0.9",
+ "syn 1.0.72",
 ]
 
 [[package]]
@@ -9716,7 +9886,7 @@ dependencies = [
  "rand 0.7.3",
  "smallvec 1.6.1",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-panic-handler",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-trie",
@@ -9728,13 +9898,27 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35391ea974fa5ee869cb094d5b437688fbf3d8127d64d1b9fed5822a1ed39b12"
 
 [[package]]
 name = "sp-std"
 version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
+
+[[package]]
+name = "sp-storage"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35391ea974fa5ee869cb094d5b437688fbf3d8127d64d1b9fed5822a1ed39b12"
+checksum = "86af458d4a0251c490cdde9dcaaccb88d398f3b97ac6694cdd49ed9337e6b961"
+dependencies = [
+ "impl-serde",
+ "parity-scale-codec",
+ "ref-cast",
+ "serde",
+ "sp-debug-derive 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "sp-storage"
@@ -9745,7 +9929,7 @@ dependencies = [
  "parity-scale-codec",
  "ref-cast",
  "serde",
- "sp-debug-derive",
+ "sp-debug-derive 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
@@ -9756,9 +9940,9 @@ source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc42
 dependencies = [
  "log",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-io",
- "sp-runtime-interface",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
@@ -9773,6 +9957,20 @@ dependencies = [
  "sp-runtime",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "wasm-timer",
+]
+
+[[package]]
+name = "sp-tracing"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567382d8d4e14fb572752863b5cd57a78f9e9a6583332b590b726f061f3ea957"
+dependencies = [
+ "log",
+ "parity-scale-codec",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing",
+ "tracing-core",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -9833,6 +10031,19 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbeffa538a13d715d30e01d57a2636ba32845b737a29a3ea32403576588222e7"
+dependencies = [
+ "impl-serde",
+ "parity-scale-codec",
+ "serde",
+ "sp-runtime",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "sp-version"
+version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
 dependencies = [
  "impl-serde",
@@ -9843,16 +10054,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-version"
+name = "sp-wasm-interface"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbeffa538a13d715d30e01d57a2636ba32845b737a29a3ea32403576588222e7"
+checksum = "b214e125666a6416cf30a70cc6a5dacd34a4e5197f8a3d479f714af7e1dc7a47"
 dependencies = [
- "impl-serde",
+ "impl-trait-for-tuples 0.2.1",
  "parity-scale-codec",
- "serde",
- "sp-runtime",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasmi",
 ]
 
 [[package]]
@@ -10111,14 +10321,14 @@ dependencies = [
  "sp-consensus-aura",
  "sp-consensus-babe",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-finality-grandpa",
  "sp-inherents 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-io",
  "sp-keyring",
  "sp-offchain",
  "sp-runtime",
- "sp-runtime-interface",
+ "sp-runtime-interface 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-session",
  "sp-state-machine",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
@@ -10860,7 +11070,7 @@ dependencies = [
  "sp-api",
  "sp-blockchain",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.9.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-runtime",
  "sp-state-machine",
  "structopt",
@@ -10873,7 +11083,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04f8ab788026715fa63b31960869617cba39117e520eb415b0139543e325ab59"
 dependencies = [
  "cfg-if 0.1.10",
- "rand 0.3.23",
+ "rand 0.6.5",
  "static_assertions",
 ]
 
@@ -11707,7 +11917,7 @@ dependencies = [
 [[package]]
 name = "xp-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "chainx-primitives",
  "impl-trait-for-tuples 0.2.1",
@@ -11718,9 +11928,52 @@ dependencies = [
 ]
 
 [[package]]
+name = "xp-gateway-bitcoin"
+version = "2.0.9"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
+dependencies = [
+ "chainx-primitives",
+ "frame-support",
+ "hex",
+ "light-bitcoin 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "log",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xp-gateway-common",
+ "xp-logging",
+]
+
+[[package]]
+name = "xp-gateway-common"
+version = "2.0.9"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
+dependencies = [
+ "bs58 0.3.1",
+ "frame-support",
+ "hex",
+ "sp-core",
+ "xp-io",
+ "xp-logging",
+]
+
+[[package]]
+name = "xp-io"
+version = "2.0.9"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
+dependencies = [
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime",
+ "sp-runtime-interface 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "xp-logging"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "log",
 ]
@@ -11728,7 +11981,7 @@ dependencies = [
 [[package]]
 name = "xp-protocol"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -11739,7 +11992,7 @@ dependencies = [
 [[package]]
 name = "xp-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "hex",
  "jsonrpc-core",
@@ -11749,7 +12002,7 @@ dependencies = [
 [[package]]
 name = "xp-runtime"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -11761,7 +12014,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "bitflags",
  "chainx-primitives",
@@ -11782,7 +12035,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -11800,9 +12053,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "xpallet-gateway-bitcoin"
+version = "2.0.9"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
+dependencies = [
+ "bs58 0.3.1",
+ "chainx-primitives",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "light-bitcoin 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "log",
+ "orml-utilities",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xp-gateway-bitcoin",
+ "xp-gateway-common",
+ "xp-logging",
+ "xp-protocol",
+ "xpallet-assets",
+ "xpallet-gateway-common",
+ "xpallet-gateway-records",
+ "xpallet-support",
+]
+
+[[package]]
 name = "xpallet-gateway-bitcoin-v2"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "bitflags",
  "bs58 0.3.1",
@@ -11810,7 +12093,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples 0.2.1",
- "light-bitcoin",
+ "light-bitcoin 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
  "parity-scale-codec",
  "serde",
  "sha2 0.8.2",
@@ -11827,9 +12110,57 @@ dependencies = [
 ]
 
 [[package]]
+name = "xpallet-gateway-common"
+version = "2.0.9"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
+dependencies = [
+ "chainx-primitives",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "light-bitcoin 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=master)",
+ "log",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xp-logging",
+ "xp-protocol",
+ "xp-rpc",
+ "xp-runtime",
+ "xpallet-assets",
+ "xpallet-assets-registrar",
+ "xpallet-gateway-records",
+ "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-records"
+version = "2.0.9"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
+dependencies = [
+ "chainx-primitives",
+ "frame-support",
+ "frame-system",
+ "log",
+ "orml-utilities",
+ "parity-scale-codec",
+ "serde",
+ "sp-runtime",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xp-logging",
+ "xp-protocol",
+ "xp-runtime",
+ "xpallet-assets",
+ "xpallet-assets-registrar",
+ "xpallet-support",
+]
+
+[[package]]
 name = "xpallet-support"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#17f4c5887821fa73bc4147e17e22a9296e0a872c"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#5c410ef386c39483406feed04dbee9909e55a93b"
 dependencies = [
  "hex",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",

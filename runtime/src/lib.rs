@@ -27,10 +27,7 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, Perbill,
 };
-use sp_std::{
-    marker::PhantomData,
-    prelude::{Box, Vec},
-};
+use sp_std::prelude::{Box, Vec};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
@@ -38,13 +35,9 @@ use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 use frame_support::{
     construct_runtime,
-    dispatch::DispatchError,
     instances::{Instance1, Instance2},
     parameter_types,
-    traits::{
-        ExistenceRequirement::{AllowDeath, KeepAlive},
-        Randomness, ReservableCurrency, WithdrawReasons,
-    },
+    traits::Randomness,
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight,
@@ -55,13 +48,12 @@ use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
 use dev_parachain_primitives::*;
-use xgateway_bitcoin_v2::pallet as xgateway_bitcoin_v2_pallet;
+use xgateway_bitcoin_bridge::pallet as xgateway_bitcoin_bridge_pallet;
+use xgateway_bitcoin_node::pallet as xgateway_bitcoin_node_pallet;
 
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
-use frame_support::sp_runtime::traits::Convert;
-use pallet_swap::{AssetId, MultiAsset};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -246,12 +238,17 @@ parameter_types! {
 
 parameter_types! {
     //bitcoin
-    pub const BridgeBtcAssetId: u32 = 0x8a000000 | 1;
-    pub const BridgeTokenBtcAssetId: u32 = 0x8c000000 | 1;
+    pub const BridgeBtcAssetId: u32 = xp_protocol::C_BTC;
+    pub const BridgeTokenBtcAssetId: u32 = xp_protocol::S_BTC;
     pub const BtcMinimumRedeemValue: Balance = 10000;
+
+    //dogecoin
+    pub const BridgeDogeAssetId: u32 = xp_protocol::C_DOGE;
+    pub const BridgeTokenDogeAssetId: u32 = xp_protocol::S_DOGE;
+    pub const DogeMinimumRedeemValue: Balance = 100000000;
 }
 
-impl xgateway_bitcoin_v2::pallet::Config<Instance1> for Runtime {
+impl xgateway_bitcoin_bridge::pallet::Config<Instance1> for Runtime {
     type Event = Event;
     type TargetAssetId = BridgeBtcAssetId;
     type TokenAssetId = BridgeTokenBtcAssetId;
@@ -263,6 +260,42 @@ impl xgateway_bitcoin_v2::pallet::Config<Instance1> for Runtime {
     type IssueRequestExpiredPeriod = IssueRequestExpiredPeriod;
     type RedeemRequestExpiredPeriod = RedeemRequestExpiredPeriod;
     type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
+}
+
+impl xgateway_bitcoin_bridge::pallet::Config<Instance2> for Runtime {
+    type Event = Event;
+    type TargetAssetId = BridgeDogeAssetId;
+    type TokenAssetId = BridgeTokenDogeAssetId;
+    type MinimumRedeemValue = BtcMinimumRedeemValue;
+    type DustCollateral = DustCollateral;
+    type SecureThreshold = SecureThreshold;
+    type PremiumThreshold = PremiumThreshold;
+    type LiquidationThreshold = LiquidationThreshold;
+    type IssueRequestExpiredPeriod = IssueRequestExpiredPeriod;
+    type RedeemRequestExpiredPeriod = RedeemRequestExpiredPeriod;
+    type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
+}
+
+impl xgateway_bitcoin_node::Config<Instance1> for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = ();
+    type TrusteeOrigin = ();
+    type ReferralBinding = ();
+    type AddressBinding = ();
+    type WeightInfo = xgateway_bitcoin_node::weights::SubstrateWeight<Runtime>;
+}
+
+impl xgateway_bitcoin_node::Config<Instance2> for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = ();
+    type TrusteeOrigin = ();
+    type ReferralBinding = ();
+    type AddressBinding = ();
+    type WeightInfo = xgateway_bitcoin_node::weights::SubstrateWeight<Runtime>;
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
@@ -330,7 +363,10 @@ construct_runtime! {
         XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
 
         Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
-        XGatewayBitcoin: xgateway_bitcoin_v2_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>} = 13,
+        XGatewayBitcoin: xgateway_bitcoin_node_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13
+        XGatewayDogecoin: xgateway_bitcoin_node_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14
+        XGatewayBitcoinBridge: xgateway_bitcoin_bridge_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
+        XGatewayDogecoinBridge: xgateway_bitcoin_bridge_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
     }
 }
 
