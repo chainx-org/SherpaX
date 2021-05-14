@@ -38,7 +38,8 @@ use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 use frame_support::{
     construct_runtime,
-    pallet_prelude::DispatchError,
+    dispatch::DispatchError,
+    instances::{Instance1, Instance2},
     parameter_types,
     traits::{
         ExistenceRequirement::{AllowDeath, KeepAlive},
@@ -54,6 +55,7 @@ use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
 use dev_parachain_primitives::*;
+use xgateway_bitcoin_v2::pallet as xgateway_bitcoin_v2_pallet;
 
 /// Constant values used within the runtime.
 pub mod constants;
@@ -232,6 +234,36 @@ impl pallet_multisig::Config for Runtime {
 parameter_types! {
     pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
 }
+parameter_types! {
+    pub const DustCollateral: Balance = 1000;
+    pub const SecureThreshold: u16 = 300;
+    pub const PremiumThreshold: u16 = 250;
+    pub const LiquidationThreshold: u16 = 180;
+    pub const IssueRequestExpiredPeriod: BlockNumber = 48 * 600;
+    pub const RedeemRequestExpiredPeriod: BlockNumber = 48 * 600;
+    pub const ExchangeRateExpiredPeriod: BlockNumber = 48 * 600;
+}
+
+parameter_types! {
+    //bitcoin
+    pub const BridgeBtcAssetId: u32 = 0x8a000000 | 1;
+    pub const BridgeTokenBtcAssetId: u32 = 0x8c000000 | 1;
+    pub const BtcMinimumRedeemValue: Balance = 10000;
+}
+
+impl xgateway_bitcoin_v2::pallet::Config<Instance1> for Runtime {
+    type Event = Event;
+    type TargetAssetId = BridgeBtcAssetId;
+    type TokenAssetId = BridgeTokenBtcAssetId;
+    type MinimumRedeemValue = BtcMinimumRedeemValue;
+    type DustCollateral = DustCollateral;
+    type SecureThreshold = SecureThreshold;
+    type PremiumThreshold = PremiumThreshold;
+    type LiquidationThreshold = LiquidationThreshold;
+    type IssueRequestExpiredPeriod = IssueRequestExpiredPeriod;
+    type RedeemRequestExpiredPeriod = RedeemRequestExpiredPeriod;
+    type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
+}
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
@@ -298,6 +330,7 @@ construct_runtime! {
         XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
 
         Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
+        XGatewayBitcoin: xgateway_bitcoin_v2_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>} = 13,
     }
 }
 
