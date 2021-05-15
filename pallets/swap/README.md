@@ -9,15 +9,6 @@
 ###### 接口功能
 > 查询买入汇率
 
-###### URL
-> http://localhost:6666
-
-###### 支持格式
-> JSON
-
-###### HTTP请求方式
-> POST　
-
 ###### 请求参数
 > | 参数       | 必选 | 类型         | 说明                                 |
 > | :--------- | :--- | :----------- | ------------------------------------ |
@@ -25,20 +16,20 @@
 > | path       | true | Vec<AssetId> | 兑换路径                             |
 
 ###### 返回字段
-> | 返回字段   | 字段类型 | 说明             |
-> | :--------- | :------- | :--------------- |
-> | 16进制数值 | Hex      | 计算得到的输入量 |
+> | 返回字段 | 字段类型 | 说明             |
+> | :------- | :------- | :--------------- |
+> | 数值     | Hex      | 计算得到的输入量 |
 
-###### 接口示例
+###### http请求示例
 > ~~~apl
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
->      "jsonrpc": "2.0",
->      "id": 1059,
->      "method": "getAmountInPrice",
->      "params": [100,[0, 1]]
->  }'
+>         "jsonrpc": "2.0",
+>         "id": 1059,
+>         "method": "swap_getAmountInPrice",
+>         "params": [100,[0, 1]]
+>   }'
 > ~~~
 ###### Response
 
@@ -50,6 +41,12 @@
 > }
 > ```
 
+###### ws请求示例
+
+> ```json
+> api.rpc.swap.getAmountInPrice(100, [0, 1])
+> ```
+
 #### getAmountOutPrice
 
 ---
@@ -57,18 +54,6 @@
 ###### 接口功能
 
 > 查询卖出汇率
-
-###### URL
-
-> http://localhost:6666
-
-###### 支持格式
-
-> JSON
-
-###### HTTP请求方式
-
-> POST　
 
 ###### 请求参数
 
@@ -79,21 +64,21 @@
 
 ###### 返回字段
 
-> | 返回字段   | 字段类型 | 说明             |
-> | :--------- | :------- | :--------------- |
-> | 16进制数值 | Hex      | 计算得到的输出量 |
+> | 返回字段 | 字段类型 | 说明             |
+> | :------- | :------- | :--------------- |
+> | 数值     | Hex      | 计算得到的输出量 |
 
-###### 接口示例
+###### http请求示例
 
 > ~~~apl
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
->      "jsonrpc": "2.0",
->      "id": 1059,
->      "method": "getAmountOutPrice",
->      "params": [100,[0, 1]]
->  }'
+>         "jsonrpc": "2.0",
+>         "id": 1059,
+>         "method": "swap_getAmountOutPrice",
+>         "params": [100,[0, 1]]
+>   }'
 > ~~~
 
 ###### Response
@@ -106,6 +91,12 @@
 > }
 > ```
 
+###### ws请求示例
+
+> ```json
+> api.rpc.swap.getAmountOutPrice(100, [0, 1])
+> ```
+
 #### getTokenList
 
 ---
@@ -113,18 +104,6 @@
 ###### 接口功能
 
 > 获取当前有流动性的所有Token相关信息
-
-###### URL
-
-> http://localhost:6666
-
-###### 支持格式
-
-> JSON
-
-###### HTTP请求方式
-
-> POST　
 
 ###### 请求参数
 
@@ -141,16 +120,16 @@
 > | token     | string   | token缩写 |
 > | tokenName | string   | token名字 |
 
-###### 接口示例
+###### http请求示例
 
 > ~~~apl
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
->      "jsonrpc": "2.0",
->      "id": 1059,
->      "method": "getTokenList"
->  }'
+>         "jsonrpc": "2.0",
+>         "id": 1059,
+>         "method": "swap_getTokenList"
+>   }'
 > ~~~
 
 ###### Response
@@ -184,113 +163,61 @@
 > }
 > ```
 
-#### Rpc Calls
+###### ws请求示例
 
-~~~json
-{
-  "swap": {
-    "getAmountInPrice": {
-      "description": "Return amount in price by amount out",
-      "params": [
-        {
-          "name": "amount_out",
-          "type": "u128"
-        },
-        {
-          "name": "path",
-          "type": "Vec<AssetId>"
-        },
-        {
-          "name": "at",
-          "type": "Hash",
-          "isOptional": true
-        }
-      ],
-      "type": "string"
-    },
-    "getAmountOutPrice": {
-      "description": "Return amount out price by amount in",
-      "params": [
-        {
-          "name": "amount_in",
-          "type": "u128"
-        },
-        {
-          "name": "path",
-          "type": "Vec<AssetId>"
-        },
-        {
-          "name": "at",
-          "type": "Hash",
-          "isOptional": true
-        }
-      ],
-      "type": "string"
-    },
-    "getTokenList":{
-            "description": "Return all token list info",
-            "params": [
-        {
-          "name": "at",
-          "type": "Hash",
-          "isOptional": true
-        }
-      ],
-      "type": "Vec<TokenInfo>"
-        },
-    "getBalance": {
-      "description": "Return balance of (asset_id, who)",
-      "params": [
-        {
-          "name": "asset_id",
-          "type": "AssetId"
-        },
-        {
-          "name": "account",
-          "type": "AccountId"
-        },
-        {
-          "name": "at",
-          "type": "Hash",
-          "isOptional": true
-        }
-      ],
-      "type": "string"
-    }
-  }
-}
-~~~
+> ```json
+> api.rpc.swap.getTokenList()
+> ```
 
-#### Types
+#### getBalance
 
-~~~json
-{
-  "AssetId": "u32",
-  "TokenInfo": {
-    "assert_id": "AssetId",
-    "assert_info": "AssetInfo"
-  },
-  "AssetInfo": {
-        "token": "String",
-        "tokenName": "String",
-        "chain": "Chain",
-        "decimals": "Decimals",
-        "desc": "String"
-    },
-  "Chain": {
-        "_enum": [
-            "ChainX",
-            "Bitcoin",
-            "Ethereum",
-            "Polkadot"
-        ]
-    },
-  "String": "Vec<u8>",
-  "Decimals": "u8"
-}
-~~~
+---
 
+###### 接口功能
 
+> 用户查询资产余额
+
+###### 请求参数
+
+> | 参数     | 必选 | 类型      | 说明   |
+> | :------- | :--- | :-------- | ------ |
+> | asset_id | ture | AssetId   | 资产id |
+> | account  | true | AccountId | 账户   |
+
+###### 返回字段
+
+> | 返回字段 | 字段类型 | 说明     |
+> | :------- | :------- | :------- |
+> | 数值     | Hex      | 资产余额 |
+
+###### http请求示例
+
+> ~~~apl
+> curl --location --request POST '127.0.0.1:6666' \
+> --header 'Content-Type: application/json' \
+> --data-raw '{
+>      "jsonrpc": "2.0",
+>      "id": 1059,
+>      "method": "swap_getBalance",
+>      "params": [0, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]
+>  }'
+> ~~~
+
+###### Response
+
+> ```json
+> {
+>     "jsonrpc": "2.0",
+>     "result": "0xde0b6b3a7640000",
+>     "id": 1059
+> }
+> ```
+
+###### ws请求示例
+
+> ```json
+> api.rpc.swap.getBalance(100, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+> ```
 
 ## Extrinsics
 
@@ -298,46 +225,46 @@
 
 ###### 功能
 
-> 创建资产对，必须创建才能进行swap等交易
+> 创建资产对，必须创建后才能进行swap等交易
 
 ###### 参数
 
 > | 参数    | 类型    | 类型         |
 > | :------ | :------ | :----------- |
 > | asset_0 | AssetId | 第一种资产id |
-> | asset_0 | AssetId | 第二种资产id |
+> | asset_1 | AssetId | 第二种资产id |
 
 #### swapExactTokensForTokens
 
 ###### 功能
 
-> swap正向操作,按照输入量进行swap交易
+> swap操作,按照输入量进行swap交易
 
 ###### 参数
 
-> | 参数           | 类型         | 类型                                   |
-> | :------------- | :----------- | :------------------------------------- |
-> | amount_in      | u128         | 输入的量                               |
-> | amount_out_min | u128         | 执行交易时，输出量最小值，小于交易失败 |
-> | path           | Vec<AssetId> | 兑换路径                               |
-> | recipient      | Account      | 接收账户                               |
-> | deadline       | BlockNumber  | 执行交易时，最大块高度，超过交易失败   |
+> | 参数           | 类型         | 类型                                 |
+> | :------------- | :----------- | :----------------------------------- |
+> | amount_in      | u128         | 输入的量                             |
+> | amount_out_min | u128         | 执行交易时，最小输出量               |
+> | path           | Vec<AssetId> | 兑换路径                             |
+> | recipient      | AccountId    | 接收账户                             |
+> | deadline       | BlockNumber  | 执行交易时，最大块高度，超过交易失败 |
 
 #### swapTokensForExactTokens
 
 ###### 功能
 
-> swap逆向操作,按照输出量进行swap交易
+> swap操作,按照输出量进行swap交易
 
 ###### 参数
 
-> | 参数          | 类型         | 类型                                   |
-> | :------------ | :----------- | :------------------------------------- |
-> | amount_out    | u128         | 输出的量                               |
-> | amount_in_max | u128         | 执行交易时，输入量最大值，超过交易失败 |
-> | path          | Vec<AssetId> | 兑换路径                               |
-> | recipient     | Account      | 接收账户                               |
-> | deadline      | BlockNumber  | 执行交易时，最大块高度，超过交易失败   |
+> | 参数          | 类型         | 类型                                 |
+> | :------------ | :----------- | :----------------------------------- |
+> | amount_out    | u128         | 输出的量                             |
+> | amount_in_max | u128         | 执行交易时，最大输入量               |
+> | path          | Vec<AssetId> | 兑换路径                             |
+> | recipient     | AccountId    | 接收账户                             |
+> | deadline      | BlockNumber  | 执行交易时，最大块高度，超过交易失败 |
 
 #### addLiquidity
 
@@ -374,4 +301,122 @@
 > | amount_asset_1_min | u128        | 第二种资产最小值 |
 > | recipient          | AccountId   | 接收账户         |
 > | deadline           | BlockNumber | 最大块高度       |
+
+## Rpc Calls
+
+~~~json
+{
+  "swap": {
+    "getAmountInPrice": {
+      "description": "Return amount in price by amount out",
+      "params": [
+        {
+          "name": "amount_out",
+          "type": "u128"
+        },
+        {
+          "name": "path",
+          "type": "Vec<AssetId>"
+        },
+        {
+          "name": "at",
+          "type": "Hash",
+          "isOptional": true
+        }
+      ],
+      "type": "u128"
+    },
+    "getAmountOutPrice": {
+      "description": "Return amount out price by amount in",
+      "params": [
+        {
+          "name": "amount_in",
+          "type": "u128"
+        },
+        {
+          "name": "path",
+          "type": "Vec<AssetId>"
+        },
+        {
+          "name": "at",
+          "type": "Hash",
+          "isOptional": true
+        }
+      ],
+      "type": "u128"
+    },
+    "getTokenList":{
+      "description": "Return all token list info",
+      "params": [
+        {
+          "name": "at",
+          "type": "Hash",
+          "isOptional": true
+        }
+      ],
+      "type": "Vec<TokenInfo>"
+    },
+    "getBalance": {
+      "description": "Return balance of (asset_id, who)",
+      "params": [
+        {
+          "name": "asset_id",
+          "type": "AssetId"
+        },
+        {
+          "name": "account",
+          "type": "AccountId"
+        },
+        {
+          "name": "at",
+          "type": "Hash",
+          "isOptional": true
+        }
+      ],
+      "type": "u128"
+    }
+  }
+}
+~~~
+
+## Types
+
+~~~json
+{
+  'AssetId': 'u32',
+  'TokenInfo': {
+    'assertId': 'AssetId',
+    'assertInfo': 'AssetInfo'
+  },
+  'AssetInfo': {
+    'token': 'String',
+    'tokenName': 'String',
+    'chain': 'Chain',
+    'decimals': 'Decimals',
+    'desc': 'String'
+  },
+  'Chain': {
+    '_enum': [
+      'ChainX',
+      'Bitcoin',
+      'Ethereum',
+      'Polkadot'
+    ]
+  },
+  'String': 'Text',
+  'Decimals': 'u8',
+  'AssetRestrictions': {"bits": "u32"},
+  "AssetType": {
+    "_enum": [
+      "Usable",
+      "Locked",
+      "Reserved",
+      "ReservedWithdrawal",
+      "ReservedDexSpot"
+    ]
+  },
+  "Desc": "Vec<u8>",
+  "Token": "Vec<u8>"
+}
+~~~
 
