@@ -1,16 +1,16 @@
 use super::*;
-use sp_std::collections::btree_set::BTreeSet;
+use sp_std::{collections::btree_set::BTreeSet, fmt::Debug};
 use xpallet_assets_registrar::AssetInfo;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, Debug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
 pub struct TokenInfo {
-    assert_id: AssetId,
-    assert_info: AssetInfo,
+    pub assert_id: AssetId,
+    pub assert_info: AssetInfo,
 }
 
 impl<T: Config> Pallet<T> {
@@ -43,7 +43,7 @@ impl<T: Config> Pallet<T> {
             .collect::<Vec<_>>()
     }
 
-    pub fn get_balance(asset_id: AssetId, account: T::AccountId) -> BalanceOf<T>{
+    pub fn get_balance(asset_id: AssetId, account: T::AccountId) -> BalanceOf<T> {
         T::MultiAsset::balance_of(asset_id, &account)
     }
 }

@@ -40,7 +40,7 @@ impl frame_system::Config for Test {
     type BlockNumber = u64;
     type Hash = H256;
     type Hashing = BlakeTwo256;
-    type AccountId = u64;
+    type AccountId = u128;
     type Lookup = IdentityLookup<Self::AccountId>;
     type Header = Header;
     type Event = Event;
@@ -57,7 +57,7 @@ impl frame_system::Config for Test {
 
 parameter_types! {
     pub const TransactionByteFee: u128 = 1_000_000;
-    pub const ExistentialDeposit: u128 = 0;
+    pub const ExistentialDeposit: u128 = 10_000_000;
     pub const MaxLocks: u32 = 50;
 }
 
@@ -105,12 +105,12 @@ impl pallet_swap::Config for Test {
     type PalletId = SwapPalletId;
 }
 
-pub(crate) type AccountId = u64;
+pub(crate) type AccountId = u128;
 pub(crate) type AssetId = u32;
 pub(crate) type Balance = u128;
-pub(crate) type BlockNumber = u32;
 pub const PCX: AssetId = 0;
 pub const X_BTC: AssetId = 1;
+pub const X_ETH: AssetId = 2;
 pub const ALICE: AccountId = 1;
 pub const BOB: AccountId = 2;
 pub const CHARLIE: AccountId = 3;
@@ -119,7 +119,7 @@ pub const DAVE: AccountId = 4;
 use std::collections::BTreeMap;
 use xpallet_assets::{AssetInfo, AssetRestrictions, Chain};
 
-pub(crate) fn pcx() -> (AssetId, AssetInfo, AssetRestrictions) {
+pub(crate) fn pcx() -> (AssetId, AssetInfo, AssetRestrictions, bool, bool) {
     (
         PCX,
         AssetInfo::new::<Test>(
@@ -131,10 +131,12 @@ pub(crate) fn pcx() -> (AssetId, AssetInfo, AssetRestrictions) {
         )
         .unwrap(),
         AssetRestrictions::DESTROY_USABLE,
+        true,
+        true,
     )
 }
 
-pub(crate) fn btc() -> (AssetId, AssetInfo, AssetRestrictions) {
+pub(crate) fn btc() -> (AssetId, AssetInfo, AssetRestrictions, bool, bool) {
     (
         X_BTC,
         AssetInfo::new::<Test>(
@@ -146,6 +148,8 @@ pub(crate) fn btc() -> (AssetId, AssetInfo, AssetRestrictions) {
         )
         .unwrap(),
         AssetRestrictions::DESTROY_USABLE,
+        true,
+        true,
     )
 }
 
@@ -157,7 +161,6 @@ impl ExtBuilder {
         self,
         assets: Vec<(AssetId, AssetInfo, AssetRestrictions, bool, bool)>,
         endowed: BTreeMap<AssetId, Vec<(AccountId, Balance)>>,
-        balances: Vec<(AccountId, Balance)>,
     ) -> sp_io::TestExternalities {
         let mut storage = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
@@ -167,29 +170,47 @@ impl ExtBuilder {
             init_assets.push((a, b, d, e));
             assets_restrictions.push((a, c))
         }
-        let init_pcx = pcx();
-        init_assets.push((init_pcx.0, init_pcx.1, true, true));
+
         let _ = xpallet_assets_registrar::GenesisConfig { assets: init_assets }
             .assimilate_storage::<Test>(&mut storage);
+        let init_balances =
+            endowed.iter().map(|(_, v)| v).collect::<Vec<_>>().first().unwrap().clone().clone();
 
         let _ = xpallet_assets::GenesisConfig::<Test> { assets_restrictions, endowed }
             .assimilate_storage(&mut storage);
 
-        let _ =
-            pallet_balances::GenesisConfig::<Test> { balances }.assimilate_storage(&mut storage);
+        let _ = pallet_balances::GenesisConfig::<Test> { balances: init_balances }
+            .assimilate_storage(&mut storage);
 
         let ext = sp_io::TestExternalities::new(storage);
         ext
     }
     pub fn build_default(self) -> sp_io::TestExternalities {
-        let btc_assets = btc();
-        let assets = vec![(btc_assets.0, btc_assets.1, btc_assets.2, true, true)];
+        let assets = vec![btc(), pcx()];
         let mut endowed = BTreeMap::new();
-        let endowed_info =
-            vec![(ALICE, 100_000), (BOB, 200_000), (CHARLIE, 300_000), (DAVE, 400_000)];
-        endowed.insert(btc_assets.0, endowed_info);
-        let balances =
-            vec![(ALICE, 10_000_000), (BOB, 20_000_000), (CHARLIE, 30_000_000), (DAVE, 40_000_000)];
-        self.build(assets, endowed, balances)
+        endowed.insert(
+            assets[0].0,
+            vec![
+                (ALICE, 1_000_000_000),
+                (BOB, 2_000_000_000),
+                (CHARLIE, 3_000_000_000),
+                (DAVE, 4_000_000_000),
+            ],
+        );
+        endowed.insert(
+            assets[1].0,
+            vec![
+                (ALICE, 10_000_000_000),
+                (BOB, 20_000_000_000),
+                (CHARLIE, 30_000_000_000),
+                (DAVE, 40_000_000_000),
+            ],
+        );
+        self.build(assets, endowed)
+    }
+    pub fn build_and_execute(self, test: impl FnOnce() -> ()) {
+        let mut ext = self.build_default();
+        ext.execute_with(|| System::set_block_number(1));
+        ext.execute_with(test);
     }
 }

@@ -49,9 +49,9 @@ pub mod pallet {
     pub trait Config: frame_system::Config + xpallet_assets::Config {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-        ///
+        /// Native AssertId
         type NativeAssetId: Get<AssetId>;
-        ///
+        /// This is responsible for asset management
         type MultiAsset: MultiAsset<Self::AccountId, BalanceOf<Self>>;
         /// This pallet Id.
         type PalletId: Get<PalletId>;
@@ -67,6 +67,11 @@ pub mod pallet {
     /// (AssetId, AssetId) -> (PairAccountId, TotalSupply)
     pub type SwapMetadata<T: Config> =
         StorageMap<_, Twox64Concat, (AssetId, AssetId), (T::AccountId, BalanceOf<T>)>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn next_pair_id)]
+    /// Next available pair ID
+    pub type NextPairId<T: Config> = StorageValue<_, u32, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn swap_ledger)]
@@ -145,12 +150,15 @@ pub mod pallet {
 
             let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
 
-            let pair_account = Self::pair_account_id(asset_0, asset_1);
-
             SwapMetadata::<T>::try_mutate((asset_0, asset_1), |meta| {
                 ensure!(meta.is_none(), Error::<T>::PairAlreadyExists);
-                *meta = Some((pair_account, Default::default()));
+                let pair_id = Self::next_pair_id();
+                let next_id = pair_id.checked_add(One::one()).ok_or(Error::<T>::Overflow)?;
 
+                let pair_account: T::AccountId = T::PalletId::get().into_sub_account(pair_id);
+
+                *meta = Some((pair_account, Default::default()));
+                NextPairId::<T>::put(next_id);
                 Self::deposit_event(Event::PairCreated(who, asset_0, asset_1));
 
                 Ok(())
@@ -328,13 +336,6 @@ pub mod pallet {
 }
 
 impl<T: Config> Pallet<T> {
-    /// The account ID of a pair account
-    fn pair_account_id(asset_0: AssetId, asset_1: AssetId) -> T::AccountId {
-        let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
-
-        T::PalletId::get().into_sub_account((asset_0, asset_1))
-    }
-
     /// The account ID of a pair account from storage
     fn get_pair_account_id(asset_0: AssetId, asset_1: AssetId) -> Option<T::AccountId> {
         let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
@@ -415,11 +416,6 @@ impl<T: Config> Pallet<T> {
         amount_token_1_min: BalanceOf<T>,
         recipient: &T::AccountId,
     ) -> DispatchResult {
-        ensure!(
-            Self::swap_ledger(((asset_0, asset_1), who)) >= remove_liquidity,
-            Error::<T>::InsufficientLiquidity
-        );
-
         SwapMetadata::<T>::try_mutate((asset_0, asset_1), |meta| {
             ensure!(meta.is_some(), Error::<T>::PairNotExists);
 
@@ -533,10 +529,7 @@ impl<T: Config> Pallet<T> {
             return Ok((amount_0_desired, amount_1_optimal));
         }
         let amount_0_optimal = Self::calculate_share_amount(amount_1_desired, reserve_1, reserve_0);
-        ensure!(
-            amount_0_optimal >= amount_0_min && amount_0_optimal <= amount_0_desired,
-            Error::<T>::IncorrectAssetAmountRange
-        );
+        ensure!(amount_0_optimal >= amount_0_min, Error::<T>::IncorrectAssetAmountRange);
         Ok((amount_0_optimal, amount_1_desired))
     }
 
@@ -600,7 +593,8 @@ impl<T: Config> Pallet<T> {
         out_vec.push(amount_out);
 
         while i > 0 {
-            let pair_account = Self::pair_account_id(path[i], path[i - 1]);
+            let pair_account =
+                Self::get_pair_account_id(path[i], path[i - 1]).ok_or(Error::<T>::PairNotExists)?;
             let reserve_0 = T::MultiAsset::balance_of(path[i], &pair_account);
             let reserve_1 = T::MultiAsset::balance_of(path[i - 1], &pair_account);
 
@@ -628,7 +622,9 @@ impl<T: Config> Pallet<T> {
         out_vec.push(amount_in);
 
         for i in 0..len {
-            let pair_account = Self::pair_account_id(path[i], path[i + 1]);
+            let pair_account =
+                Self::get_pair_account_id(path[i], path[i + 1]).ok_or(Error::<T>::PairNotExists)?;
+
             let reserve_0 = T::MultiAsset::balance_of(path[i], &pair_account);
             let reserve_1 = T::MultiAsset::balance_of(path[i + 1], &pair_account);
 

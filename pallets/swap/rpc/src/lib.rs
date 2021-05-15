@@ -46,7 +46,8 @@ pub trait SwapApi<BlockHash, AccountId> {
         &self,
         asset_id: AssetId,
         account: AccountId,
-        at: Option<BlockHash>) -> Result<NumberOrHex>;
+        at: Option<BlockHash>,
+    ) -> Result<NumberOrHex>;
 }
 
 const RUNTIME_ERROR: i64 = 1;
