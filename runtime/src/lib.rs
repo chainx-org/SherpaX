@@ -48,7 +48,10 @@ use frame_support::{
     },
     PalletId,
 };
-use frame_system::limits::{BlockLength, BlockWeights};
+use frame_system::{
+    limits::{BlockLength, BlockWeights},
+    EnsureRoot,
+};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
 use dev_parachain_primitives::*;
@@ -359,6 +362,25 @@ impl pallet_swap::Config for Runtime {
     type PalletId = SwapPalletId;
 }
 
+parameter_types! {
+    pub const LocalChainId: chainbridge::ChainId = 0;
+    pub const ProposalLifetime: BlockNumber = 60 * MINUTES;
+}
+
+impl chainbridge::Config for Runtime {
+    type Event = Event;
+    type AdminOrigin = EnsureRoot<AccountId>;
+    type Proposal = Call;
+    type ChainId = LocalChainId;
+    type ProposalLifetime = ProposalLifetime;
+}
+
+impl assets_handler::Config for Runtime {
+    type Event = Event;
+    type RegistorOrigin = EnsureRoot<AccountId>;
+    type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
+}
+
 construct_runtime! {
     pub enum Runtime where
         Block = Block,
@@ -385,6 +407,9 @@ construct_runtime! {
         XGatewayBitcoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
         XGatewayDogecoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
         XGatewayRecord: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 17,
+
+        ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 18,
+        AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 19,
     }
 }
 
