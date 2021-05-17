@@ -867,6 +867,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "chainbridge"
+version = "0.0.2"
+source = "git+https://github.com/chainx-org/chainbridge-substrate#807c40daabbcdbf265bcc3bb6c537cb54e5fb167"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+]
+
+[[package]]
 name = "chainx-primitives"
 version = "2.0.9"
 source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#4313b9d52d7c3ea50bd1a068d65181d68f6cdfa5"
@@ -1569,12 +1585,14 @@ dependencies = [
 name = "dev-parachain-runtime"
 version = "0.1.0"
 dependencies = [
+ "chainbridge",
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
  "dev-parachain-primitives",
  "frame-executive",
  "frame-support",
  "frame-system",
+ "handler",
  "orml-traits",
  "pallet-balances",
  "pallet-multisig",
@@ -2600,6 +2618,26 @@ dependencies = [
  "quick-error 2.0.0",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "handler"
+version = "0.1.0"
+source = "git+https://github.com/chainx-org/chainbridge-substrate#807c40daabbcdbf265bcc3bb6c537cb54e5fb167"
+dependencies = [
+ "chainbridge",
+ "chainx-primitives",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "xpallet-assets",
+ "xpallet-assets-registrar",
 ]
 
 [[package]]
