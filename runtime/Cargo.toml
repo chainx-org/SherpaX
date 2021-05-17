@@ -42,7 +42,7 @@ cumulus-primitives-core = { git = 'https://github.com/paritytech/cumulus',  defa
 parachain-info = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 
 # ChainX pallet
-xgateway-bitcoin-node = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1", package = "xpallet-gateway-bitcoin" }
+xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
 xpallet-gateway-records = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
 xgateway-bitcoin-bridge = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1", package = "xpallet-gateway-bitcoin-v2" }
 xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
@@ -95,7 +95,7 @@ std = [
 	'xp-gateway-bitcoin/std',
 	'xgateway-bitcoin-bridge/std',
 	'xpallet-gateway-records/std',
-	'xgateway-bitcoin-node/std',
+	'xpallet-gateway-bitcoin/std',
 	'xpallet-assets/std',
 	'xpallet-assets-registrar/std',
 	'chainx-primitives/std',

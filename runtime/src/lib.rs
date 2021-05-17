@@ -293,7 +293,7 @@ impl<AccountId: Ord> frame_support::traits::SortedMembers<AccountId>
     }
 }
 
-impl xgateway_bitcoin_node::Config<Instance1> for Runtime {
+impl xpallet_gateway_bitcoin::Config<Instance1> for Runtime {
     type Event = Event;
     type UnixTime = Timestamp;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
@@ -301,10 +301,10 @@ impl xgateway_bitcoin_node::Config<Instance1> for Runtime {
     type TrusteeOrigin = EnsureSignedBy<TrusteeProvider<AccountId>, AccountId>;
     type ReferralBinding = ();
     type AddressBinding = ();
-    type WeightInfo = xgateway_bitcoin_node::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
 }
 
-impl xgateway_bitcoin_node::Config<Instance2> for Runtime {
+impl xpallet_gateway_bitcoin::Config<Instance2> for Runtime {
     type Event = Event;
     type UnixTime = Timestamp;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
@@ -312,7 +312,7 @@ impl xgateway_bitcoin_node::Config<Instance2> for Runtime {
     type TrusteeOrigin = EnsureSignedBy<TrusteeProvider<AccountId>, AccountId>;
     type ReferralBinding = ();
     type AddressBinding = ();
-    type WeightInfo = xgateway_bitcoin_node::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
@@ -380,8 +380,8 @@ construct_runtime! {
         XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
 
         Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
-        XGatewayBitcoin: xgateway_bitcoin_node::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
-        XGatewayDogecoin: xgateway_bitcoin_node::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
+        XGatewayDogecoin: xpallet_gateway_bitcoin::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14,
         XGatewayBitcoinBridge: xgateway_bitcoin_bridge_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
         XGatewayDogecoinBridge: xgateway_bitcoin_bridge_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
         XGatewayRecord: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 17,

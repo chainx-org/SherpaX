@@ -185,7 +185,7 @@ fn testnet_genesis(
             issue_griefing_fee: 10,
             ..Default::default()
         },
-        xgateway_bitcoin_node_Instance1: Default::default(),
-        xgateway_bitcoin_node_Instance2: Default::default(),
+        xpallet_gateway_bitcoin_Instance1: Default::default(),
+        xpallet_gateway_bitcoin_Instance2: Default::default(),
     }
 }
