@@ -19,6 +19,7 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
+use frame_system::EnsureSignedBy;
 use sp_api::impl_runtime_apis;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
@@ -28,8 +29,8 @@ use sp_runtime::{
     ApplyExtrinsicResult, Perbill,
 };
 use sp_std::{
-    marker::PhantomData,
     prelude::{Box, Vec},
+    vec,
 };
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -38,12 +39,9 @@ use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 use frame_support::{
     construct_runtime,
-    pallet_prelude::DispatchError,
+    instances::{Instance1, Instance2},
     parameter_types,
-    traits::{
-        ExistenceRequirement::{AllowDeath, KeepAlive},
-        Randomness, ReservableCurrency, WithdrawReasons,
-    },
+    traits::Randomness,
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight,
@@ -57,12 +55,11 @@ use frame_system::{
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
 use dev_parachain_primitives::*;
+use xpallet_gateway_bitcoin_v2::pallet as xpallet_gateway_bitcoin_v2_pallet;
 
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
-use frame_support::sp_runtime::traits::Convert;
-use pallet_swap::{AssetId, MultiAsset};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -232,8 +229,93 @@ impl pallet_multisig::Config for Runtime {
     type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
 }
 
+impl xpallet_gateway_records::Config for Runtime {
+    type Event = Event;
+    type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
+}
+
 parameter_types! {
     pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+}
+parameter_types! {
+    pub const DustCollateral: Balance = 1000;
+    pub const SecureThreshold: u16 = 300;
+    pub const PremiumThreshold: u16 = 250;
+    pub const LiquidationThreshold: u16 = 180;
+    pub const IssueRequestExpiredPeriod: BlockNumber = 48 * 600;
+    pub const RedeemRequestExpiredPeriod: BlockNumber = 48 * 600;
+    pub const ExchangeRateExpiredPeriod: BlockNumber = 48 * 600;
+}
+
+parameter_types! {
+    //bitcoin
+    pub const BridgeBtcAssetId: u32 = xp_protocol::C_BTC;
+    pub const BridgeTokenBtcAssetId: u32 = xp_protocol::S_BTC;
+    pub const BtcMinimumRedeemValue: Balance = 10000;
+
+    //dogecoin
+    pub const BridgeDogeAssetId: u32 = xp_protocol::C_DOGE;
+    pub const BridgeTokenDogeAssetId: u32 = xp_protocol::S_DOGE;
+    pub const DogeMinimumRedeemValue: Balance = 100000000;
+}
+
+impl xpallet_gateway_bitcoin_v2_pallet::Config<Instance1> for Runtime {
+    type Event = Event;
+    type TargetAssetId = BridgeBtcAssetId;
+    type TokenAssetId = BridgeTokenBtcAssetId;
+    type MinimumRedeemValue = BtcMinimumRedeemValue;
+    type DustCollateral = DustCollateral;
+    type SecureThreshold = SecureThreshold;
+    type PremiumThreshold = PremiumThreshold;
+    type LiquidationThreshold = LiquidationThreshold;
+    type IssueRequestExpiredPeriod = IssueRequestExpiredPeriod;
+    type RedeemRequestExpiredPeriod = RedeemRequestExpiredPeriod;
+    type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
+}
+
+impl xpallet_gateway_bitcoin_v2_pallet::Config<Instance2> for Runtime {
+    type Event = Event;
+    type TargetAssetId = BridgeDogeAssetId;
+    type TokenAssetId = BridgeTokenDogeAssetId;
+    type MinimumRedeemValue = BtcMinimumRedeemValue;
+    type DustCollateral = DustCollateral;
+    type SecureThreshold = SecureThreshold;
+    type PremiumThreshold = PremiumThreshold;
+    type LiquidationThreshold = LiquidationThreshold;
+    type IssueRequestExpiredPeriod = IssueRequestExpiredPeriod;
+    type RedeemRequestExpiredPeriod = RedeemRequestExpiredPeriod;
+    type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
+}
+
+pub struct TrusteeProvider<AccountId: Ord>(sp_std::marker::PhantomData<AccountId>);
+impl<AccountId: Ord> frame_support::traits::SortedMembers<AccountId>
+    for TrusteeProvider<AccountId>
+{
+    fn sorted_members() -> Vec<AccountId> {
+        vec![]
+    }
+}
+
+impl xpallet_gateway_bitcoin::Config<Instance1> for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = ();
+    type TrusteeOrigin = EnsureSignedBy<TrusteeProvider<AccountId>, AccountId>;
+    type ReferralBinding = ();
+    type AddressBinding = ();
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+}
+
+impl xpallet_gateway_bitcoin::Config<Instance2> for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = ();
+    type TrusteeOrigin = EnsureSignedBy<TrusteeProvider<AccountId>, AccountId>;
+    type ReferralBinding = ();
+    type AddressBinding = ();
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
@@ -320,9 +402,14 @@ construct_runtime! {
         XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
 
         Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
+        XGatewayDogecoin: xpallet_gateway_bitcoin::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14,
+        XGatewayBitcoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
+        XGatewayDogecoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
+        XGatewayRecord: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 17,
 
-        ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 13,
-        AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 14,
+        ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 18,
+        AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 19,
     }
 }
 

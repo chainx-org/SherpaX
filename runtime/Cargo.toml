@@ -41,8 +41,15 @@ cumulus-pallet-parachain-system = { git = 'https://github.com/paritytech/cumulus
 cumulus-primitives-core = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 parachain-info = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
 
+# ChainX pallet
+xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+xpallet-gateway-records = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1"}
 xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+chainx-primitives ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+xp-protocol ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+xp-gateway-bitcoin ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 
 pallet-swap = { path = "../pallets/swap", default-features = false }
 orml-traits = { version = "0.4.0", default-features = false }
@@ -87,8 +94,13 @@ std = [
 	'cumulus-primitives-core/std',
 	'parachain-info/std',
 
+	'xp-gateway-bitcoin/std',
+	'xpallet-gateway-bitcoin-v2/std',
+	'xpallet-gateway-records/std',
+	'xpallet-gateway-bitcoin/std',
 	'xpallet-assets/std',
 	'xpallet-assets-registrar/std',
+	'chainx-primitives/std',
 
 	'pallet-swap/std',
 	'orml-traits/std',
