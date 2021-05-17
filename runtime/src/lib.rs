@@ -293,7 +293,7 @@ impl chainbridge::Config for Runtime {
     type ProposalLifetime = ProposalLifetime;
 }
 
-impl handler::Config for Runtime {
+impl assets_handler::Config for Runtime {
     type Event = Event;
     type RegistorOrigin = EnsureRoot<AccountId>;
     type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
@@ -322,7 +322,7 @@ construct_runtime! {
         Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
 
         ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 13,
-        Handler: handler::{Pallet, Call, Storage, Event<T>} = 14,
+        AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 14,
     }
 }
 

@@ -218,6 +218,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 
 [[package]]
+name = "assets-handler"
+version = "0.1.0"
+source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=rococo-v1#76d26624c46fcb9b33a086e3c717480b43fabd8a"
+dependencies = [
+ "chainbridge",
+ "chainx-primitives",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
+ "xpallet-assets",
+ "xpallet-assets-registrar",
+]
+
+[[package]]
 name = "async-attributes"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -878,7 +898,7 @@ dependencies = [
 [[package]]
 name = "chainbridge"
 version = "0.0.2"
-source = "git+https://github.com/chainx-org/chainbridge-substrate#c6112439862eacfcee2ad5a0261882ba9c38aa0b"
+source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=rococo-v1#76d26624c46fcb9b33a086e3c717480b43fabd8a"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1597,6 +1617,7 @@ dependencies = [
 name = "dev-parachain-runtime"
 version = "0.1.0"
 dependencies = [
+ "assets-handler",
  "chainbridge",
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
@@ -1604,7 +1625,6 @@ dependencies = [
  "frame-executive",
  "frame-support",
  "frame-system",
- "handler",
  "orml-traits",
  "pallet-balances",
  "pallet-multisig",
@@ -2638,26 +2658,6 @@ dependencies = [
  "quick-error 2.0.1",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "handler"
-version = "0.1.0"
-source = "git+https://github.com/chainx-org/chainbridge-substrate#c6112439862eacfcee2ad5a0261882ba9c38aa0b"
-dependencies = [
- "chainbridge",
- "chainx-primitives",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
- "xpallet-assets",
- "xpallet-assets-registrar",
 ]
 
 [[package]]
