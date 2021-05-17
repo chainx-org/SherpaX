@@ -25,9 +25,9 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 
 use cumulus_primitives_core::ParaId;
 
-use xgateway_bitcoin_bridge::types::TradingPrice;
 use xpallet_assets::AssetRestrictions;
 use xpallet_assets_registrar::{AssetInfo, Chain};
+use xpallet_gateway_bitcoin_v2::types::TradingPrice;
 
 use dev_parachain_primitives::{AccountId, Signature};
 use dev_parachain_runtime::{constants::currency::DOTS, *};
@@ -175,12 +175,12 @@ fn testnet_genesis(
             endowed: Default::default(), // FIXME: maybe issue some asset balances?
         },
 
-        xgateway_bitcoin_bridge_pallet_Instance1: XGatewayBitcoinBridgeConfig {
+        xpallet_gateway_bitcoin_v2_pallet_Instance1: XGatewayBitcoinBridgeConfig {
             exchange_rate: TradingPrice { price: 1, decimal: 2 },
             issue_griefing_fee: 10,
             ..Default::default()
         },
-        xgateway_bitcoin_bridge_pallet_Instance2: XGatewayDogecoinBridgeConfig {
+        xpallet_gateway_bitcoin_v2_pallet_Instance2: XGatewayDogecoinBridgeConfig {
             exchange_rate: TradingPrice { price: 1222222233, decimal: 2 },
             issue_griefing_fee: 10,
             ..Default::default()

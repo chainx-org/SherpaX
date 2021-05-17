@@ -52,7 +52,7 @@ use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
 use dev_parachain_primitives::*;
-use xgateway_bitcoin_bridge::pallet as xgateway_bitcoin_bridge_pallet;
+use xpallet_gateway_bitcoin_v2::pallet as xpallet_gateway_bitcoin_v2_pallet;
 
 /// Constant values used within the runtime.
 pub mod constants;
@@ -256,7 +256,7 @@ parameter_types! {
     pub const DogeMinimumRedeemValue: Balance = 100000000;
 }
 
-impl xgateway_bitcoin_bridge::pallet::Config<Instance1> for Runtime {
+impl xpallet_gateway_bitcoin_v2_pallet::Config<Instance1> for Runtime {
     type Event = Event;
     type TargetAssetId = BridgeBtcAssetId;
     type TokenAssetId = BridgeTokenBtcAssetId;
@@ -270,7 +270,7 @@ impl xgateway_bitcoin_bridge::pallet::Config<Instance1> for Runtime {
     type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
 }
 
-impl xgateway_bitcoin_bridge::pallet::Config<Instance2> for Runtime {
+impl xpallet_gateway_bitcoin_v2_pallet::Config<Instance2> for Runtime {
     type Event = Event;
     type TargetAssetId = BridgeDogeAssetId;
     type TokenAssetId = BridgeTokenDogeAssetId;
@@ -382,8 +382,8 @@ construct_runtime! {
         Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
         XGatewayBitcoin: xpallet_gateway_bitcoin::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
         XGatewayDogecoin: xpallet_gateway_bitcoin::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14,
-        XGatewayBitcoinBridge: xgateway_bitcoin_bridge_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
-        XGatewayDogecoinBridge: xgateway_bitcoin_bridge_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
+        XGatewayBitcoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
+        XGatewayDogecoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
         XGatewayRecord: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 17,
     }
 }
