@@ -39,6 +39,7 @@ native_executor_instance!(
     pub Executor,
     dev_parachain_runtime::api::dispatch,
     dev_parachain_runtime::native_version,
+    frame_benchmarking::benchmarking::HostFunctions,
 );
 
 /// Starts a `ServiceBuilder` for a full service.

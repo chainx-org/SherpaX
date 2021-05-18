@@ -76,6 +76,10 @@ xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  defa
 
 pallet-swap-rpc = { path = "../pallets/swap/rpc" }
 
+# Benchmarking
+frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = 'rococo-v1' }
+frame-benchmarking-cli = { git = 'https://github.com/paritytech/substrate', branch = 'rococo-v1' }
+
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 
@@ -95,3 +99,9 @@ polkadot-test-service = { git = "https://github.com/paritytech/polkadot", branch
 pallet-sudo = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 substrate-test-client = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 substrate-test-runtime-client = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
+
+[features]
+default = []
+runtime-benchmarks = [
+    "dev-parachain-runtime/runtime-benchmarks"
+]

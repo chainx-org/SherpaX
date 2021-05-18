@@ -1572,13 +1572,18 @@ dependencies = [
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
  "dev-parachain-primitives",
+ "frame-benchmarking",
  "frame-executive",
  "frame-support",
  "frame-system",
+ "frame-system-benchmarking",
+ "hex-literal",
  "orml-traits",
  "pallet-balances",
+ "pallet-collective",
  "pallet-multisig",
  "pallet-randomness-collective-flip",
+ "pallet-society",
  "pallet-sudo",
  "pallet-swap",
  "pallet-swap-rpc-runtime-api",
@@ -1588,6 +1593,7 @@ dependencies = [
  "pallet-utility",
  "parachain-info",
  "parity-scale-codec",
+ "rococo-runtime",
  "serde",
  "sp-api",
  "sp-block-builder",
@@ -2199,6 +2205,20 @@ dependencies = [
  "sp-runtime",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-version",
+]
+
+[[package]]
+name = "frame-system-benchmarking"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
 ]
 
 [[package]]
@@ -4683,6 +4703,7 @@ name = "pallet-collective"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4783,6 +4804,7 @@ name = "pallet-im-online"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -4801,6 +4823,7 @@ name = "pallet-indices"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -5013,6 +5036,7 @@ name = "pallet-staking"
 version = "3.0.0"
 source = "git+https://github.com/paritytech/substrate?branch=rococo-v1#2be8fcc4236d32786c62f6f27a98e7fe7e550807"
 dependencies = [
+ "frame-benchmarking",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",
@@ -5021,6 +5045,7 @@ dependencies = [
  "pallet-session",
  "parity-scale-codec",
  "paste",
+ "rand_chacha 0.2.2",
  "serde",
  "sp-application-crypto",
  "sp-io",
@@ -5058,6 +5083,7 @@ dependencies = [
 name = "pallet-swap"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
@@ -5113,6 +5139,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sp-inherents",
+ "sp-io",
  "sp-runtime",
  "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=rococo-v1)",
  "sp-timestamp",
@@ -6365,12 +6392,14 @@ source = "git+https://github.com/paritytech/polkadot?branch=rococo-v1#127eb17a25
 dependencies = [
  "beefy-primitives",
  "bitvec",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples 0.2.1",
  "libsecp256k1",
  "log",
  "pallet-authorship",
+ "pallet-babe",
  "pallet-balances",
  "pallet-beefy",
  "pallet-mmr",
@@ -6407,8 +6436,10 @@ source = "git+https://github.com/paritytech/polkadot?branch=rococo-v1#127eb17a25
 dependencies = [
  "bitvec",
  "derive_more 0.99.13",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "libsecp256k1",
  "log",
  "pallet-authority-discovery",
  "pallet-authorship",
@@ -8851,6 +8882,8 @@ dependencies = [
  "dev-parachain-primitives",
  "dev-parachain-runtime",
  "exit-future 0.1.4",
+ "frame-benchmarking",
+ "frame-benchmarking-cli",
  "futures 0.3.14",
  "hex-literal",
  "jsonrpc-core",
@@ -10715,7 +10748,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04f8ab788026715fa63b31960869617cba39117e520eb415b0139543e325ab59"
 dependencies = [
  "cfg-if 0.1.10",
- "rand 0.7.3",
+ "rand 0.6.5",
  "static_assertions",
 ]
 

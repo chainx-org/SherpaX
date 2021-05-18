@@ -101,6 +101,32 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
     ))
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+pub fn benchmarks_config() -> Result<ChainSpec, String> {
+    Ok(ChainSpec::from_genesis(
+        "Dev Parachain Benchmarks",
+        "dev_parachain_testnet",
+        ChainType::Development,
+        move || {
+            testnet_genesis(
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
+                vec![
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob"),
+                    get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+                ],
+                100u32.into(),
+            )
+        },
+        vec![],
+        None,
+        Some("dev"),
+        None,
+        Extensions { relay_chain: "benchmarks".into(), para_id: 100u32.into() },
+    ))
+}
+
 type AssetId = u32;
 
 const PCX: AssetId = 0;

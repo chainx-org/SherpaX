@@ -21,7 +21,7 @@
 > | 数值     | Hex      | 计算得到的输入量 |
 
 ###### http请求示例
-> ~~~apl
+> ~~~
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
@@ -43,7 +43,7 @@
 
 ###### ws请求示例
 
-> ```json
+> ```
 > api.rpc.swap.getAmountInPrice(100, [0, 1])
 > ```
 
@@ -70,7 +70,7 @@
 
 ###### http请求示例
 
-> ~~~apl
+> ~~~
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
@@ -93,7 +93,7 @@
 
 ###### ws请求示例
 
-> ```json
+> ```
 > api.rpc.swap.getAmountOutPrice(100, [0, 1])
 > ```
 
@@ -122,7 +122,7 @@
 
 ###### http请求示例
 
-> ~~~apl
+> ~~~
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
@@ -165,7 +165,7 @@
 
 ###### ws请求示例
 
-> ```json
+> ```
 > api.rpc.swap.getTokenList()
 > ```
 
@@ -192,7 +192,7 @@
 
 ###### http请求示例
 
-> ~~~apl
+> ~~~
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
@@ -215,7 +215,7 @@
 
 ###### ws请求示例
 
-> ```json
+> ```
 > api.rpc.swap.getBalance(100, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
 > ```
 
@@ -383,29 +383,29 @@
 
 ~~~json
 {
-  'AssetId': 'u32',
-  'TokenInfo': {
-    'assertId': 'AssetId',
-    'assertInfo': 'AssetInfo'
+  "AssetId": "u32",
+  "TokenInfo": {
+    "assertId": "AssetId",
+    "assertInfo": "AssetInfo"
   },
-  'AssetInfo': {
-    'token': 'String',
-    'tokenName': 'String',
-    'chain': 'Chain',
-    'decimals': 'Decimals',
-    'desc': 'String'
+  "AssetInfo": {
+    "token": "String",
+    "tokenName": "String",
+    "chain": "Chain",
+    "decimals": "Decimals",
+    "desc": "String"
   },
-  'Chain': {
-    '_enum': [
-      'ChainX',
-      'Bitcoin',
-      'Ethereum',
-      'Polkadot'
+  "Chain": {
+    "_enum": [
+      "ChainX",
+      "Bitcoin",
+      "Ethereum",
+      "Polkadot"
     ]
   },
-  'String': 'Text',
-  'Decimals': 'u8',
-  'AssetRestrictions': {"bits": "u32"},
+  "String": "Text",
+  "Decimals": "u8",
+  "AssetRestrictions": {"bits": "u32"},
   "AssetType": {
     "_enum": [
       "Usable",

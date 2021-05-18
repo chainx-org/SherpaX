@@ -48,6 +48,13 @@ pallet-swap = { path = "../pallets/swap", default-features = false }
 pallet-swap-rpc-runtime-api = { path = "../pallets/swap/rpc/runtime-api", default-features = false }
 orml-traits = { version = "0.4.0", default-features = false }
 
+hex-literal = {version = "0.3.1", optional = true}
+frame-benchmarking = {git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "rococo-v1"}
+frame-system-benchmarking = {git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "rococo-v1"}
+pallet-collective = {git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "rococo-v1"}
+pallet-society = {git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "rococo-v1"}
+rococo-runtime = {git = "https://github.com/paritytech/polkadot", default-features = false, optional = true, branch = "rococo-v1"}
+
 [build-dependencies]
 substrate-wasm-builder = '3.0.0'
 
@@ -91,4 +98,15 @@ std = [
 	'pallet-swap/std',
 	'pallet-swap-rpc-runtime-api/std',
 	'orml-traits/std',
+]
+runtime-benchmarks = [
+	"hex-literal",
+	"frame-benchmarking",
+	"frame-system-benchmarking",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-society/runtime-benchmarks",
+	"rococo-runtime/runtime-benchmarks",
+	"pallet-swap/runtime-benchmarks"
 ]

@@ -18,6 +18,7 @@
 use crate::{
     chain_spec,
     cli::{Cli, RelayChainCli, Subcommand},
+    service::Executor,
 };
 use codec::Encode;
 use cumulus_client_service::genesis::generate_genesis_block;
@@ -43,6 +44,19 @@ fn load_spec(
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
     match id {
         "" => Ok(Box::new(chain_spec::get_chain_spec(para_id)?)),
+        "benchmarks" => {
+            #[cfg(feature = "runtime-benchmarks")]
+            {
+                Ok(Box::new(chain_spec::benchmarks_config()?))
+            }
+            #[cfg(not(feature = "runtime-benchmarks"))]
+            {
+                return Err(
+                    "benchmarks chain-config should compile with feature `runtime-benchmarks`"
+                        .into(),
+                );
+            }
+        }
         path => Ok(Box::new(chain_spec::ChainSpec::from_json_file(path.into())?)),
     }
 }
@@ -140,6 +154,19 @@ pub fn run() -> Result<()> {
     let cli = Cli::from_args();
 
     match &cli.subcommand {
+        Some(Subcommand::Benchmark(cmd)) => {
+            if cfg!(feature = "runtime-benchmarks") {
+                let runner = cli.create_runner(cmd)?;
+
+                runner.sync_run(|config| cmd.run::<dev_parachain_runtime::Block, Executor>(config))
+            } else {
+                println!(
+                    "Benchmarking wasn't enabled when building the node. \
+                    You can enable it with `--features runtime-benchmarks`."
+                );
+                Ok(())
+            }
+        }
         Some(Subcommand::BuildSpec(cmd)) => {
             let runner = cli.create_runner(cmd)?;
             runner.sync_run(|config| cmd.run(config.chain_spec, config.network))

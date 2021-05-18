@@ -1,5 +1,5 @@
 use super::*;
-use crate::{mock::*, rpc::TokenInfo};
+pub use crate::{mock::*, rpc::TokenInfo};
 use frame_support::{assert_noop, assert_ok};
 use xpallet_assets_registrar::{AssetInfo, Chain};
 
