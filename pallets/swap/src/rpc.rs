@@ -43,7 +43,7 @@ impl<T: Config> Pallet<T> {
             .collect::<Vec<_>>()
     }
 
-    pub fn get_balance(asset_id: AssetId, account: T::AccountId) -> BalanceOf<T>{
+    pub fn get_balance(asset_id: AssetId, account: T::AccountId) -> BalanceOf<T> {
         T::MultiAsset::balance_of(asset_id, &account)
     }
 }
