@@ -271,6 +271,7 @@ impl pallet_swap::Config for Runtime {
     type NativeAssetId = PcxAssetId;
     type MultiAsset = pallet_swap::SimpleMultiAsset<Self>;
     type PalletId = SwapPalletId;
+    type WeightInfo = pallet_swap::weights::SubstrateWeight<Runtime>;
 }
 
 construct_runtime! {

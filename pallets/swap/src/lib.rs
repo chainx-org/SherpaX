@@ -30,9 +30,12 @@ use sp_runtime::traits::{
 
 mod multiasset;
 pub mod rpc;
+pub mod weights;
 
 pub use self::multiasset::{MultiAsset, SimpleMultiAsset};
 pub use pallet::*;
+
+pub use self::weights::WeightInfo;
 
 pub type AssetId = u32;
 
@@ -57,6 +60,8 @@ pub mod pallet {
         type MultiAsset: MultiAsset<Self::AccountId, BalanceOf<Self>>;
         /// This pallet Id.
         type PalletId: Get<PalletId>;
+        /// Weight information for extrinsic in this pallet.
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::pallet]
@@ -141,7 +146,7 @@ pub mod pallet {
         ///
         /// - `asset_0`: Asset which make up Pair
         /// - `asset_1`: Asset which make up Pair
-        #[pallet::weight(1000_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::create_pair())]
         pub fn create_pair(
             origin: OriginFor<T>,
             asset_0: AssetId,
@@ -180,7 +185,7 @@ pub mod pallet {
         /// - `amount_0_min`: Minimum amount of asset_0 added to the pair
         /// - `amount_1_min`: Minimum amount of asset_1 added to the pair
         /// - `deadline`: Height of the cutoff block of this transaction
-        #[pallet::weight(1000_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::add_liquidity())]
         #[frame_support::transactional]
         #[allow(clippy::too_many_arguments)]
         pub fn add_liquidity(
@@ -225,7 +230,7 @@ pub mod pallet {
         /// - `amount_asset_1_min`: Minimum amount of asset_1 to exact
         /// - `recipient`: Account that accepts withdrawal of assets
         /// - `deadline`: Height of the cutoff block of this transaction
-        #[pallet::weight(1000_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::remove_liquidity())]
         #[frame_support::transactional]
         #[allow(clippy::too_many_arguments)]
         pub fn remove_liquidity(
@@ -270,7 +275,7 @@ pub mod pallet {
         /// - `path`: path can convert to pairs.
         /// - `recipient`: Account that receive the target asset
         /// - `deadline`: Height of the cutoff block of this transaction
-        #[pallet::weight(1000_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::swap_exact_tokens_for_tokens())]
         #[frame_support::transactional]
         pub fn swap_exact_tokens_for_tokens(
             origin: OriginFor<T>,
@@ -307,7 +312,7 @@ pub mod pallet {
         /// - `path`: path can convert to pairs.
         /// - `recipient`: Account that receive the target asset
         /// - `deadline`: Height of the cutoff block of this transaction
-        #[pallet::weight(1000_000)]
+        #[pallet::weight(<T as Config>::WeightInfo::swap_tokens_for_exact_tokens())]
         #[frame_support::transactional]
         pub fn swap_tokens_for_exact_tokens(
             origin: OriginFor<T>,
