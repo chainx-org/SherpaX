@@ -13,13 +13,11 @@ sp_api::decl_runtime_apis! {
      where
         AccountId: Codec,
      {
-        //buy amount token price
-        fn get_amount_in_price(amount_out: u128, path: Vec<AssetId>) -> u128;
+         fn get_amount_in_price(amount_out: u128, path: Vec<AssetId>) -> u128;
 
-        //sell amount token price
-        fn get_amount_out_price(amount_in: u128, path: Vec<AssetId>) -> u128;
+         fn get_amount_out_price(amount_in: u128, path: Vec<AssetId>) -> u128;
 
-        fn get_token_list() -> Vec<TokenInfo>;
+         fn get_token_list() -> Vec<TokenInfo>;
 
          fn get_balance(asset_id: AssetId, account: AccountId) -> u128;
      }

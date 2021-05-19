@@ -7,9 +7,9 @@ edition = "2018"
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
 
-# alias "parity-scale-code" to "codec"
 [dependencies]
 serde = { version = "1.0.119", features = ["derive"], optional = true }
+# alias "parity-scale-code" to "codec"
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 
 jsonrpc-core = "15.1.0"
@@ -17,13 +17,11 @@ jsonrpc-core-client = "15.1.0"
 jsonrpc-derive = "15.1.0"
 
 # Substrate packages
-
-sp-blockchain = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
 sp-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
 sp-rpc = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
 sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
 
 # Local packages
-
 pallet-swap = { path = "..", default-features = false }
 pallet-swap-rpc-runtime-api = { path = "./runtime-api", default-features = false }

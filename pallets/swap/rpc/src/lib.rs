@@ -72,7 +72,6 @@ where
     C: HeaderBackend<Block>,
     C::Api: SwapRuntimeApi<Block, AccountId>,
 {
-    //buy amount token price
     fn get_amount_in_price(
         &self,
         amount_out: u128,
@@ -87,7 +86,6 @@ where
             .map_err(runtime_error_into_rpc_err)
     }
 
-    //sell amount token price
     fn get_amount_out_price(
         &self,
         amount_in: u128,

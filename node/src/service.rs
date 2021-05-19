@@ -270,7 +270,6 @@ pub async fn start_node(
         use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
 
         io.extend_with(SwapApi::to_delegate(Swap::new(client.clone())));
-
         io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client)));
 
         io
