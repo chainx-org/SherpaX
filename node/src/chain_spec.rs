@@ -27,12 +27,10 @@ use cumulus_primitives_core::ParaId;
 
 use xpallet_assets::AssetRestrictions;
 use xpallet_assets_registrar::{AssetInfo, Chain};
+use xpallet_gateway_bitcoin_v2::types::TradingPrice;
 
 use dev_parachain_primitives::{AccountId, Signature};
-use dev_parachain_runtime::{
-    constants::currency::DOTS, BalancesConfig, GenesisConfig, ParachainInfoConfig, Runtime,
-    SudoConfig, SystemConfig, XAssetsConfig, XAssetsRegistrarConfig,
-};
+use dev_parachain_runtime::{constants::currency::DOTS, *};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<dev_parachain_runtime::GenesisConfig, Extensions>;
@@ -82,7 +80,7 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
         ChainType::Local,
         move || {
             testnet_genesis(
-                hex!["18ec21f2ee09b23cc0be299d316fe0688b42c3904500f0690bae24328433a025"].into(),
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
                 vec![
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
@@ -124,9 +122,14 @@ fn pcx_asset_info() -> AssetInfo {
     .unwrap()
 }
 
+use std::collections::BTreeMap;
+
 const X_BTC: AssetId = 1;
 const BTC_DECIMALS: u8 = 8;
 const X_BTC_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
+const X_ETH: AssetId = 2;
+const ETH_DECIMALS: u8 = 8;
+const X_ETH_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
 
 fn xbtc_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
@@ -137,6 +140,35 @@ fn xbtc_asset_info() -> AssetInfo {
         b"ChainX's Cross-chain Bitcoin".to_vec(),
     )
     .unwrap()
+}
+
+fn xeth_asset_info() -> AssetInfo {
+    AssetInfo::new::<Runtime>(
+        b"XETH".to_vec(),
+        b"ChainX ETH".to_vec(),
+        Chain::Ethereum,
+        ETH_DECIMALS,
+        b"ChainX's Cross-chain ETH".to_vec(),
+    )
+    .unwrap()
+}
+
+fn asset_endowed() -> BTreeMap<u32, Vec<(AccountId, u128)>> {
+    let mut endowed = BTreeMap::new();
+
+    let endowed_info = vec![
+        (get_account_id_from_seed::<sr25519::Public>("Alice"), 1000_000_000_000),
+        (get_account_id_from_seed::<sr25519::Public>("Bob"), 2000_000_000_000),
+    ];
+    endowed.insert(X_BTC, endowed_info);
+
+    let endowed_info = vec![
+        (get_account_id_from_seed::<sr25519::Public>("Alice"), 2000_000_000_000),
+        (get_account_id_from_seed::<sr25519::Public>("Bob"), 4000_000_000_000),
+    ];
+    endowed.insert(X_ETH, endowed_info);
+
+    endowed
 }
 
 fn testnet_genesis(
@@ -170,11 +202,29 @@ fn testnet_genesis(
             assets: vec![
                 (PCX, pcx_asset_info(), true, false),
                 (X_BTC, xbtc_asset_info(), true, true),
+                (X_ETH, xeth_asset_info(), true, true),
             ],
         },
         xpallet_assets: XAssetsConfig {
-            assets_restrictions: vec![(PCX, pcx_restrictions()), (X_BTC, X_BTC_ASSETRESTRICTIONS)],
-            endowed: Default::default(), // FIXME: maybe issue some asset balances?
+            assets_restrictions: vec![
+                (PCX, pcx_restrictions()),
+                (X_BTC, X_BTC_ASSETRESTRICTIONS),
+                (X_ETH, X_ETH_ASSETRESTRICTIONS),
+            ],
+            endowed: asset_endowed(),
         },
+
+        xpallet_gateway_bitcoin_v2_pallet_Instance1: XGatewayBitcoinBridgeConfig {
+            exchange_rate: TradingPrice { price: 1, decimal: 2 },
+            issue_griefing_fee: 10,
+            ..Default::default()
+        },
+        xpallet_gateway_bitcoin_v2_pallet_Instance2: XGatewayDogecoinBridgeConfig {
+            exchange_rate: TradingPrice { price: 1222222233, decimal: 2 },
+            issue_griefing_fee: 10,
+            ..Default::default()
+        },
+        xpallet_gateway_bitcoin_Instance1: Default::default(),
+        xpallet_gateway_bitcoin_Instance2: Default::default(),
     }
 }

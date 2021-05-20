@@ -19,6 +19,7 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
+use frame_system::EnsureSignedBy;
 use sp_api::impl_runtime_apis;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
@@ -27,28 +28,40 @@ use sp_runtime::{
     transaction_validity::{TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, Perbill,
 };
-use sp_std::prelude::{Box, Vec};
+use sp_std::{
+    prelude::{Box, Vec},
+    vec,
+};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
 use frame_support::{
-    construct_runtime, parameter_types,
+    construct_runtime,
+    instances::{Instance1, Instance2},
+    parameter_types,
     traits::Randomness,
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, IdentityFee, Weight,
     },
+    PalletId,
 };
-use frame_system::limits::{BlockLength, BlockWeights};
+use frame_system::{
+    limits::{BlockLength, BlockWeights},
+    EnsureRoot,
+};
 use pallet_transaction_payment_rpc_runtime_api::{FeeDetails, RuntimeDispatchInfo};
 
 use dev_parachain_primitives::*;
+use xpallet_gateway_bitcoin_v2::pallet as xpallet_gateway_bitcoin_v2_pallet;
 
 /// Constant values used within the runtime.
 pub mod constants;
 use constants::{currency::*, time::*};
+
+use pallet_swap::{rpc::TokenInfo, AssetId};
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -218,8 +231,93 @@ impl pallet_multisig::Config for Runtime {
     type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
 }
 
+impl xpallet_gateway_records::Config for Runtime {
+    type Event = Event;
+    type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
+}
+
 parameter_types! {
     pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+}
+parameter_types! {
+    pub const DustCollateral: Balance = 1000;
+    pub const SecureThreshold: u16 = 300;
+    pub const PremiumThreshold: u16 = 250;
+    pub const LiquidationThreshold: u16 = 180;
+    pub const IssueRequestExpiredPeriod: BlockNumber = 48 * 600;
+    pub const RedeemRequestExpiredPeriod: BlockNumber = 48 * 600;
+    pub const ExchangeRateExpiredPeriod: BlockNumber = 48 * 600;
+}
+
+parameter_types! {
+    //bitcoin
+    pub const BridgeBtcAssetId: u32 = xp_protocol::C_BTC;
+    pub const BridgeTokenBtcAssetId: u32 = xp_protocol::S_BTC;
+    pub const BtcMinimumRedeemValue: Balance = 10000;
+
+    //dogecoin
+    pub const BridgeDogeAssetId: u32 = xp_protocol::C_DOGE;
+    pub const BridgeTokenDogeAssetId: u32 = xp_protocol::S_DOGE;
+    pub const DogeMinimumRedeemValue: Balance = 100000000;
+}
+
+impl xpallet_gateway_bitcoin_v2_pallet::Config<Instance1> for Runtime {
+    type Event = Event;
+    type TargetAssetId = BridgeBtcAssetId;
+    type TokenAssetId = BridgeTokenBtcAssetId;
+    type MinimumRedeemValue = BtcMinimumRedeemValue;
+    type DustCollateral = DustCollateral;
+    type SecureThreshold = SecureThreshold;
+    type PremiumThreshold = PremiumThreshold;
+    type LiquidationThreshold = LiquidationThreshold;
+    type IssueRequestExpiredPeriod = IssueRequestExpiredPeriod;
+    type RedeemRequestExpiredPeriod = RedeemRequestExpiredPeriod;
+    type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
+}
+
+impl xpallet_gateway_bitcoin_v2_pallet::Config<Instance2> for Runtime {
+    type Event = Event;
+    type TargetAssetId = BridgeDogeAssetId;
+    type TokenAssetId = BridgeTokenDogeAssetId;
+    type MinimumRedeemValue = BtcMinimumRedeemValue;
+    type DustCollateral = DustCollateral;
+    type SecureThreshold = SecureThreshold;
+    type PremiumThreshold = PremiumThreshold;
+    type LiquidationThreshold = LiquidationThreshold;
+    type IssueRequestExpiredPeriod = IssueRequestExpiredPeriod;
+    type RedeemRequestExpiredPeriod = RedeemRequestExpiredPeriod;
+    type ExchangeRateExpiredPeriod = ExchangeRateExpiredPeriod;
+}
+
+pub struct TrusteeProvider<AccountId: Ord>(sp_std::marker::PhantomData<AccountId>);
+impl<AccountId: Ord> frame_support::traits::SortedMembers<AccountId>
+    for TrusteeProvider<AccountId>
+{
+    fn sorted_members() -> Vec<AccountId> {
+        vec![]
+    }
+}
+
+impl xpallet_gateway_bitcoin::Config<Instance1> for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = ();
+    type TrusteeOrigin = EnsureSignedBy<TrusteeProvider<AccountId>, AccountId>;
+    type ReferralBinding = ();
+    type AddressBinding = ();
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+}
+
+impl xpallet_gateway_bitcoin::Config<Instance2> for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = ();
+    type TrusteeOrigin = EnsureSignedBy<TrusteeProvider<AccountId>, AccountId>;
+    type ReferralBinding = ();
+    type AddressBinding = ();
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
 }
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
@@ -255,6 +353,36 @@ impl xpallet_assets::Config for Runtime {
     type WeightInfo = xpallet_assets::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+    pub const SwapPalletId: PalletId = PalletId(*b"//swap//");
+}
+
+impl pallet_swap::Config for Runtime {
+    type Event = Event;
+    type NativeAssetId = PcxAssetId;
+    type MultiAsset = pallet_swap::SimpleMultiAsset<Self>;
+    type PalletId = SwapPalletId;
+}
+
+parameter_types! {
+    pub const LocalChainId: chainbridge::ChainId = 0;
+    pub const ProposalLifetime: BlockNumber = 60 * MINUTES;
+}
+
+impl chainbridge::Config for Runtime {
+    type Event = Event;
+    type AdminOrigin = EnsureRoot<AccountId>;
+    type Proposal = Call;
+    type ChainId = LocalChainId;
+    type ProposalLifetime = ProposalLifetime;
+}
+
+impl assets_handler::Config for Runtime {
+    type Event = Event;
+    type RegistorOrigin = EnsureRoot<AccountId>;
+    type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
+}
+
 construct_runtime! {
     pub enum Runtime where
         Block = Block,
@@ -274,6 +402,16 @@ construct_runtime! {
 
         XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config} = 10,
         XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
+
+        Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
+        XGatewayDogecoin: xpallet_gateway_bitcoin::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14,
+        XGatewayBitcoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
+        XGatewayDogecoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
+        XGatewayRecord: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 17,
+
+        ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 18,
+        AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 19,
     }
 }
 
@@ -391,6 +529,33 @@ impl_runtime_apis! {
         }
         fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
             TransactionPayment::query_fee_details(uxt, len)
+        }
+    }
+
+    impl pallet_swap_rpc_runtime_api::SwapApi<
+        Block,
+        AccountId,
+    > for Runtime {
+        fn get_amount_in_price(
+            amount_out: u128,
+            path: Vec<AssetId>
+        ) -> u128 {
+            Swap::get_amount_in_price(amount_out, path)
+        }
+
+        fn get_amount_out_price(
+            amount_in: u128,
+            path: Vec<AssetId>
+        ) -> u128 {
+            Swap::get_amount_out_price(amount_in, path)
+        }
+
+        fn get_token_list() -> Vec<TokenInfo> {
+            Swap::get_token_list()
+        }
+
+        fn get_balance(asset_id: AssetId, account: AccountId) -> u128 {
+            Swap::get_balance(asset_id, account)
         }
     }
 }
