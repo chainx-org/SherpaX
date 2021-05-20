@@ -20,6 +20,7 @@ parking_lot = "0.9.0"
 serde = { version = "1.0.119", features = ["derive"] }
 structopt = "0.3.3"
 trie-root = "0.15.2"
+serde_json = "1.0"
 
 # Substrate dependencies
 sc-basic-authorship = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
@@ -74,6 +75,13 @@ dev-parachain-runtime = { path = "../runtime" }
 xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+xpallet-gateway-common = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+xp-protocol = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+chainx-primitives = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+ 
+
+light-bitcoin = { git = "https://github.com/chainx-org/light-bitcoin", default-features = false, branch = "btc-like" }
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }

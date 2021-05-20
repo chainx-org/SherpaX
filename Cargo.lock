@@ -918,7 +918,7 @@ dependencies = [
 [[package]]
 name = "chainx-primitives"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "frame-system",
  "parity-scale-codec",
@@ -3988,27 +3988,13 @@ name = "light-bitcoin"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
- "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-keys 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-merkle 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-script 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
-]
-
-[[package]]
-name = "light-bitcoin"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
-dependencies = [
- "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-keys 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-merkle 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-script 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin-chain",
+ "light-bitcoin-crypto",
+ "light-bitcoin-keys",
+ "light-bitcoin-merkle",
+ "light-bitcoin-primitives",
+ "light-bitcoin-script",
+ "light-bitcoin-serialization",
 ]
 
 [[package]]
@@ -4017,22 +4003,9 @@ version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
  "hex",
- "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "parity-scale-codec",
- "serde",
-]
-
-[[package]]
-name = "light-bitcoin-chain"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
-dependencies = [
- "hex",
- "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin-crypto",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
  "parity-scale-codec",
  "serde",
 ]
@@ -4043,20 +4016,7 @@ version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
  "digest 0.9.0",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "ripemd160",
- "sha-1 0.9.6",
- "sha2 0.9.5",
- "siphasher",
-]
-
-[[package]]
-name = "light-bitcoin-crypto"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
-dependencies = [
- "digest 0.9.0",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin-primitives",
  "ripemd160",
  "sha-1 0.9.6",
  "sha2 0.9.5",
@@ -4071,24 +4031,9 @@ dependencies = [
  "bs58 0.4.0",
  "hex",
  "libsecp256k1",
- "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "parity-scale-codec",
- "serde",
-]
-
-[[package]]
-name = "light-bitcoin-keys"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
-dependencies = [
- "bs58 0.4.0",
- "hex",
- "libsecp256k1",
- "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin-crypto",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
  "parity-scale-codec",
  "serde",
 ]
@@ -4098,20 +4043,9 @@ name = "light-bitcoin-merkle"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
- "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "parity-scale-codec",
-]
-
-[[package]]
-name = "light-bitcoin-merkle"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
-dependencies = [
- "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin-chain",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
  "parity-scale-codec",
 ]
 
@@ -4130,43 +4064,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "light-bitcoin-primitives"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
-dependencies = [
- "byteorder",
- "fixed-hash",
- "hex",
- "impl-codec",
- "impl-serde",
- "primitive-types",
- "serde",
-]
-
-[[package]]
 name = "light-bitcoin-script"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
  "hex",
- "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-keys 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
-]
-
-[[package]]
-name = "light-bitcoin-script"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
-dependencies = [
- "hex",
- "light-bitcoin-chain 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-crypto 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-keys 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-serialization 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin-chain",
+ "light-bitcoin-crypto",
+ "light-bitcoin-keys",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
 ]
 
 [[package]]
@@ -4174,33 +4081,14 @@ name = "light-bitcoin-serialization"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
 dependencies = [
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
- "light-bitcoin-serialization-derive 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
-]
-
-[[package]]
-name = "light-bitcoin-serialization"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
-dependencies = [
- "light-bitcoin-primitives 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
- "light-bitcoin-serialization-derive 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization-derive",
 ]
 
 [[package]]
 name = "light-bitcoin-serialization-derive"
 version = "0.2.0"
 source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
-dependencies = [
- "proc-macro2 1.0.26",
- "quote 1.0.9",
- "syn 1.0.72",
-]
-
-[[package]]
-name = "light-bitcoin-serialization-derive"
-version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=master#c0db1bc73bda1b5fddd5fcb5814dc2caf1409700"
 dependencies = [
  "proc-macro2 1.0.26",
  "quote 1.0.9",
@@ -9120,6 +9008,7 @@ name = "sherpax"
 version = "0.1.0"
 dependencies = [
  "assert_cmd",
+ "chainx-primitives",
  "cumulus-client-cli",
  "cumulus-client-collator",
  "cumulus-client-consensus-common",
@@ -9134,6 +9023,7 @@ dependencies = [
  "futures 0.3.15",
  "hex-literal",
  "jsonrpc-core",
+ "light-bitcoin",
  "log",
  "nix",
  "pallet-sudo",
@@ -9163,6 +9053,7 @@ dependencies = [
  "sc-tracing",
  "sc-transaction-pool",
  "serde",
+ "serde_json",
  "sp-block-builder",
  "sp-blockchain",
  "sp-consensus",
@@ -9181,9 +9072,12 @@ dependencies = [
  "substrate-test-runtime-client",
  "tokio 0.2.25",
  "trie-root 0.15.2",
+ "xp-protocol",
  "xpallet-assets",
  "xpallet-assets-registrar",
+ "xpallet-gateway-bitcoin",
  "xpallet-gateway-bitcoin-v2",
+ "xpallet-gateway-common",
 ]
 
 [[package]]
@@ -11121,7 +11015,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04f8ab788026715fa63b31960869617cba39117e520eb415b0139543e325ab59"
 dependencies = [
  "cfg-if 0.1.10",
- "rand 0.7.3",
+ "rand 0.6.5",
  "static_assertions",
 ]
 
@@ -11956,7 +11850,7 @@ dependencies = [
 [[package]]
 name = "xp-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "chainx-primitives",
  "impl-trait-for-tuples 0.2.1",
@@ -11969,12 +11863,12 @@ dependencies = [
 [[package]]
 name = "xp-gateway-bitcoin"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "chainx-primitives",
  "frame-support",
  "hex",
- "light-bitcoin 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin",
  "log",
  "parity-scale-codec",
  "serde",
@@ -11988,7 +11882,7 @@ dependencies = [
 [[package]]
 name = "xp-gateway-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "bs58 0.3.1",
  "frame-support",
@@ -12001,7 +11895,7 @@ dependencies = [
 [[package]]
 name = "xp-io"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "parity-scale-codec",
  "sp-core",
@@ -12012,7 +11906,7 @@ dependencies = [
 [[package]]
 name = "xp-logging"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "log",
 ]
@@ -12020,7 +11914,7 @@ dependencies = [
 [[package]]
 name = "xp-protocol"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -12031,7 +11925,7 @@ dependencies = [
 [[package]]
 name = "xp-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "hex",
  "jsonrpc-core",
@@ -12041,7 +11935,7 @@ dependencies = [
 [[package]]
 name = "xp-runtime"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -12053,7 +11947,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "bitflags",
  "chainx-primitives",
@@ -12074,7 +11968,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12094,14 +11988,14 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-bitcoin"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "bs58 0.3.1",
  "chainx-primitives",
  "frame-support",
  "frame-system",
  "hex",
- "light-bitcoin 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin",
  "log",
  "orml-utilities",
  "pallet-timestamp",
@@ -12124,7 +12018,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-bitcoin-v2"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "bitflags",
  "bs58 0.3.1",
@@ -12132,7 +12026,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples 0.2.1",
- "light-bitcoin 0.2.0 (git+https://github.com/chainx-org/light-bitcoin?branch=btc-like)",
+ "light-bitcoin",
  "parity-scale-codec",
  "serde",
  "sha2 0.8.2",
@@ -12151,13 +12045,13 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "chainx-primitives",
  "frame-support",
  "frame-system",
  "hex",
- "light-bitcoin 0.2.0 (git+https://github.com/chainx-org/light-bitcoin)",
+ "light-bitcoin",
  "log",
  "parity-scale-codec",
  "serde",
@@ -12177,7 +12071,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-records"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12199,7 +12093,7 @@ dependencies = [
 [[package]]
 name = "xpallet-support"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#fc26c303d8d715d1d7351659f78433cc10a48a6a"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#ca39225c9c0a8e4c156add04d8e1e3070c28803d"
 dependencies = [
  "hex",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
