@@ -143,6 +143,9 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
             ensure!(asset_0 != asset_1, Error::<T>::DeniedCreatePair);
 
+            <xpallet_assets_registrar::Module<T>>::ensure_asset_is_valid(&asset_0)?;
+            <xpallet_assets_registrar::Module<T>>::ensure_asset_is_valid(&asset_1)?;
+
             let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
 
             let pair_account = Self::pair_account_id(asset_0, asset_1);

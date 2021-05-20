@@ -22,7 +22,7 @@ pub trait SwapApi<BlockHash, AccountId> {
     #[rpc(name = "swap_getAmountInPrice")]
     fn get_amount_in_price(
         &self,
-        amount_out: u128,
+        amount_out: String,
         path: Vec<AssetId>,
         at: Option<BlockHash>,
     ) -> Result<NumberOrHex>;
@@ -31,7 +31,7 @@ pub trait SwapApi<BlockHash, AccountId> {
     #[rpc(name = "swap_getAmountOutPrice")]
     fn get_amount_out_price(
         &self,
-        amount_in: u128,
+        amount_in: String,
         path: Vec<AssetId>,
         at: Option<BlockHash>,
     ) -> Result<NumberOrHex>;
@@ -74,13 +74,13 @@ where
 {
     fn get_amount_in_price(
         &self,
-        amount_out: u128,
+        amount_out: String,
         path: Vec<AssetId>,
         at: Option<<Block as BlockT>::Hash>,
     ) -> Result<NumberOrHex> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
-
+        let amount_out = amount_out.parse::<u128>().map_err(runtime_error_into_rpc_err)?;
         api.get_amount_in_price(&at, amount_out, path)
             .map(|price| price.into())
             .map_err(runtime_error_into_rpc_err)
@@ -88,13 +88,13 @@ where
 
     fn get_amount_out_price(
         &self,
-        amount_in: u128,
+        amount_in: String,
         path: Vec<AssetId>,
         at: Option<<Block as BlockT>::Hash>,
     ) -> Result<NumberOrHex> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
-
+        let amount_in = amount_in.parse::<u128>().map_err(runtime_error_into_rpc_err)?;
         api.get_amount_out_price(&at, amount_in, path)
             .map(|price| price.into())
             .map_err(runtime_error_into_rpc_err)
