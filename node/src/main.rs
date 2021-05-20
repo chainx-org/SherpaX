@@ -25,6 +25,7 @@ mod chain_spec;
 mod service;
 mod cli;
 mod command;
+mod bitcoin;
 
 fn main() -> sc_cli::Result<()> {
     command::run()
