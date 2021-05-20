@@ -1,5 +1,5 @@
 use super::*;
-use sp_std::collections::btree_set::BTreeSet;
+use sp_std::vec;
 use xpallet_assets_registrar::AssetInfo;
 
 #[cfg(feature = "std")]
@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
 pub struct TokenInfo {
-    assert_id: AssetId,
-    assert_info: AssetInfo,
+    asset_id: AssetId,
+    asset_info: AssetInfo,
 }
 
 impl<T: Config> Pallet<T> {
@@ -25,20 +25,21 @@ impl<T: Config> Pallet<T> {
     }
 
     pub fn get_token_list() -> Vec<TokenInfo> {
-        let mut all_assert: BTreeSet<AssetId> = BTreeSet::new();
-        SwapMetadata::<T>::iter()
-            .filter(|(_, (_, total_liquidity))| *total_liquidity > Zero::zero())
-            .for_each(|((asset_0, asset_1), _)| {
-                all_assert.insert(asset_0);
-                all_assert.insert(asset_1);
-            });
+        let mut unique_asset_ids: Vec<AssetId> = SwapMetadata::<T>::iter()
+            .filter(|(_, (_, total_liquidity))| !total_liquidity.is_zero())
+            .map(|((asset_0, asset_1), _)| vec![asset_0, asset_1])
+            .flatten()
+            .collect();
 
-        all_assert
-            .iter()
-            .map(|&assert_id| TokenInfo {
-                assert_id,
-                assert_info: <xpallet_assets_registrar::Module<T>>::get_asset_info(&assert_id)
-                    .unwrap(),
+        unique_asset_ids.sort();
+        unique_asset_ids.dedup();
+
+        unique_asset_ids
+            .into_iter()
+            .filter_map(|asset_id| {
+                <xpallet_assets_registrar::Module<T>>::get_asset_info(&asset_id)
+                    .map(|asset_info| TokenInfo { asset_id, asset_info })
+                    .ok()
             })
             .collect::<Vec<_>>()
     }
