@@ -554,7 +554,7 @@ impl_runtime_apis! {
             Swap::get_token_list()
         }
 
-        fn get_balance(asset_id: AssetId, account: AccountId) -> u128{
+        fn get_balance(asset_id: AssetId, account: AccountId) -> u128 {
             Swap::get_balance(asset_id, account)
         }
     }
