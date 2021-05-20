@@ -61,6 +61,8 @@ use xpallet_gateway_bitcoin_v2::pallet as xpallet_gateway_bitcoin_v2_pallet;
 pub mod constants;
 use constants::{currency::*, time::*};
 
+use pallet_swap::{rpc::TokenInfo, AssetId};
+
 // Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
@@ -527,6 +529,33 @@ impl_runtime_apis! {
         }
         fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
             TransactionPayment::query_fee_details(uxt, len)
+        }
+    }
+
+    impl pallet_swap_rpc_runtime_api::SwapApi<
+        Block,
+        AccountId,
+    > for Runtime {
+        fn get_amount_in_price(
+            amount_out: u128,
+            path: Vec<AssetId>
+        ) -> u128 {
+            Swap::get_amount_in_price(amount_out, path)
+        }
+
+        fn get_amount_out_price(
+            amount_in: u128,
+            path: Vec<AssetId>
+        ) -> u128 {
+            Swap::get_amount_out_price(amount_in, path)
+        }
+
+        fn get_token_list() -> Vec<TokenInfo> {
+            Swap::get_token_list()
+        }
+
+        fn get_balance(asset_id: AssetId, account: AccountId) -> u128 {
+            Swap::get_balance(asset_id, account)
         }
     }
 }

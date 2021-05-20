@@ -75,6 +75,8 @@ xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-featur
 xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
 
+pallet-swap-rpc = { path = "../pallets/swap/rpc" }
+
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1" }
 

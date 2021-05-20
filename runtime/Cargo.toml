@@ -52,6 +52,7 @@ xp-protocol ={ git = "https://github.com/chainx-org/ChainX",  default-features =
 xp-gateway-bitcoin ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 
 pallet-swap = { path = "../pallets/swap", default-features = false }
+pallet-swap-rpc-runtime-api = { path = "../pallets/swap/rpc/runtime-api", default-features = false }
 orml-traits = { version = "0.4.0", default-features = false }
 
 chainbridge = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "rococo-v1" }
@@ -103,6 +104,7 @@ std = [
 	'chainx-primitives/std',
 
 	'pallet-swap/std',
+	'pallet-swap-rpc-runtime-api/std',
 	'orml-traits/std',
 
 	'chainbridge/std',

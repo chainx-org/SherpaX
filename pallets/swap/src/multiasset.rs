@@ -1,12 +1,8 @@
 use sp_std::marker::PhantomData;
 
-use frame_support::traits::{
-    Currency,
-    ExistenceRequirement::{AllowDeath, KeepAlive},
-    Get, ReservableCurrency, WithdrawReasons,
-};
+use frame_support::traits::{Currency, ExistenceRequirement::KeepAlive, Get};
 
-use crate::{AssetId, BalanceOf, Config, DispatchError, Pallet};
+use crate::{AssetId, BalanceOf, Config, DispatchError};
 
 pub trait MultiAsset<AccountId, Balance: Copy> {
     fn balance_of(asset_id: AssetId, who: &AccountId) -> Balance;

@@ -20,14 +20,14 @@ use frame_support::{
     traits::{Currency, Get},
     PalletId,
 };
-use sp_core::U256;
+
 use sp_runtime::traits::{
-    AccountIdConversion, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, IntegerSquareRoot, One,
-    Saturating, StaticLookup, Zero,
+    AccountIdConversion, CheckedAdd, CheckedDiv, CheckedSub, IntegerSquareRoot, One, Saturating,
+    StaticLookup, Zero,
 };
-use sp_std::convert::TryInto;
 
 mod multiasset;
+pub mod rpc;
 
 pub use self::multiasset::{MultiAsset, SimpleMultiAsset};
 pub use pallet::*;
@@ -142,6 +142,9 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(asset_0 != asset_1, Error::<T>::DeniedCreatePair);
+
+            <xpallet_assets_registrar::Module<T>>::ensure_asset_is_valid(&asset_0)?;
+            <xpallet_assets_registrar::Module<T>>::ensure_asset_is_valid(&asset_1)?;
 
             let (asset_0, asset_1) = Self::sort_asset_id(asset_0, asset_1);
 
