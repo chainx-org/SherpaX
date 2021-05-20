@@ -25,8 +25,11 @@ It should at least work until the following commits
 
 -   polkadot.js.org (apps v0.86.3-54)
 -   Polkadot rococo-v1 @ `127eb17a25bbe2a9f2731ff11a65d7f8170f2373`
+    018825472f35fc26054d5512ba72d9790a96bad3
 -   Cumulus rococo-v1 @ `da4c3bac6e9584e65740ef5db4dbd2c31c1a91db`
+    70afaae2cfa279c9cd80e897c76eb5c2386ee017
 -   Substrate rococo-v1  @ `2be8fcc4236d32786c62f6f27a98e7fe7e550807`
+    d908ef803a0368236c8f5891cbe4df11d6e85ec6
 
 ### 2. How to use
 

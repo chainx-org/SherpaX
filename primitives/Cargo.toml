@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 # Substrate dependencies
-sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
+sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'master' }
+sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'master' }
 
 [features]
 default = [ "std" ]

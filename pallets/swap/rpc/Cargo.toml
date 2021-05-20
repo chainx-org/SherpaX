@@ -17,10 +17,10 @@ jsonrpc-core-client = "15.1.0"
 jsonrpc-derive = "15.1.0"
 
 # Substrate packages
-sp-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
-sp-blockchain = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
-sp-rpc = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
+sp-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "master" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "master" }
+sp-rpc = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "master" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "master" }
 
 # Local packages
 pallet-swap = { path = "..", default-features = false }
