@@ -550,7 +550,7 @@ impl_runtime_apis! {
             Swap::get_amount_out_price(amount_in, path)
         }
 
-        fn get_token_list() -> Vec<TokenInfo>{
+        fn get_token_list() -> Vec<TokenInfo> {
             Swap::get_token_list()
         }
 
