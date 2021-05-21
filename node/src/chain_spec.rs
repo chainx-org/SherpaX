@@ -17,6 +17,7 @@
 
 use hex_literal::hex;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::{ChainType, Properties};
@@ -25,7 +26,7 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 
 use cumulus_primitives_core::ParaId;
 
-use xp_protocol::{C_BTC, C_DOGE, S_BTC, S_DOGE};
+use xp_protocol::{C_BTC, C_DOGE, S_BTC, S_DOGE, X_ETH};
 use xpallet_assets::AssetRestrictions;
 use xpallet_assets_registrar::{AssetInfo, Chain};
 use xpallet_gateway_bitcoin::{BtcParams, BtcTxVerifier};
@@ -158,7 +159,8 @@ fn xeth_asset_info() -> AssetInfo {
         Chain::Ethereum,
         ETH_DECIMALS,
         b"ChainX's Cross-chain ETH".to_vec(),
-    ).unwrap()
+    )
+    .unwrap()
 }
 fn sbtc_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
@@ -169,6 +171,7 @@ fn sbtc_asset_info() -> AssetInfo {
         b"Shadow token of ChainX's Cross-chain Bitcoin".to_vec(),
     )
     .unwrap()
+}
 
 fn asset_endowed() -> BTreeMap<u32, Vec<(AccountId, u128)>> {
     let mut endowed = BTreeMap::new();
@@ -177,7 +180,7 @@ fn asset_endowed() -> BTreeMap<u32, Vec<(AccountId, u128)>> {
         (get_account_id_from_seed::<sr25519::Public>("Alice"), 1000_000_000_000),
         (get_account_id_from_seed::<sr25519::Public>("Bob"), 2000_000_000_000),
     ];
-    endowed.insert(X_BTC, endowed_info);
+    endowed.insert(C_BTC, endowed_info);
 
     let endowed_info = vec![
         (get_account_id_from_seed::<sr25519::Public>("Alice"), 2000_000_000_000),

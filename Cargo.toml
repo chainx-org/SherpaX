@@ -23,3 +23,7 @@ pallet-balances = { git =  "https://github.com/paritytech/substrate", branch = "
 
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+
+substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+
+
