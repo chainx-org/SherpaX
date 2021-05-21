@@ -483,8 +483,8 @@ fn get_token_list_work() {
             Swap::get_token_list(),
             vec![
                 TokenInfo {
-                    assert_id: 0,
-                    assert_info: AssetInfo::new::<Test>(
+                    asset_id: 0,
+                    asset_info: AssetInfo::new::<Test>(
                         "PCX".into(),
                         "PCX".into(),
                         Chain::ChainX,
@@ -494,8 +494,8 @@ fn get_token_list_work() {
                     .unwrap()
                 },
                 TokenInfo {
-                    assert_id: 1,
-                    assert_info: AssetInfo::new::<Test>(
+                    asset_id: 1,
+                    asset_info: AssetInfo::new::<Test>(
                         "X-BTC".into(),
                         "X-BTC".into(),
                         Chain::Bitcoin,

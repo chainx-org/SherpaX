@@ -21,7 +21,7 @@
 > | 数值     | Hex      | 计算得到的输入量 |
 
 ###### http请求示例
-> ~~~apl
+> ~~~
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
@@ -70,7 +70,7 @@
 
 ###### http请求示例
 
-> ~~~apl
+> ~~~
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
@@ -122,7 +122,7 @@
 
 ###### http请求示例
 
-> ~~~apl
+> ~~~
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
@@ -192,7 +192,7 @@
 
 ###### http请求示例
 
-> ~~~apl
+> ~~~
 > curl --location --request POST '127.0.0.1:6666' \
 > --header 'Content-Type: application/json' \
 > --data-raw '{
@@ -312,7 +312,7 @@
       "params": [
         {
           "name": "amount_out",
-          "type": "u128"
+          "type": "String"
         },
         {
           "name": "path",
@@ -331,7 +331,7 @@
       "params": [
         {
           "name": "amount_in",
-          "type": "u128"
+          "type": "String"
         },
         {
           "name": "path",
@@ -416,7 +416,97 @@
     ]
   },
   "Desc": "Vec<u8>",
-  "Token": "Vec<u8>"
+  "Token": "Vec<u8>",
+  "BlockLength": "u32",
+  "BlockWeights": {
+    "baseBlock": "Weight",
+    "maxBlock": "Weight",
+    "perClass": "PerDispatchClass"
+  },
+  "PerDispatchClass": {
+    "normal": "WeightPerClass",
+    "operational": "WeightPerClass",
+    "mandatory": "WeightPerClass"
+  },
+  "WeightPerClass": {
+    "baseExtrinsic": "Weight",
+    "maxExtrinsic": "Weight",
+    "maxTotal": "Option<Weight>",
+    "reserved": "Option<Weight>"
+  },
+  "Address": "MultiAddress",
+  "LookupSource": "MultiAddress",
+  "RequestId": "u128",
+  "BlockNumberFor": "BlockNumber",
+  "Vault": {
+    "id": "AccountId",
+    "toBeIssuedTokens": "Balance",
+    "issuedTokens": "Balance",
+    "toBeRedeemedTokens": "Balance",
+    "wallet": "Text",
+    "bannedUntil": "BlockNumber",
+    "status": "VaultStatus"
+  },
+  "VaultStatus": {
+    "_enum": [
+      "Active",
+      "Liquidated",
+      "CommittedTheft"
+    ]
+  },
+  "TradingPrice": {
+    "price": "u128",
+    "decimal": "u8"
+  },
+  "AddrStr": "Text",
+  "Network": {
+    "_enum": [
+      "Mainnet",
+      "Testnet"
+    ]
+  },
+  "AddressHash": "H160",
+  "IssueRequest": {
+    "vault": "AccountId",
+    "openTime": "BlockNumber",
+    "requester": "AccountId",
+    "btcAddress": "BtcAddress",
+    "completed": "bool",
+    "cancelled": "bool",
+    "btcAmount": "Balance",
+    "griefingCollateral": "Balance"
+  },
+  "RedeemRequestStatus": {
+    "_enum": [
+      "Processing",
+      "Cancled",
+      "Completed"
+    ]
+  },
+  "RedeemRequest": {
+    "vault": "AccountId",
+    "openTime": "BlockNumber",
+    "requester": "AccountId",
+    "btcAddress": "BtcAddress",
+    "amount": "Balance",
+    "redeemFee": "Balance",
+    "status": "RedeemRequestStatus",
+    "reimburse": "bool"
+  },
+  "chainbridge::ChainId": "u8",
+  "ChainId": "u8",
+  "ResourceId": "[u8; 32]",
+  "DepositNonce": "u64",
+  "ProposalVotes": {
+    "votes_for": "Vec<AccountId>",
+    "votes_against": "Vec<AccountId>",
+    "status": "enum"
+  },
+  "Erc721Token": {
+    "id": "TokenId",
+    "metadata": "Vec<u8>"
+  },
+  "TokenId": "U256"
 }
 ~~~
 

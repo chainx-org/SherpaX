@@ -1,16 +1,16 @@
 use super::*;
-use sp_std::vec;
+use sp_std::{vec, fmt::Debug};
 use xpallet_assets_registrar::AssetInfo;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Eq, Clone, Encode, Decode)]
+#[derive(PartialEq, Eq, Clone, Encode, Decode, Debug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
 pub struct TokenInfo {
-    asset_id: AssetId,
-    asset_info: AssetInfo,
+    pub asset_id: AssetId,
+    pub asset_info: AssetInfo,
 }
 
 impl<T: Config> Pallet<T> {

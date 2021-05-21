@@ -153,6 +153,23 @@ pub(crate) fn btc() -> (AssetId, AssetInfo, AssetRestrictions, bool, bool) {
     )
 }
 
+pub(crate) fn eth() -> (AssetId, AssetInfo, AssetRestrictions, bool, bool) {
+    (
+        X_ETH,
+        AssetInfo::new::<Test>(
+            b"X-ETH".to_vec(),
+            b"X-ETH".to_vec(),
+            Chain::Ethereum,
+            8,
+            b"ChainX's cross-chain eth".to_vec(),
+        )
+        .unwrap(),
+        AssetRestrictions::DESTROY_USABLE,
+        true,
+        true,
+    )
+}
+
 #[derive(Default)]
 pub struct ExtBuilder;
 
@@ -186,7 +203,7 @@ impl ExtBuilder {
         ext
     }
     pub fn build_default(self) -> sp_io::TestExternalities {
-        let assets = vec![btc(), pcx()];
+        let assets = vec![btc(), pcx(), eth()];
         let mut endowed = BTreeMap::new();
         endowed.insert(
             assets[0].0,
