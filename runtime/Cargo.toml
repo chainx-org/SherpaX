@@ -12,51 +12,51 @@ codec = { package = 'parity-scale-codec', version = '2.0.0', default-features = 
 dev-parachain-primitives = { path = '../primitives', default-features = false }
 
 # Substrate dependencies
-sp-api = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-block-builder = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-io = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-inherents = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-offchain = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-session = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-std = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-transaction-pool = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-sp-version = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
+sp-api = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-block-builder = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-io = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-inherents = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-offchain = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-session = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-std = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-transaction-pool = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+sp-version = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
 
-frame-executive = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-frame-support = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-frame-system = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-pallet-balances = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-pallet-multisig = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
-pallet-randomness-collective-flip = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-pallet-timestamp = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-pallet-sudo = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-pallet-transaction-payment = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'rococo-v1' }
-pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", default-features = false , branch = "rococo-v1" }
-pallet-utility = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
+frame-executive = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+frame-support = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+frame-system = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+pallet-balances = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+pallet-multisig = { git = "https://github.com/paritytech/substrate", default-features = false, branch = 'polkadot-v0.9.1' }
+pallet-randomness-collective-flip = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+pallet-timestamp = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+pallet-sudo = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+pallet-transaction-payment = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.1' }
+pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", default-features = false , branch = 'polkadot-v0.9.1' }
+pallet-utility = { git = "https://github.com/paritytech/substrate", default-features = false, branch = 'polkadot-v0.9.1' }
 
 # Cumulus dependencies
-cumulus-pallet-parachain-system = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
-cumulus-primitives-core = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
-parachain-info = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'rococo-v1' }
+cumulus-pallet-parachain-system = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'polkadot-v0.9.1' }
+cumulus-primitives-core = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'polkadot-v0.9.1' }
+parachain-info = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'polkadot-v0.9.1' }
 
 # ChainX pallet
-xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
-xpallet-gateway-records = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
-xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1"}
-xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
-xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
-chainx-primitives ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
-xp-protocol ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
-xp-gateway-bitcoin ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
+xpallet-gateway-records = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
+xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version"}
+xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
+xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
+chainx-primitives ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version"}
+xp-protocol ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
+xp-gateway-bitcoin ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
 
 pallet-swap = { path = "../pallets/swap", default-features = false }
 pallet-swap-rpc-runtime-api = { path = "../pallets/swap/rpc/runtime-api", default-features = false }
 orml-traits = { version = "0.4.0", default-features = false }
 
-chainbridge = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "rococo-v1" }
-assets-handler = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "rococo-v1" }
+chainbridge = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "update_substrate_version" }
+assets-handler = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "update_substrate_version" }
 
 [build-dependencies]
 substrate-wasm-builder = '3.0.0'

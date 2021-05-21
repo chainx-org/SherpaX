@@ -237,9 +237,6 @@ impl xpallet_gateway_records::Config for Runtime {
 }
 
 parameter_types! {
-    pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
-}
-parameter_types! {
     pub const DustCollateral: Balance = 1000;
     pub const SecureThreshold: u16 = 300;
     pub const PremiumThreshold: u16 = 250;
@@ -320,12 +317,18 @@ impl xpallet_gateway_bitcoin::Config<Instance2> for Runtime {
     type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+    pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+    pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+}
+
 impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnValidationData = ();
     type SelfParaId = parachain_info::Module<Runtime>;
-    type DownwardMessageHandlers = ();
     type OutboundXcmpMessageSource = ();
+    type DmpMessageHandler = ();
+    type ReservedDmpWeight = ReservedDmpWeight;
     type XcmpMessageHandler = ();
     type ReservedXcmpWeight = ReservedXcmpWeight;
 }
@@ -486,10 +489,6 @@ impl_runtime_apis! {
 
         fn check_inherents(block: Block, data: sp_inherents::InherentData) -> sp_inherents::CheckInherentsResult {
             data.check_extrinsics(&block)
-        }
-
-        fn random_seed() -> <Block as BlockT>::Hash {
-            RandomnessCollectiveFlip::random_seed().0
         }
     }
 
