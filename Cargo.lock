@@ -1509,6 +1509,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "cumulus-pallet-aura-ext"
+version = "0.1.0"
+source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.1#4b2c51514cd5f34a5aa0404d4a2eac86f88203f8"
+dependencies = [
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "pallet-aura",
+ "parity-scale-codec",
+ "serde",
+ "sp-application-crypto",
+ "sp-consensus-aura",
+ "sp-runtime",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.1)",
+]
+
+[[package]]
 name = "cumulus-pallet-parachain-system"
 version = "0.1.0"
 source = "git+https://github.com/paritytech/cumulus?branch=polkadot-v0.9.1#4b2c51514cd5f34a5aa0404d4a2eac86f88203f8"
@@ -1680,6 +1697,7 @@ dependencies = [
  "assets-handler",
  "chainbridge",
  "chainx-primitives",
+ "cumulus-pallet-aura-ext",
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
  "dev-parachain-primitives",
@@ -1687,6 +1705,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "orml-traits",
+ "pallet-aura",
  "pallet-balances",
  "pallet-multisig",
  "pallet-randomness-collective-flip",
@@ -4831,6 +4850,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ff55baddef9e4ad00f88b6c743a2a8062d4c6ade126c2a528644b8e444d52ce"
 dependencies = [
  "stable_deref_trait",
+]
+
+[[package]]
+name = "pallet-aura"
+version = "3.0.0"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.1#3f110196163b5ec03bac5ee188d60bedf3ebd91d"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "sp-application-crypto",
+ "sp-consensus-aura",
+ "sp-runtime",
+ "sp-std 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.1)",
 ]
 
 [[package]]
@@ -9230,6 +9265,7 @@ dependencies = [
  "sp-core",
  "sp-inherents 3.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.1)",
  "sp-io",
+ "sp-keystore",
  "sp-offchain",
  "sp-runtime",
  "sp-session",
@@ -9238,6 +9274,7 @@ dependencies = [
  "sp-trie",
  "structopt",
  "substrate-build-script-utils",
+ "substrate-prometheus-endpoint",
  "substrate-test-client",
  "substrate-test-runtime-client",
  "tokio 0.2.25",

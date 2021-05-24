@@ -315,5 +315,7 @@ fn testnet_genesis(
             verifier: BtcTxVerifier::Recover,
             ..Default::default()
         },
+        cumulus_pallet_aura_ext: Default::default(),
+        pallet_aura: Default::default(),
     }
 }

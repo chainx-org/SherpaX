@@ -21,6 +21,7 @@
 
 use frame_system::EnsureSignedBy;
 use sp_api::impl_runtime_apis;
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
@@ -386,6 +387,12 @@ impl assets_handler::Config for Runtime {
     type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
 }
 
+impl pallet_aura::Config for Runtime {
+    type AuthorityId = AuraId;
+}
+
+impl cumulus_pallet_aura_ext::Config for Runtime {}
+
 construct_runtime! {
     pub enum Runtime where
         Block = Block,
@@ -415,6 +422,9 @@ construct_runtime! {
 
         ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 18,
         AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 19,
+
+        Aura: pallet_aura::{Pallet, Config<T>} = 20,
+        AuraExt: cumulus_pallet_aura_ext::{Pallet, Config} = 21,
     }
 }
 
@@ -454,12 +464,12 @@ pub type Executive = frame_executive::Executive<
 impl_runtime_apis! {
     impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
         fn slot_duration() -> sp_consensus_aura::SlotDuration {
-			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
-		}
+            sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
+        }
 
-		fn authorities() -> Vec<AuraId> {
-			Aura::authorities()
-		}
+        fn authorities() -> Vec<AuraId> {
+            Aura::authorities()
+        }
     }
     impl sp_api::Core<Block> for Runtime {
         fn version() -> RuntimeVersion {
@@ -537,6 +547,12 @@ impl_runtime_apis! {
         }
         fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
             TransactionPayment::query_fee_details(uxt, len)
+        }
+    }
+
+    impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
+        fn collect_collation_info() -> cumulus_primitives_core::CollationInfo {
+            ParachainSystem::collect_collation_info()
         }
     }
 
