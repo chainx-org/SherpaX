@@ -19,7 +19,7 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
-use frame_system::EnsureSignedBy;
+use frame_system::{EnsureOneOf, EnsureSignedBy};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::OpaqueMetadata;
@@ -70,11 +70,28 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub type SessionHandlers = ();
 
-impl_opaque_keys! {
-    pub struct SessionKeys {}
+/// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
+/// the specifics of the runtime. They can then be made to be agnostic over specific formats
+/// of data like extrinsics, allowing for them to continue syncing the network through upgrades
+/// to even the core data structures.
+pub mod opaque {
+    use super::*;
+    pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
+    /// Opaque block header type.
+    pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+    /// Opaque block type.
+    pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+    /// Opaque block identifier type.
+    pub type BlockId = generic::BlockId<Block>;
+    impl_opaque_keys! {
+        pub struct SessionKeys {
+            pub aura: Aura,
+        }
+    }
 }
 
 /// This runtime version.
+// #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("chainx-parachain"),
     impl_name: create_runtime_str!("chainx-parachain"),
@@ -176,6 +193,17 @@ impl pallet_timestamp::Config for Runtime {
     type OnTimestampSet = ();
     type MinimumPeriod = MinimumPeriod;
     type WeightInfo = pallet_timestamp::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    pub const UncleGenerations: u32 = 0;
+}
+
+impl pallet_authorship::Config for Runtime {
+    type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
+    type UncleGenerations = UncleGenerations;
+    type FilterUncle = ();
+    type EventHandler = ();
 }
 
 parameter_types! {
@@ -387,11 +415,69 @@ impl assets_handler::Config for Runtime {
     type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
 }
 
+parameter_types! {
+    pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(33);
+    pub const Period: u32 = 6 * HOURS;
+    pub const Offset: u32 = 0;
+}
+
+/// A convertor from collators id. Since this pallet does not have stash/controller, this is
+/// just identity.
+pub struct IdentityCollator;
+impl<T> sp_runtime::traits::Convert<T, Option<T>> for IdentityCollator {
+    fn convert(t: T) -> Option<T> {
+        Some(t)
+    }
+}
+
+impl pallet_session::Config for Runtime {
+    type Event = Event;
+    type ValidatorId = <Self as frame_system::Config>::AccountId;
+    // we don't have stash and controller, thus we don't need the convert as well.
+    type ValidatorIdOf = IdentityCollator;
+    type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
+    type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+    // type SessionManager = CollatorSelection;
+    type SessionManager = ();
+    // Essentially just Aura, but lets be pedantic.
+    type SessionHandler =
+        <opaque::SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
+    type Keys = opaque::SessionKeys;
+    type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
+    type WeightInfo = ();
+}
+
 impl pallet_aura::Config for Runtime {
     type AuthorityId = AuraId;
 }
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
+
+parameter_types! {
+    pub const PotId: PalletId = PalletId(*b"PotStake");
+    pub const MaxCandidates: u32 = 1000;
+    pub const SessionLength: BlockNumber = 6 * HOURS;
+    pub const MaxInvulnerables: u32 = 100;
+}
+
+/// We allow root and the Relay Chain council to execute privileged collator selection operations.
+// pub type CollatorSelectionUpdateOrigin = EnsureOneOf<
+// AccountId,
+// EnsureRoot<AccountId>,
+// EnsureXcm<IsMajorityOfBody<KsmLocation, ExecutiveBody>>,
+// >;
+
+// impl pallet_collator_selection::Config for Runtime {
+// type Event = Event;
+// type Currency = Balances;
+// type UpdateOrigin = ();
+// type PotId = PotId;
+// type MaxCandidates = MaxCandidates;
+// type MaxInvulnerables = MaxInvulnerables;
+// // should be a multiple of session or things will get inconsistent
+// type KickThreshold = Period;
+// type WeightInfo = ();
+// }
 
 construct_runtime! {
     pub enum Runtime where
@@ -400,31 +486,37 @@ construct_runtime! {
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
-        Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 1,
-        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 2,
-        Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 3,
-        RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Call, Storage} = 4,
-        ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event<T>} = 5,
-        TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 6,
-        ParachainInfo: parachain_info::{Pallet, Storage, Config} = 7,
+        ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Storage, Inherent, Event<T>} = 1,
+        RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Call, Storage} = 2,
+        Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 3,
+        ParachainInfo: parachain_info::{Pallet, Storage, Config} = 4,
+        Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 5,
+
+        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 6,
+        TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 7,
+
         Utility: pallet_utility::{Pallet, Call, Event} = 8,
         Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 9,
 
-        XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config} = 10,
-        XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
+        // Collator support. the order of these 4 are important and shall not change.
+        Authorship: pallet_authorship::{Pallet, Call, Storage} = 10,
+        // CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 11,
+        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 12,
+        Aura: pallet_aura::{Pallet, Config<T>} = 13,
+        AuraExt: cumulus_pallet_aura_ext::{Pallet, Config} = 14,
 
-        Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 12,
-        XGatewayBitcoin: xpallet_gateway_bitcoin::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
-        XGatewayDogecoin: xpallet_gateway_bitcoin::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 14,
-        XGatewayBitcoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 15,
-        XGatewayDogecoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
-        XGatewayRecord: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 17,
+        XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event, Config} = 15,
+        XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>} = 16,
 
-        ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 18,
-        AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 19,
+        Swap: pallet_swap::{Pallet, Call, Storage, Event<T>} = 17,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 18,
+        XGatewayDogecoin: xpallet_gateway_bitcoin::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 19,
+        XGatewayBitcoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 20,
+        XGatewayDogecoinBridge: xpallet_gateway_bitcoin_v2_pallet::<Instance2>::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
+        XGatewayRecord: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 22,
 
-        Aura: pallet_aura::{Pallet, Config<T>} = 20,
-        AuraExt: cumulus_pallet_aura_ext::{Pallet, Config} = 21,
+        ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 23,
+        AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 24,
     }
 }
 
@@ -530,11 +622,11 @@ impl_runtime_apis! {
         fn decode_session_keys(
             encoded: Vec<u8>,
         ) -> Option<Vec<(Vec<u8>, sp_core::crypto::KeyTypeId)>> {
-            SessionKeys::decode_into_raw_public_keys(&encoded)
+            opaque::SessionKeys::decode_into_raw_public_keys(&encoded)
         }
 
         fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
-            SessionKeys::generate(seed)
+            opaque::SessionKeys::generate(seed)
         }
     }
 

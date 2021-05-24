@@ -74,6 +74,13 @@ where
     AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
+/// Generate collator keys from seed.
+///
+/// This function's return type must always match the session keys of the chain in tuple format.
+pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
+    get_from_seed::<AuraId>(seed)
+}
+
 pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
     let mut properties = Properties::new();
     properties.insert("tokenSymbol".into(), "PCX".into());
@@ -86,6 +93,10 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
         move || {
             testnet_genesis(
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+                vec![(
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_collator_keys_from_seed("Alice"),
+                )],
                 vec![
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                     get_account_id_from_seed::<sr25519::Public>("Bob"),
@@ -222,8 +233,16 @@ fn sdoge_asset_info() -> AssetInfo {
     .unwrap()
 }
 
+/// Generate the session keys from individual elements.
+///
+/// The input must be a tuple of individual keys (a single arg for now since we have just one key).
+pub fn session_keys(keys: AuraId) -> dev_parachain_runtime::opaque::SessionKeys {
+    dev_parachain_runtime::opaque::SessionKeys { aura: keys }
+}
+
 fn testnet_genesis(
     root_key: AccountId,
+    invulnerables: Vec<(AccountId, AuraId)>,
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
     bitcoin: BtcGenesisParams,
@@ -318,7 +337,20 @@ fn testnet_genesis(
             verifier: BtcTxVerifier::Recover,
             ..Default::default()
         },
-        pallet_aura: AuraConfig { authorities: initial_authorities },
+        pallet_session: dev_parachain_runtime::SessionConfig {
+            keys: invulnerables
+                .iter()
+                .cloned()
+                .map(|(acc, aura)| {
+                    (
+                        acc.clone(),        // account id
+                        acc.clone(),        // validator id
+                        session_keys(aura), // session keys
+                    )
+                })
+                .collect(),
+        },
+        pallet_aura: Default::default(),
         cumulus_pallet_aura_ext: Default::default(),
     }
 }
