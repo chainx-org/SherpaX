@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Zenlink
+// Copyright 2020-2021 ChainX
 // Copyright 2019 Parity Technologies (UK) Ltd.
 // This file is part of Cumulus.
 
@@ -47,7 +47,7 @@ fn load_spec(
 
 impl SubstrateCli for Cli {
     fn impl_name() -> String {
-        "Zenlink Collator".into()
+        "SherpaX Collator".into()
     }
 
     fn impl_version() -> String {
@@ -69,7 +69,7 @@ impl SubstrateCli for Cli {
     }
 
     fn support_url() -> String {
-        "https://github.com/zenlinkpro/dev-parachain/issues/new".into()
+        "https://github.com/chainx-org/sherpax/issues/new".into()
     }
 
     fn copyright_start_year() -> i32 {
@@ -87,7 +87,7 @@ impl SubstrateCli for Cli {
 
 impl SubstrateCli for RelayChainCli {
     fn impl_name() -> String {
-        "Zenlink Collator".into()
+        "SherpaX Collator".into()
     }
 
     fn impl_version() -> String {
@@ -107,7 +107,7 @@ impl SubstrateCli for RelayChainCli {
     }
 
     fn support_url() -> String {
-        "https://github.com/zenlinkpro/dev-parachain/issues/new".into()
+        "https://github.com/chainx-org/SherpaX/issues/new".into()
     }
 
     fn copyright_start_year() -> i32 {

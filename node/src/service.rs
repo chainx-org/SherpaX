@@ -390,8 +390,10 @@ pub async fn start_rococo_parachain_node(
             let mut io = jsonrpc_core::IoHandler::default();
 
             use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
+            use pallet_swap_rpc::{Swap, SwapApi};
 
-            io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client)));
+            io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client.clone())));
+            io.extend_with(SwapApi::to_delegate(Swap::new(client)));
 
             io
         },

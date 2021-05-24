@@ -21,6 +21,7 @@ use std::collections::BTreeMap;
 
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::{ChainType, Properties};
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
@@ -99,6 +100,7 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
                 crate::bitcoin::btc_genesis_params(include_str!(
                     "res/dogecoin_testnet_genesis.json"
                 )),
+                vec![get_from_seed::<AuraId>("Alice"), get_from_seed::<AuraId>("Bob")],
             )
         },
         vec![],
@@ -226,6 +228,7 @@ fn testnet_genesis(
     id: ParaId,
     bitcoin: BtcGenesisParams,
     dogecoin: BtcGenesisParams,
+    initial_authorities: Vec<AuraId>,
 ) -> GenesisConfig {
     const ENDOWMENT: u128 = 1_000_000 * DOTS;
     const STASH: u128 = 100 * DOTS;
@@ -315,7 +318,7 @@ fn testnet_genesis(
             verifier: BtcTxVerifier::Recover,
             ..Default::default()
         },
+        pallet_aura: AuraConfig { authorities: initial_authorities },
         cumulus_pallet_aura_ext: Default::default(),
-        pallet_aura: Default::default(),
     }
 }
