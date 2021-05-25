@@ -71,7 +71,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub type SessionHandlers = ();
 
 impl_opaque_keys! {
-    pub struct SessionKeys {}
+    pub struct SessionKeys {
+        pub aura: Aura,
+    }
 }
 
 /// This runtime version.
@@ -326,7 +328,7 @@ parameter_types! {
 impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnValidationData = ();
-    type SelfParaId = parachain_info::Module<Runtime>;
+    type SelfParaId = parachain_info::Pallet<Runtime>;
     type OutboundXcmpMessageSource = ();
     type DmpMessageHandler = ();
     type ReservedDmpWeight = ReservedDmpWeight;
@@ -584,4 +586,7 @@ impl_runtime_apis! {
     }
 }
 
-cumulus_pallet_parachain_system::register_validate_block!(Runtime, Executive);
+cumulus_pallet_parachain_system::register_validate_block!(
+    Runtime,
+    cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>
+);
