@@ -24,8 +24,8 @@ frame-system = { git = "https://github.com/paritytech/substrate", default-featur
 orml-traits = { version = "0.4.0", default-features = false }
 
 # ChainX
-xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
-xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
+xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "expose-bitcoin-genesis" }
+xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "expose-bitcoin-genesis" }
 
 [dev-dependencies]
 pallet-balances = { git = 'https://github.com/paritytech/substrate',  branch = 'polkadot-v0.9.1' }
