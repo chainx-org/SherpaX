@@ -18,9 +18,9 @@ jsonrpc-core = "15.1.0"
 log = "0.4.14"
 parking_lot = "0.9.0"
 serde = { version = "1.0.119", features = ["derive"] }
+serde_json = "1.0"
 structopt = "0.3.3"
 trie-root = "0.15.2"
-serde_json = "1.0"
 
 # Substrate dependencies
 sc-basic-authorship = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
@@ -37,23 +37,23 @@ sc-telemetry = { git = "https://github.com/paritytech/substrate", branch = "polk
 sc-tracing = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 sc-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 sp-block-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 sp-consensus = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 sp-consensus-aura = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
-sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
-sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 sp-inherents = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
-sp-offchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
-sp-session = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
-sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
-sp-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
-sp-trie = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 sp-keystore = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
-substrate-prometheus-endpoint = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+sp-offchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+sp-session = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+sp-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
+sp-trie = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 
+substrate-prometheus-endpoint = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 pallet-transaction-payment-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1" }
 
 # Cumulus dependencies
@@ -78,15 +78,14 @@ polkadot-test-service = { git = "https://github.com/paritytech/polkadot", branch
 dev-parachain-primitives = { path = "../primitives" }
 dev-parachain-runtime = { path = "../runtime" }
 
-chainx-cli = { git = "https://github.com/chainx-org/ChainX",  branch = "expose-bitcoin-genesis" }
-xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  branch = "expose-bitcoin-genesis" }
-xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  branch = "expose-bitcoin-genesis" }
-xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", branch = "expose-bitcoin-genesis" }
-
-xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", branch = "expose-bitcoin-genesis" }
-xpallet-gateway-common = { git = "https://github.com/chainx-org/ChainX", branch = "expose-bitcoin-genesis" }
-xp-protocol = { git = "https://github.com/chainx-org/ChainX", branch = "expose-bitcoin-genesis" }
-chainx-primitives = { git = "https://github.com/chainx-org/ChainX", branch = "expose-bitcoin-genesis" }
+chainx-cli = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1" }
+chainx-primitives = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1" }
+xpallet-assets = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1" }
+xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1" }
+xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1" }
+xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1" }
+xpallet-gateway-common = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1" }
+xp-protocol = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1" }
 
 light-bitcoin = { git = "https://github.com/chainx-org/light-bitcoin", branch = "btc-like" }
 

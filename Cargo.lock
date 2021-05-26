@@ -224,7 +224,7 @@ checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 [[package]]
 name = "assets-handler"
 version = "0.1.0"
-source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=expose-bitcoin-genesis#d07945316a20f6acde27ba675f610a6497fe2812"
+source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=rococo-v1#abcf48ab2c2be76ccc85dad0e03c42eabb0f5710"
 dependencies = [
  "chainbridge",
  "chainx-primitives",
@@ -669,9 +669,9 @@ dependencies = [
 
 [[package]]
 name = "blake3"
-version = "0.3.7"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9ff35b701f3914bdb8fad3368d822c766ef2858b2583198e41639b936f09d3f"
+checksum = "b64485778c4f16a6a5a9d335e80d449ac6c70cdd6a06d2af18a6f6f775a125b3"
 dependencies = [
  "arrayref",
  "arrayvec 0.5.2",
@@ -872,9 +872,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.0.67"
+version = "1.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3c69b077ad434294d3ce9f1f6143a2a4b89a8a2d54ef813d85003a4fd1137fd"
+checksum = "4a72c244c1ff497a746a7e1fb3d14bd08420ecda70c8f25c7112f2781652d787"
 dependencies = [
  "jobserver",
 ]
@@ -932,7 +932,7 @@ dependencies = [
 [[package]]
 name = "chainbridge"
 version = "0.0.2"
-source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=expose-bitcoin-genesis#d07945316a20f6acde27ba675f610a6497fe2812"
+source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=rococo-v1#abcf48ab2c2be76ccc85dad0e03c42eabb0f5710"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -948,7 +948,7 @@ dependencies = [
 [[package]]
 name = "chainx-cli"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-executor",
  "chainx-primitives",
@@ -1005,7 +1005,7 @@ dependencies = [
 [[package]]
 name = "chainx-executor"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-runtime",
  "dev-runtime",
@@ -1018,7 +1018,7 @@ dependencies = [
 [[package]]
 name = "chainx-primitives"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "frame-system",
  "parity-scale-codec",
@@ -1032,7 +1032,7 @@ dependencies = [
 [[package]]
 name = "chainx-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "chainx-runtime",
@@ -1082,7 +1082,7 @@ dependencies = [
 [[package]]
 name = "chainx-runtime"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "chainx-runtime-common",
@@ -1164,7 +1164,7 @@ dependencies = [
 [[package]]
 name = "chainx-runtime-common"
 version = "2.0.7-1"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -1180,7 +1180,7 @@ dependencies = [
 [[package]]
 name = "chainx-service"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-executor",
  "chainx-primitives",
@@ -1905,9 +1905,9 @@ checksum = "3ee2393c4a91429dffb4bedf19f4d6abf27d8a732c8ce4980305d782e5426d57"
 
 [[package]]
 name = "data-encoding-macro"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a94feec3d2ba66c0b6621bca8bc6f68415b1e5c69af3586fdd0af9fd9f29b17"
+checksum = "d3920ab0ba823e4fe0fe4c358f105a7e36643f2155f409b13df03e67965d296f"
 dependencies = [
  "data-encoding",
  "data-encoding-macro-internal",
@@ -2022,7 +2022,7 @@ dependencies = [
 [[package]]
 name = "dev-runtime"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "chainx-runtime-common",
@@ -2323,9 +2323,9 @@ checksum = "68b91989ae21441195d7d9b9993a2f9295c7e1a8c96255d8b729accddc124797"
 
 [[package]]
 name = "erased-serde"
-version = "0.3.13"
+version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0465971a8cc1fa2455c8465aaa377131e1f1cf4983280f474a13e68793aa770c"
+checksum = "e5b36e6f2295f393f44894c6031f67df4d185b984cd54d08f768ce678007efcd"
 dependencies = [
  "serde",
 ]
@@ -3947,9 +3947,9 @@ checksum = "3576a87f2ba00f6f106fdfcd16db1d698d648a26ad8e0573cad8537c3c362d2a"
 
 [[package]]
 name = "libc"
-version = "0.2.94"
+version = "0.2.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18794a8ad5b29321f790b55d93dfba91e125cb1a9edbd4f8e3150acc771c1a5e"
+checksum = "789da6d93f1b866ffe175afc5322a4d76c038605a1c3319bb57b06967ca98a36"
 
 [[package]]
 name = "libloading"
@@ -4687,7 +4687,7 @@ dependencies = [
 [[package]]
 name = "malan-runtime"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "chainx-runtime-common",
@@ -4826,9 +4826,9 @@ checksum = "b16bd47d9e329435e309c58469fe0791c2d0d1ba96ec0954152a5ae2b04387dc"
 
 [[package]]
 name = "memmap2"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "397d1a6d6d0563c0f5462bbdae662cf6c784edf5e828e40c7257f85d82bf56dd"
+checksum = "723e3ebdcdc5c023db1df315364573789f8857c11b631a2fdfad7c00f5c046b4"
 dependencies = [
  "libc",
 ]
@@ -7901,9 +7901,9 @@ dependencies = [
 
 [[package]]
 name = "psm"
-version = "0.1.12"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3abf49e5417290756acfd26501536358560c4a5cc4a0934d390939acb3e7083a"
+checksum = "21ff0279b4a85e576b97e4a21d13e437ebcd56612706cde5d3f0d5c9399490c0"
 dependencies = [
  "cc",
 ]
@@ -11372,18 +11372,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.24"
+version = "1.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0f4a65597094d4483ddaed134f409b2cb7c1beccf25201a9f73c719254fa98e"
+checksum = "fa6f76457f59514c7eeb4e59d891395fab0b2fd1d40723ae737d64153392e9c6"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.24"
+version = "1.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7765189610d8241a44529806d6fd1f2e0a08734313a35d5b3a556f92b381f3c0"
+checksum = "8a36768c0fbf1bb15eca10defa29526bda730a2376c2ab4393ccfa16fb1a318d"
 dependencies = [
  "proc-macro2 1.0.27",
  "quote 1.0.9",
@@ -11982,7 +11982,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04f8ab788026715fa63b31960869617cba39117e520eb415b0139543e325ab59"
 dependencies = [
  "cfg-if 0.1.10",
- "rand 0.6.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
@@ -12160,9 +12160,9 @@ dependencies = [
 
 [[package]]
 name = "vcpkg"
-version = "0.2.12"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbdbff6266a24120518560b5dc983096efb98462e51d0d68169895b237be3e5d"
+checksum = "025ce40a007e1907e58d5bc1a594def78e5573bb0b1160bc389634e8f12e4faa"
 
 [[package]]
 name = "vec_map"
@@ -12841,7 +12841,7 @@ dependencies = [
 [[package]]
 name = "xp-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "impl-trait-for-tuples 0.2.1",
@@ -12854,7 +12854,7 @@ dependencies = [
 [[package]]
 name = "xp-gateway-bitcoin"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12871,7 +12871,7 @@ dependencies = [
 [[package]]
 name = "xp-gateway-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "bs58 0.3.1",
  "frame-support",
@@ -12883,7 +12883,7 @@ dependencies = [
 [[package]]
 name = "xp-genesis-builder"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "serde",
@@ -12893,7 +12893,7 @@ dependencies = [
 [[package]]
 name = "xp-io"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "parity-scale-codec",
  "sp-core",
@@ -12904,7 +12904,7 @@ dependencies = [
 [[package]]
 name = "xp-mining-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "sp-arithmetic",
@@ -12914,7 +12914,7 @@ dependencies = [
 [[package]]
 name = "xp-mining-staking"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "sp-runtime",
@@ -12925,7 +12925,7 @@ dependencies = [
 [[package]]
 name = "xp-protocol"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -12936,7 +12936,7 @@ dependencies = [
 [[package]]
 name = "xp-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "hex",
  "jsonrpc-core",
@@ -12946,7 +12946,7 @@ dependencies = [
 [[package]]
 name = "xp-runtime"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -12958,7 +12958,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "bitflags",
  "chainx-primitives",
@@ -12977,7 +12977,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12996,7 +12996,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -13012,7 +13012,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets-rpc-runtime-api"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -13024,7 +13024,7 @@ dependencies = [
 [[package]]
 name = "xpallet-dex-spot"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -13043,7 +13043,7 @@ dependencies = [
 [[package]]
 name = "xpallet-dex-spot-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -13060,7 +13060,7 @@ dependencies = [
 [[package]]
 name = "xpallet-dex-spot-rpc-runtime-api"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -13071,7 +13071,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-bitcoin"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "bs58 0.3.1",
  "chainx-primitives",
@@ -13099,7 +13099,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-bitcoin-v2"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "bitflags",
  "bs58 0.3.1",
@@ -13126,7 +13126,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -13150,7 +13150,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-common-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "hex",
  "jsonrpc-core",
@@ -13167,7 +13167,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-common-rpc-runtime-api"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -13182,7 +13182,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-records"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -13202,7 +13202,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-records-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -13219,7 +13219,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-records-rpc-runtime-api"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -13232,7 +13232,7 @@ dependencies = [
 [[package]]
 name = "xpallet-genesis-builder"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -13253,7 +13253,7 @@ dependencies = [
 [[package]]
 name = "xpallet-mining-asset"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -13276,7 +13276,7 @@ dependencies = [
 [[package]]
 name = "xpallet-mining-asset-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -13292,7 +13292,7 @@ dependencies = [
 [[package]]
 name = "xpallet-mining-asset-rpc-runtime-api"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -13304,7 +13304,7 @@ dependencies = [
 [[package]]
 name = "xpallet-mining-staking"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -13329,7 +13329,7 @@ dependencies = [
 [[package]]
 name = "xpallet-mining-staking-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -13345,7 +13345,7 @@ dependencies = [
 [[package]]
 name = "xpallet-mining-staking-rpc-runtime-api"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -13356,7 +13356,7 @@ dependencies = [
 [[package]]
 name = "xpallet-support"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "hex",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -13365,7 +13365,7 @@ dependencies = [
 [[package]]
 name = "xpallet-system"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -13379,7 +13379,7 @@ dependencies = [
 [[package]]
 name = "xpallet-transaction-fee"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -13393,7 +13393,7 @@ dependencies = [
 [[package]]
 name = "xpallet-transaction-fee-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -13412,7 +13412,7 @@ dependencies = [
 [[package]]
 name = "xpallet-transaction-fee-rpc-runtime-api"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=expose-bitcoin-genesis#79aa6ade17e2357d77414cefb225d89a51e1bd29"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
