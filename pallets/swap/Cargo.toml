@@ -4,46 +4,45 @@ version = "0.1.0"
 authors = ["The ChainX Authors"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 log = { version = "0.4.14", default-features = false }
 serde = { version = "1.0.119", optional = true }
-# alias "parity-scale-code" to "codec"
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
-
-# Substrate
-sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
-
-frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
-frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
 
 orml-traits = { version = "0.4.0", default-features = false }
 
+# Substrate
+sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
+
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
+
 # ChainX
-xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
-xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
+xpallet-assets = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1", default-features = false }
+xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX", branch = "rococo-v1", default-features = false }
 
 [dev-dependencies]
-pallet-balances = { git = 'https://github.com/paritytech/substrate',  branch = 'polkadot-v0.9.1' }
+pallet-balances = { git = 'https://github.com/paritytech/substrate', branch = 'polkadot-v0.9.1' }
 
 [features]
 default = ["std"]
 std = [
+    "codec/std",
     "log/std",
     "serde",
-    "codec/std",
-    "sp-core/std",
-    "frame-support/std",
-    "frame-system/std",
-    "sp-runtime/std",
-    "sp-std/std",
-    "sp-arithmetic/std",
 
     "orml-traits/std",
 
+    "sp-arithmetic/std",
+    "sp-core/std",
+    "sp-runtime/std",
+    "sp-std/std",
+    "frame-support/std",
+    "frame-system/std",
+
     "xpallet-assets/std",
+    "xpallet-assets-registrar/std",
 ]

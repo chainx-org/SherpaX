@@ -23,7 +23,6 @@
 mod chain_spec;
 #[macro_use]
 mod service;
-mod bitcoin;
 mod cli;
 mod command;
 

@@ -27,13 +27,13 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 
 use cumulus_primitives_core::ParaId;
 
+use chainx_cli::genesis::bitcoin::{btc_genesis_params, BtcGenesisParams};
 use xp_protocol::{C_BTC, C_DOGE, S_BTC, S_DOGE, X_ETH};
 use xpallet_assets::AssetRestrictions;
 use xpallet_assets_registrar::{AssetInfo, Chain};
 use xpallet_gateway_bitcoin::{BtcParams, BtcTxVerifier};
 use xpallet_gateway_bitcoin_v2::types::TradingPrice;
 
-use crate::bitcoin::BtcGenesisParams;
 use dev_parachain_primitives::{AccountId, Signature};
 use dev_parachain_runtime::{constants::currency::DOTS, *};
 
@@ -94,12 +94,8 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
                     hex!["18ec21f2ee09b23cc0be299d316fe0688b42c3904500f0690bae24328433a025"].into(),
                 ],
                 id,
-                crate::bitcoin::btc_genesis_params(include_str!(
-                    "res/bitcoin_testnet_genesis.json"
-                )),
-                crate::bitcoin::btc_genesis_params(include_str!(
-                    "res/dogecoin_testnet_genesis.json"
-                )),
+                btc_genesis_params(include_str!("res/bitcoin_testnet_genesis.json")),
+                btc_genesis_params(include_str!("res/dogecoin_testnet_genesis.json")),
                 vec![get_from_seed::<AuraId>("Alice"), get_from_seed::<AuraId>("Bob")],
             )
         },
