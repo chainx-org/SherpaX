@@ -17,18 +17,23 @@
 
 use hex_literal::hex;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::{ChainType, Properties};
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 use cumulus_primitives_core::ParaId;
 
+use xp_protocol::{C_BTC as X_BTC, C_DOGE as X_DOGE, S_BTC, S_DOGE, X_ETH};
 use xpallet_assets::AssetRestrictions;
 use xpallet_assets_registrar::{AssetInfo, Chain};
+use xpallet_gateway_bitcoin::{BtcParams, BtcTxVerifier};
 use xpallet_gateway_bitcoin_v2::types::TradingPrice;
 
+use crate::bitcoin::BtcGenesisParams;
 use dev_parachain_primitives::{AccountId, Signature};
 use dev_parachain_runtime::{constants::currency::DOTS, *};
 
@@ -89,6 +94,13 @@ pub fn get_chain_spec(id: ParaId) -> Result<ChainSpec, String> {
                     hex!["18ec21f2ee09b23cc0be299d316fe0688b42c3904500f0690bae24328433a025"].into(),
                 ],
                 id,
+                crate::bitcoin::btc_genesis_params(include_str!(
+                    "res/bitcoin_testnet_genesis.json"
+                )),
+                crate::bitcoin::btc_genesis_params(include_str!(
+                    "res/dogecoin_testnet_genesis.json"
+                )),
+                vec![get_from_seed::<AuraId>("Alice"), get_from_seed::<AuraId>("Bob")],
             )
         },
         vec![],
@@ -122,18 +134,16 @@ fn pcx_asset_info() -> AssetInfo {
     .unwrap()
 }
 
-use std::collections::BTreeMap;
-
-const X_BTC: AssetId = 1;
 const BTC_DECIMALS: u8 = 8;
 const X_BTC_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
-const X_ETH: AssetId = 2;
-const ETH_DECIMALS: u8 = 8;
-const X_ETH_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
 
-fn xbtc_asset_info() -> AssetInfo {
+fn sbtc_restrictions() -> AssetRestrictions {
+    AssetRestrictions::TRANSFER | AssetRestrictions::DESTROY_USABLE
+}
+
+fn cbtc_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
-        b"XBTC".to_vec(),
+        b"CBTC".to_vec(),
         b"ChainX Bitcoin".to_vec(),
         Chain::Bitcoin,
         BTC_DECIMALS,
@@ -142,6 +152,8 @@ fn xbtc_asset_info() -> AssetInfo {
     .unwrap()
 }
 
+const ETH_DECIMALS: u8 = 8;
+const X_ETH_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
 fn xeth_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
         b"XETH".to_vec(),
@@ -149,6 +161,16 @@ fn xeth_asset_info() -> AssetInfo {
         Chain::Ethereum,
         ETH_DECIMALS,
         b"ChainX's Cross-chain ETH".to_vec(),
+    )
+    .unwrap()
+}
+fn sbtc_asset_info() -> AssetInfo {
+    AssetInfo::new::<Runtime>(
+        b"CBTC".to_vec(),
+        b"ChainX Bitcoin".to_vec(),
+        Chain::Bitcoin,
+        BTC_DECIMALS,
+        b"Shadow token of ChainX's Cross-chain Bitcoin".to_vec(),
     )
     .unwrap()
 }
@@ -171,10 +193,42 @@ fn asset_endowed() -> BTreeMap<u32, Vec<(AccountId, u128)>> {
     endowed
 }
 
+const DOGE_DECIMALS: u8 = 8;
+const X_DOGE_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
+
+fn sdoge_restrictions() -> AssetRestrictions {
+    AssetRestrictions::TRANSFER | AssetRestrictions::DESTROY_USABLE
+}
+
+fn cdoge_asset_info() -> AssetInfo {
+    AssetInfo::new::<Runtime>(
+        b"CDOGE".to_vec(),
+        b"ChainX Bitcoin".to_vec(),
+        Chain::Dogecoin,
+        DOGE_DECIMALS,
+        b"ChainX's Cross-chain Dogecoin".to_vec(),
+    )
+    .unwrap()
+}
+
+fn sdoge_asset_info() -> AssetInfo {
+    AssetInfo::new::<Runtime>(
+        b"CBTC".to_vec(),
+        b"ChainX Bitcoin".to_vec(),
+        Chain::Dogecoin,
+        DOGE_DECIMALS,
+        b"Shadow token of ChainX's Cross-chain Dogecoin".to_vec(),
+    )
+    .unwrap()
+}
+
 fn testnet_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
+    bitcoin: BtcGenesisParams,
+    dogecoin: BtcGenesisParams,
+    initial_authorities: Vec<AuraId>,
 ) -> GenesisConfig {
     const ENDOWMENT: u128 = 1_000_000 * DOTS;
     const STASH: u128 = 100 * DOTS;
@@ -201,17 +255,23 @@ fn testnet_genesis(
         xpallet_assets_registrar: XAssetsRegistrarConfig {
             assets: vec![
                 (PCX, pcx_asset_info(), true, false),
-                (X_BTC, xbtc_asset_info(), true, true),
                 (X_ETH, xeth_asset_info(), true, true),
+                (X_BTC, cbtc_asset_info(), true, true),
+                (S_BTC, sbtc_asset_info(), true, true),
+                (X_DOGE, cdoge_asset_info(), true, true),
+                (S_DOGE, sdoge_asset_info(), true, true),
             ],
         },
         xpallet_assets: XAssetsConfig {
             assets_restrictions: vec![
                 (PCX, pcx_restrictions()),
-                (X_BTC, X_BTC_ASSETRESTRICTIONS),
                 (X_ETH, X_ETH_ASSETRESTRICTIONS),
+                (X_BTC, X_BTC_ASSETRESTRICTIONS),
+                (S_BTC, sbtc_restrictions()),
+                (X_DOGE, X_DOGE_ASSETRESTRICTIONS),
+                (S_DOGE, sdoge_restrictions()),
             ],
-            endowed: asset_endowed(),
+            endowed: Default::default(), // FIXME: maybe issue some asset balances?
         },
 
         xpallet_gateway_bitcoin_v2_pallet_Instance1: XGatewayBitcoinBridgeConfig {
@@ -224,7 +284,41 @@ fn testnet_genesis(
             issue_griefing_fee: 10,
             ..Default::default()
         },
-        xpallet_gateway_bitcoin_Instance1: Default::default(),
-        xpallet_gateway_bitcoin_Instance2: Default::default(),
+        xpallet_gateway_bitcoin_Instance1: XGatewayBitcoinConfig {
+            network_id: bitcoin.network,
+            confirmation_number: bitcoin.confirmation_number,
+            genesis_hash: bitcoin.hash(),
+            genesis_info: (bitcoin.header(), bitcoin.height),
+            params_info: BtcParams::new(
+                486604799,            // max_bits
+                2 * 60 * 60,          // block_max_future
+                2 * 7 * 24 * 60 * 60, // target_timespan_seconds
+                10 * 60,              // target_spacing_seconds
+                4,                    // retargeting_factor
+            ), // retargeting_factor
+            btc_withdrawal_fee: 500000,
+            max_withdrawal_count: 100,
+            verifier: BtcTxVerifier::Recover,
+            ..Default::default()
+        },
+        xpallet_gateway_bitcoin_Instance2: XGatewayDogecoinConfig {
+            network_id: dogecoin.network,
+            confirmation_number: dogecoin.confirmation_number,
+            genesis_hash: dogecoin.hash(),
+            genesis_info: (dogecoin.header(), dogecoin.height),
+            params_info: BtcParams::new(
+                486604799,            // max_bits
+                2 * 60 * 60,          // block_max_future
+                2 * 7 * 24 * 60 * 60, // target_timespan_seconds
+                10 * 60,              // target_spacing_seconds
+                4,                    // retargeting_factor
+            ), // retargeting_factor
+            btc_withdrawal_fee: 5_000_000_000,
+            max_withdrawal_count: 100,
+            verifier: BtcTxVerifier::Recover,
+            ..Default::default()
+        },
+        pallet_aura: AuraConfig { authorities: initial_authorities },
+        cumulus_pallet_aura_ext: Default::default(),
     }
 }

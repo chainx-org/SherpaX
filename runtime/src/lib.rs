@@ -21,6 +21,7 @@
 
 use frame_system::EnsureSignedBy;
 use sp_api::impl_runtime_apis;
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::OpaqueMetadata;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
@@ -70,7 +71,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub type SessionHandlers = ();
 
 impl_opaque_keys! {
-    pub struct SessionKeys {}
+    pub struct SessionKeys {
+        pub aura: Aura,
+    }
 }
 
 /// This runtime version.
@@ -237,9 +240,6 @@ impl xpallet_gateway_records::Config for Runtime {
 }
 
 parameter_types! {
-    pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
-}
-parameter_types! {
     pub const DustCollateral: Balance = 1000;
     pub const SecureThreshold: u16 = 300;
     pub const PremiumThreshold: u16 = 250;
@@ -320,12 +320,18 @@ impl xpallet_gateway_bitcoin::Config<Instance2> for Runtime {
     type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+    pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+    pub const ReservedDmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT / 4;
+}
+
 impl cumulus_pallet_parachain_system::Config for Runtime {
     type Event = Event;
     type OnValidationData = ();
-    type SelfParaId = parachain_info::Module<Runtime>;
-    type DownwardMessageHandlers = ();
+    type SelfParaId = parachain_info::Pallet<Runtime>;
     type OutboundXcmpMessageSource = ();
+    type DmpMessageHandler = ();
+    type ReservedDmpWeight = ReservedDmpWeight;
     type XcmpMessageHandler = ();
     type ReservedXcmpWeight = ReservedXcmpWeight;
 }
@@ -383,6 +389,12 @@ impl assets_handler::Config for Runtime {
     type BridgeOrigin = chainbridge::EnsureBridge<Runtime>;
 }
 
+impl pallet_aura::Config for Runtime {
+    type AuthorityId = AuraId;
+}
+
+impl cumulus_pallet_aura_ext::Config for Runtime {}
+
 construct_runtime! {
     pub enum Runtime where
         Block = Block,
@@ -412,6 +424,9 @@ construct_runtime! {
 
         ChainBridge: chainbridge::{Pallet, Call, Storage, Event<T>} = 18,
         AssetsHandler: assets_handler::{Pallet, Call, Storage, Event<T>} = 19,
+
+        Aura: pallet_aura::{Pallet, Config<T>} = 20,
+        AuraExt: cumulus_pallet_aura_ext::{Pallet, Config} = 21,
     }
 }
 
@@ -449,6 +464,15 @@ pub type Executive = frame_executive::Executive<
 >;
 
 impl_runtime_apis! {
+    impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
+        fn slot_duration() -> sp_consensus_aura::SlotDuration {
+            sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
+        }
+
+        fn authorities() -> Vec<AuraId> {
+            Aura::authorities()
+        }
+    }
     impl sp_api::Core<Block> for Runtime {
         fn version() -> RuntimeVersion {
             VERSION
@@ -486,10 +510,6 @@ impl_runtime_apis! {
 
         fn check_inherents(block: Block, data: sp_inherents::InherentData) -> sp_inherents::CheckInherentsResult {
             data.check_extrinsics(&block)
-        }
-
-        fn random_seed() -> <Block as BlockT>::Hash {
-            RandomnessCollectiveFlip::random_seed().0
         }
     }
 
@@ -532,6 +552,12 @@ impl_runtime_apis! {
         }
     }
 
+    impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
+        fn collect_collation_info() -> cumulus_primitives_core::CollationInfo {
+            ParachainSystem::collect_collation_info()
+        }
+    }
+
     impl pallet_swap_rpc_runtime_api::SwapApi<
         Block,
         AccountId,
@@ -560,4 +586,7 @@ impl_runtime_apis! {
     }
 }
 
-cumulus_pallet_parachain_system::register_validate_block!(Runtime, Executive);
+cumulus_pallet_parachain_system::register_validate_block!(
+    Runtime,
+    cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>
+);

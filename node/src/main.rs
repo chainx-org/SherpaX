@@ -1,4 +1,4 @@
-// Copyright 2020-2021 ChainX
+// Copyright 2020-2021 Zenlink
 // Copyright 2019 Parity Technologies (UK) Ltd.
 // This file is part of Cumulus.
 
@@ -23,6 +23,7 @@
 mod chain_spec;
 #[macro_use]
 mod service;
+mod bitcoin;
 mod cli;
 mod command;
 

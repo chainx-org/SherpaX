@@ -13,13 +13,13 @@ serde = { version = "1.0.119", optional = true }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false }
 
 # Substrate
-sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
-sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
-sp-std = { git = "https://github.com/paritytech/substrate", branch = "rococo-v1", default-features = false }
+sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.1", default-features = false }
 
-frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
-frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "rococo-v1" }
+frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
+frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.1" }
 
 orml-traits = { version = "0.4.0", default-features = false }
 
@@ -28,7 +28,7 @@ xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-featur
 xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
 
 [dev-dependencies]
-pallet-balances = { git = 'https://github.com/paritytech/substrate',  branch = 'rococo-v1' }
+pallet-balances = { git = 'https://github.com/paritytech/substrate',  branch = 'polkadot-v0.9.1' }
 
 [features]
 default = ["std"]
