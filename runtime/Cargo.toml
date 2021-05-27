@@ -46,21 +46,21 @@ cumulus-primitives-core = { git = 'https://github.com/paritytech/cumulus',  defa
 parachain-info = { git = 'https://github.com/paritytech/cumulus',  default-features = false, branch = 'polkadot-v0.9.1' }
 
 # ChainX pallet
-xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
-xpallet-gateway-records = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
-xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1"}
-xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
-xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
-chainx-primitives ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1"}
-xp-protocol ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
-xp-gateway-bitcoin ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
+xpallet-gateway-records = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
+xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version"}
+xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
+xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
+chainx-primitives ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version"}
+xp-protocol ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
+xp-gateway-bitcoin ={ git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
 
 pallet-swap = { path = "../pallets/swap", default-features = false }
 pallet-swap-rpc-runtime-api = { path = "../pallets/swap/rpc/runtime-api", default-features = false }
 orml-traits = { version = "0.4.0", default-features = false }
 
-chainbridge = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "rococo-v1" }
-assets-handler = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "rococo-v1" }
+chainbridge = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "update_substrate_version" }
+assets-handler = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "update_substrate_version" }
 
 [build-dependencies]
 substrate-wasm-builder = '3.0.0'
