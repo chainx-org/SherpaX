@@ -78,16 +78,15 @@ polkadot-test-service = { git = "https://github.com/paritytech/polkadot", branch
 dev-parachain-primitives = { path = "../primitives" }
 dev-parachain-runtime = { path = "../runtime" }
 
-xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
-xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "update_substrate_version" }
-xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
+xpallet-assets = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+xpallet-assets-registrar = { git = "https://github.com/chainx-org/ChainX",  default-features = false, branch = "rococo-v1" }
+xpallet-gateway-bitcoin-v2 = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
 
 pallet-swap-rpc = { path = "../pallets/swap/rpc" }
-xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
-xpallet-gateway-common = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
-xp-protocol = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
-chainx-primitives = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "update_substrate_version" }
- 
+xpallet-gateway-bitcoin = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+xpallet-gateway-common = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+xp-protocol = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
+chainx-primitives = { git = "https://github.com/chainx-org/ChainX", default-features = false, branch = "rococo-v1" }
 
 light-bitcoin = { git = "https://github.com/chainx-org/light-bitcoin", default-features = false, branch = "btc-like" }
 

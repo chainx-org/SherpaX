@@ -218,7 +218,7 @@ checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 [[package]]
 name = "assets-handler"
 version = "0.1.0"
-source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=update_substrate_version#147325dcd20ba227bf718770a4919668ec10ef4a"
+source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=rococo-v1#abcf48ab2c2be76ccc85dad0e03c42eabb0f5710"
 dependencies = [
  "chainbridge",
  "chainx-primitives",
@@ -926,7 +926,7 @@ dependencies = [
 [[package]]
 name = "chainbridge"
 version = "0.0.2"
-source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=update_substrate_version#147325dcd20ba227bf718770a4919668ec10ef4a"
+source = "git+https://github.com/chainx-org/chainbridge-substrate?branch=rococo-v1#abcf48ab2c2be76ccc85dad0e03c42eabb0f5710"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -942,7 +942,7 @@ dependencies = [
 [[package]]
 name = "chainx-primitives"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "frame-system",
  "parity-scale-codec",
@@ -12088,7 +12088,7 @@ dependencies = [
 [[package]]
 name = "xp-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "impl-trait-for-tuples 0.2.1",
@@ -12101,7 +12101,7 @@ dependencies = [
 [[package]]
 name = "xp-gateway-bitcoin"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12118,7 +12118,7 @@ dependencies = [
 [[package]]
 name = "xp-gateway-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "bs58 0.3.1",
  "frame-support",
@@ -12130,7 +12130,7 @@ dependencies = [
 [[package]]
 name = "xp-io"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "parity-scale-codec",
  "sp-core",
@@ -12141,7 +12141,7 @@ dependencies = [
 [[package]]
 name = "xp-protocol"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -12152,7 +12152,7 @@ dependencies = [
 [[package]]
 name = "xp-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "hex",
  "jsonrpc-core",
@@ -12162,7 +12162,7 @@ dependencies = [
 [[package]]
 name = "xp-runtime"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -12174,7 +12174,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "bitflags",
  "chainx-primitives",
@@ -12193,7 +12193,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12212,7 +12212,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-bitcoin"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "bs58 0.3.1",
  "chainx-primitives",
@@ -12240,7 +12240,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-bitcoin-v2"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "bitflags",
  "bs58 0.3.1",
@@ -12267,7 +12267,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12291,7 +12291,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-records"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12311,7 +12311,7 @@ dependencies = [
 [[package]]
 name = "xpallet-support"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=update_substrate_version#526b9cdd734e64150ee446416b639b69e6c37065"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
 dependencies = [
  "hex",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
