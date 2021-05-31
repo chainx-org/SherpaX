@@ -21,12 +21,12 @@
 
 ### 1. Supported Polkadot dependencies
 
-It should at least work until the following commits
+It should at least work until the following commits:
 
--   polkadot.js.org (apps v0.86.3-54)
--   Polkadot rococo-v1 @ `127eb17a25bbe2a9f2731ff11a65d7f8170f2373`
--   Cumulus rococo-v1 @ `da4c3bac6e9584e65740ef5db4dbd2c31c1a91db`
--   Substrate rococo-v1  @ `2be8fcc4236d32786c62f6f27a98e7fe7e550807`
+- polkadot.js.org (apps v0.86.3-54)
+- Polkadot rococo-v1 @ `127eb17a25bbe2a9f2731ff11a65d7f8170f2373`
+- Cumulus rococo-v1 @ `da4c3bac6e9584e65740ef5db4dbd2c31c1a91db`
+- Substrate rococo-v1 @ `2be8fcc4236d32786c62f6f27a98e7fe7e550807`
 
 ### 2. How to use
 
@@ -60,66 +60,61 @@ $ cargo build --release
 
 ```json
 {
-    "relaychain":{
-        "bin":"../polkadot/target/release/polkadot",
-        "chain":"rococo-local",
-        "nodes":[
-            {
-                "name":"alice",
-                "wsPort":9944,
-                "port":30444
-            },
-            {
-                "name":"bob",
-                "wsPort":9955,
-                "port":30555
-            },
-            {
-                "name":"charlie",
-                "wsPort":9966,
-                "port":30666
-            }
-        ],
-        "runtime_genesis_config":{
-            "parachainsConfiguration":{
-                "config":{
-                    "validation_upgrade_frequency":10,
-                    "validation_upgrade_delay":5
-                }
-            }
+  "relaychain": {
+    "bin": "../polkadot/target/release/polkadot",
+    "chain": "rococo-local",
+    "nodes": [
+      {
+        "name": "alice",
+        "wsPort": 9944,
+        "port": 30444
+      },
+      {
+        "name": "bob",
+        "wsPort": 9955,
+        "port": 30555
+      },
+      {
+        "name": "charlie",
+        "wsPort": 9966,
+        "port": 30666
+      }
+    ],
+    "runtime_genesis_config": {
+      "parachainsConfiguration": {
+        "config": {
+          "validation_upgrade_frequency": 10,
+          "validation_upgrade_delay": 5
         }
-    },
-    "parachains":[
+      }
+    }
+  },
+  "parachains": [
+    {
+      "bin": "./target/release/sherpax",
+      "id": "1059",
+      "balance": "1000000000000000000000",
+      "nodes": [
         {
-            "bin":"./target/release/sherpax",
-            "id":"1059",
-            "balance":"1000000000000000000000",
-            "nodes":[
-                {
-                    "wsPort":9977,
-                    "port":31200,
-                    "flags":[
-                        "--execution=nativeelsewasm",
-                        "-lexecutor=trace",
-                        "--discover-local",
-                        "--rpc-port=11111",
-                        "--",
-                        "--execution=wasm"
-                    ]
-                }
-            ]
+          "wsPort": 9977,
+          "port": 31200,
+          "flags": [
+            "--execution=nativeelsewasm",
+            "-lexecutor=trace",
+            "--discover-local",
+            "--rpc-port=11111",
+            "--",
+            "--execution=wasm"
+          ]
         }
-    ],
-    "hrmpChannels":[
-
-    ],
-    "types":{
-
-    },
-    "finalization":false
+      ]
+    }
+  ],
+  "hrmpChannels": [],
+  "types": {},
+  "finalization": false
 }
 ```
-
 
 ### 4. Launch a local setup including a Relay Chain and a Parachain by cmd
 
