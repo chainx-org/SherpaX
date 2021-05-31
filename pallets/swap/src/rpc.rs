@@ -47,4 +47,11 @@ impl<T: Config> Pallet<T> {
     pub fn get_balance(asset_id: AssetId, account: T::AccountId) -> BalanceOf<T> {
         T::MultiAsset::balance_of(asset_id, &account)
     }
+
+    pub fn get_all_pairs() -> Vec<(AssetId, AssetId)> {
+        SwapMetadata::<T>::iter()
+            .filter(|(_, (_, total_liquidity))| !total_liquidity.is_zero())
+            .map(|(k, _)| k)
+            .collect()
+    }
 }

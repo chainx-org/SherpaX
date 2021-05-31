@@ -583,6 +583,10 @@ impl_runtime_apis! {
         fn get_balance(asset_id: AssetId, account: AccountId) -> u128 {
             Swap::get_balance(asset_id, account)
         }
+
+        fn get_all_pairs() -> Vec<(AssetId, AssetId)> {
+            Swap::get_all_pairs()
+        }
     }
 }
 

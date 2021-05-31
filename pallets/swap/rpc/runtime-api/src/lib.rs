@@ -20,5 +20,7 @@ sp_api::decl_runtime_apis! {
          fn get_token_list() -> Vec<TokenInfo>;
 
          fn get_balance(asset_id: AssetId, account: AccountId) -> u128;
+
+         fn get_all_pairs() -> Vec<(AssetId, AssetId)>;
      }
 }

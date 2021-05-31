@@ -48,6 +48,10 @@ pub trait SwapApi<BlockHash, AccountId> {
         account: AccountId,
         at: Option<BlockHash>,
     ) -> Result<NumberOrHex>;
+
+    /// Return all pairs
+    #[rpc(name = "swap_getAllPairs")]
+    fn get_all_pairs(&self, at: Option<BlockHash>) -> Result<Vec<(AssetId, AssetId)>>;
 }
 
 const RUNTIME_ERROR: i64 = 1;
@@ -118,6 +122,15 @@ where
         api.get_balance(&at, asset_id, account)
             .map(|balance| balance.into())
             .map_err(runtime_error_into_rpc_err)
+    }
+
+    fn get_all_pairs(
+        &self,
+        at: Option<<Block as BlockT>::Hash>,
+    ) -> Result<Vec<(AssetId, AssetId)>> {
+        let api = self.client.runtime_api();
+        let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
+        api.get_all_pairs(&at).map_err(runtime_error_into_rpc_err)
     }
 }
 
