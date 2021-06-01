@@ -466,7 +466,9 @@
       "ChainX",
       "Bitcoin",
       "Ethereum",
-      "Polkadot"
+      "Polkadot",
+      "Dogecoin",
+      "Binance"
     ]
   },
   "String": "Text",
