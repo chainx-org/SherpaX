@@ -141,9 +141,9 @@ fn sbtc_restrictions() -> AssetRestrictions {
     AssetRestrictions::TRANSFER | AssetRestrictions::DESTROY_USABLE
 }
 
-fn cbtc_asset_info() -> AssetInfo {
+fn xbtc_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
-        b"CBTC".to_vec(),
+        b"XBTC".to_vec(),
         b"ChainX Bitcoin".to_vec(),
         Chain::Bitcoin,
         BTC_DECIMALS,
@@ -166,8 +166,8 @@ fn xeth_asset_info() -> AssetInfo {
 }
 fn sbtc_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
-        b"CBTC".to_vec(),
-        b"ChainX Bitcoin".to_vec(),
+        b"SBTC".to_vec(),
+        b"ChainX Shadow Bitcoin".to_vec(),
         Chain::Bitcoin,
         BTC_DECIMALS,
         b"Shadow token of ChainX's Cross-chain Bitcoin".to_vec(),
@@ -200,10 +200,10 @@ fn sdoge_restrictions() -> AssetRestrictions {
     AssetRestrictions::TRANSFER | AssetRestrictions::DESTROY_USABLE
 }
 
-fn cdoge_asset_info() -> AssetInfo {
+fn xdoge_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
-        b"CDOGE".to_vec(),
-        b"ChainX Bitcoin".to_vec(),
+        b"XDOGE".to_vec(),
+        b"ChainX Dogecoin".to_vec(),
         Chain::Dogecoin,
         DOGE_DECIMALS,
         b"ChainX's Cross-chain Dogecoin".to_vec(),
@@ -213,8 +213,8 @@ fn cdoge_asset_info() -> AssetInfo {
 
 fn sdoge_asset_info() -> AssetInfo {
     AssetInfo::new::<Runtime>(
-        b"CBTC".to_vec(),
-        b"ChainX Bitcoin".to_vec(),
+        b"SDOGE".to_vec(),
+        b"ChainX Shadow Dogecin".to_vec(),
         Chain::Dogecoin,
         DOGE_DECIMALS,
         b"Shadow token of ChainX's Cross-chain Dogecoin".to_vec(),
@@ -256,9 +256,9 @@ fn testnet_genesis(
             assets: vec![
                 (PCX, pcx_asset_info(), true, false),
                 (X_ETH, xeth_asset_info(), true, true),
-                (X_BTC, cbtc_asset_info(), true, true),
+                (X_BTC, xbtc_asset_info(), true, true),
                 (S_BTC, sbtc_asset_info(), true, true),
-                (X_DOGE, cdoge_asset_info(), true, true),
+                (X_DOGE, xdoge_asset_info(), true, true),
                 (S_DOGE, sdoge_asset_info(), true, true),
             ],
         },
