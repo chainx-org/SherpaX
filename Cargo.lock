@@ -942,7 +942,7 @@ dependencies = [
 [[package]]
 name = "chainx-primitives"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "frame-system",
  "parity-scale-codec",
@@ -4070,7 +4070,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "light-bitcoin-chain",
  "light-bitcoin-crypto",
@@ -4084,7 +4084,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-chain"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "hex",
  "light-bitcoin-crypto",
@@ -4097,7 +4097,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-crypto"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "digest 0.9.0",
  "light-bitcoin-primitives",
@@ -4110,7 +4110,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-keys"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "bs58 0.4.0",
  "hex",
@@ -4125,7 +4125,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-merkle"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "light-bitcoin-chain",
  "light-bitcoin-primitives",
@@ -4136,7 +4136,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-primitives"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "byteorder",
  "fixed-hash",
@@ -4150,7 +4150,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-script"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "hex",
  "light-bitcoin-chain",
@@ -4163,7 +4163,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-serialization"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "light-bitcoin-primitives",
  "light-bitcoin-serialization-derive",
@@ -4172,7 +4172,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-serialization-derive"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#5ec9b441cd3bdd08256577386e4231118fe24b99"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=btc-like#443180fd013d2a97340c33fd24647c8efe417acb"
 dependencies = [
  "proc-macro2 1.0.27",
  "quote 1.0.9",
@@ -12088,7 +12088,7 @@ dependencies = [
 [[package]]
 name = "xp-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "chainx-primitives",
  "impl-trait-for-tuples 0.2.1",
@@ -12101,7 +12101,7 @@ dependencies = [
 [[package]]
 name = "xp-gateway-bitcoin"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12118,7 +12118,7 @@ dependencies = [
 [[package]]
 name = "xp-gateway-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "bs58 0.3.1",
  "frame-support",
@@ -12130,7 +12130,7 @@ dependencies = [
 [[package]]
 name = "xp-io"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "parity-scale-codec",
  "sp-core",
@@ -12141,7 +12141,7 @@ dependencies = [
 [[package]]
 name = "xp-protocol"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "chainx-primitives",
  "parity-scale-codec",
@@ -12152,7 +12152,7 @@ dependencies = [
 [[package]]
 name = "xp-rpc"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "hex",
  "jsonrpc-core",
@@ -12162,7 +12162,7 @@ dependencies = [
 [[package]]
 name = "xp-runtime"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -12174,7 +12174,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "bitflags",
  "chainx-primitives",
@@ -12193,7 +12193,7 @@ dependencies = [
 [[package]]
 name = "xpallet-assets-registrar"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12212,7 +12212,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-bitcoin"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "bs58 0.3.1",
  "chainx-primitives",
@@ -12240,7 +12240,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-bitcoin-v2"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "bitflags",
  "bs58 0.3.1",
@@ -12267,7 +12267,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-common"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12291,7 +12291,7 @@ dependencies = [
 [[package]]
 name = "xpallet-gateway-records"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "chainx-primitives",
  "frame-support",
@@ -12311,7 +12311,7 @@ dependencies = [
 [[package]]
 name = "xpallet-support"
 version = "2.0.9"
-source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#3844d7f21afbbde97c9a4b0ee294a8184f7258bb"
+source = "git+https://github.com/chainx-org/ChainX?branch=rococo-v1#26cb731e04423838eb232c0c4d8669d28ea9c7d5"
 dependencies = [
  "hex",
  "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
