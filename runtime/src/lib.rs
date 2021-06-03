@@ -307,6 +307,7 @@ impl xpallet_gateway_bitcoin::Config<Instance1> for Runtime {
     type ReferralBinding = ();
     type AddressBinding = ();
     type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+    type Chain = xpallet_gateway_bitcoin::types::BtcChain;
 }
 
 impl xpallet_gateway_bitcoin::Config<Instance2> for Runtime {
@@ -318,6 +319,7 @@ impl xpallet_gateway_bitcoin::Config<Instance2> for Runtime {
     type ReferralBinding = ();
     type AddressBinding = ();
     type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+    type Chain = xpallet_gateway_bitcoin::types::DogeChain;
 }
 
 parameter_types! {

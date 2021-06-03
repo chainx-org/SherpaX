@@ -280,7 +280,7 @@ fn testnet_genesis(
             ..Default::default()
         },
         xpallet_gateway_bitcoin_v2_pallet_Instance2: XGatewayDogecoinBridgeConfig {
-            exchange_rate: TradingPrice { price: 1222222233, decimal: 2 },
+            exchange_rate: TradingPrice { price: 1000, decimal: 2 },
             issue_griefing_fee: 10,
             ..Default::default()
         },
