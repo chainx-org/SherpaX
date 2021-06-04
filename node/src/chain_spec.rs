@@ -138,7 +138,7 @@ const BTC_DECIMALS: u8 = 8;
 const X_BTC_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
 
 fn sbtc_restrictions() -> AssetRestrictions {
-    AssetRestrictions::TRANSFER | AssetRestrictions::DESTROY_USABLE
+    AssetRestrictions::TRANSFER
 }
 
 fn xbtc_asset_info() -> AssetInfo {
@@ -197,7 +197,7 @@ const DOGE_DECIMALS: u8 = 8;
 const X_DOGE_ASSETRESTRICTIONS: AssetRestrictions = AssetRestrictions::DESTROY_USABLE;
 
 fn sdoge_restrictions() -> AssetRestrictions {
-    AssetRestrictions::TRANSFER | AssetRestrictions::DESTROY_USABLE
+    AssetRestrictions::TRANSFER
 }
 
 fn xdoge_asset_info() -> AssetInfo {
