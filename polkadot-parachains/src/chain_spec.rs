@@ -18,7 +18,7 @@ use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
 use rococo_parachain_runtime::{AccountId, AuraId, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
-use sc_service::ChainType;
+use sc_service::{ChainType,Properties};
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
@@ -56,8 +56,7 @@ impl Extensions {
 type AccountPublic = <Signature as Verify>::Signer;
 
 /// Helper function to generate an account ID from seed
-pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
-where
+pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId where
 	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
 {
 	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
@@ -104,17 +103,24 @@ pub fn get_chain_spec(id: ParaId) -> ChainSpec {
 }
 
 pub fn get_shell_chain_spec(id: ParaId) -> ShellChainSpec {
+	let mut properties = Properties::new();
+	properties.insert("tokenSymbol".into(), "KSX".into());
+	properties.insert("tokenDecimals".into(), 8.into());
+
 	ShellChainSpec::from_genesis(
-		"Shell Local Testnet",
+		"SherpaX",
 		"shell_local_testnet",
 		ChainType::Local,
-		move || shell_testnet_genesis(id),
+		move || shell_testnet_genesis(
+			hex!["2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d"].into(),
+			vec![hex!["2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d"].into()],
+			id),
 		vec![],
 		None,
 		None,
-		None,
+		Some(properties),
 		Extensions {
-			relay_chain: "westend-dev".into(),
+			relay_chain: "kusama".into(),
 			para_id: id.into(),
 		},
 	)
@@ -182,7 +188,13 @@ fn testnet_genesis(
 	}
 }
 
-fn shell_testnet_genesis(parachain_id: ParaId) -> shell_runtime::GenesisConfig {
+fn shell_testnet_genesis(
+	root_key: AccountId,
+	endowed_accounts: Vec<AccountId>,
+	parachain_id: ParaId
+) -> shell_runtime::GenesisConfig {
+	const ENDOWMENT: u128 = 21_000_000_000_000;
+
 	shell_runtime::GenesisConfig {
 		frame_system: shell_runtime::SystemConfig {
 			code: shell_runtime::WASM_BINARY
@@ -191,5 +203,13 @@ fn shell_testnet_genesis(parachain_id: ParaId) -> shell_runtime::GenesisConfig {
 			changes_trie_config: Default::default(),
 		},
 		parachain_info: shell_runtime::ParachainInfoConfig { parachain_id },
+		pallet_balances: shell_runtime::BalancesConfig {
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, ENDOWMENT))
+				.collect(),
+		},
+		pallet_sudo: shell_runtime::SudoConfig { key: root_key },
 	}
 }

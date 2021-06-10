@@ -1833,6 +1833,8 @@ dependencies = [
  "hex",
  "hex-literal 0.3.1",
  "log",
+ "pallet-balances",
+ "pallet-sudo",
  "parachain-info",
  "parity-scale-codec",
  "polkadot-parachain",
