@@ -60,7 +60,7 @@ pallet-swap-rpc-runtime-api = { path = "../pallets/swap/rpc/runtime-api", defaul
 orml-traits = { version = "0.4.0", default-features = false }
 
 chainbridge = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "rococo-v1" }
-assets-handler = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "rococo-v1" }
+asset-handler = { git = "https://github.com/chainx-org/chainbridge-substrate", default-features = false, branch = "rococo-v1" }
 
 [build-dependencies]
 substrate-wasm-builder = '3.0.0'
@@ -114,5 +114,5 @@ std = [
 	'orml-traits/std',
 
 	'chainbridge/std',
-	'assets-handler/std',
+	'asset-handler/std',
 ]
