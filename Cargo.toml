@@ -5,5 +5,8 @@ panic = 'unwind'
 members = [
 	"node",
 	"primitives",
-	"runtime"
+	"runtime/common",
+	"runtime/rococo",
+	"runtime/shell",
+	"runtime/statemine"
 ]

@@ -1,5 +1,4 @@
-// Copyright 2020-2021 ChainX
-// Copyright 2019 Parity Technologies (UK) Ltd.
+// Copyright 2019-2021 Parity Technologies (UK) Ltd.
 // This file is part of Cumulus.
 
 // Substrate is free software: you can redistribute it and/or modify
@@ -18,5 +17,9 @@
 use substrate_wasm_builder::WasmBuilder;
 
 fn main() {
-    WasmBuilder::new().with_current_project().export_heap_base().import_memory().build()
+	WasmBuilder::new()
+		.with_current_project()
+		.export_heap_base()
+		.import_memory()
+		.build()
 }

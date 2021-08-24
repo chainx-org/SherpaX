@@ -16,6 +16,7 @@
 // along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::chain_spec;
+use sc_cli;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -60,8 +61,10 @@ pub struct ExportGenesisStateCommand {
     pub output: Option<PathBuf>,
 
     /// Id of the parachain this state is for.
-    #[structopt(long, default_value = "500")]
-    pub parachain_id: u32,
+    ///
+    /// Default: 100
+    #[structopt(long)]
+    pub parachain_id: Option<u32>,
 
     /// Write output in binary. Default is to write in hex.
     #[structopt(short, long)]
@@ -89,24 +92,6 @@ pub struct ExportGenesisWasmCommand {
 }
 
 #[derive(Debug, StructOpt)]
-pub struct RunCmd {
-    #[structopt(flatten)]
-    pub base: sc_cli::RunCmd,
-
-    /// Id of the parachain this collator collates for.
-    #[structopt(long)]
-    pub parachain_id: Option<u32>,
-}
-
-impl std::ops::Deref for RunCmd {
-    type Target = sc_cli::RunCmd;
-
-    fn deref(&self) -> &Self::Target {
-        &self.base
-    }
-}
-
-#[derive(Debug, StructOpt)]
 #[structopt(settings = &[
     structopt::clap::AppSettings::GlobalVersion,
     structopt::clap::AppSettings::ArgsNegateSubcommands,
@@ -117,13 +102,7 @@ pub struct Cli {
     pub subcommand: Option<Subcommand>,
 
     #[structopt(flatten)]
-    pub run: RunCmd,
-
-    /// Run node as collator.
-    ///
-    /// Note that this is the same as running with `--validator`.
-    #[structopt(long, conflicts_with = "validator")]
-    pub collator: bool,
+    pub run: cumulus_client_cli::RunCmd,
 
     /// Relaychain arguments
     #[structopt(raw = true)]
@@ -150,7 +129,14 @@ impl RelayChainCli {
     ) -> Self {
         let extension = chain_spec::Extensions::try_get(&*para_config.chain_spec);
         let chain_id = extension.map(|e| e.relay_chain.clone());
-        let base_path = para_config.base_path.as_ref().map(|x| x.path().join("polkadot"));
-        Self { base_path, chain_id, base: polkadot_cli::RunCmd::from_iter(relay_chain_args) }
+        let base_path = para_config
+            .base_path
+            .as_ref()
+            .map(|x| x.path().join("polkadot"));
+        Self {
+            base_path,
+            chain_id,
+            base: polkadot_cli::RunCmd::from_iter(relay_chain_args),
+        }
     }
 }
