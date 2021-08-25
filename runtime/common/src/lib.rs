@@ -19,7 +19,7 @@ pub mod impls;
 pub use types::*;
 pub use constants::*;
 
-/// Common types of statemint and statemine.
+/// Common types of statemint and sherpax.
 mod types {
 	use sp_runtime::traits::{Verify, IdentifyAccount, BlakeTwo256};
 
@@ -51,12 +51,12 @@ mod types {
 
 	/// Digest item type.
 	pub type DigestItem = sp_runtime::generic::DigestItem<Hash>;
-	
+
 	// Aura consensus authority.
 	pub type AuraId = sp_consensus_aura::sr25519::AuthorityId;
 }
 
-/// Common constants of statemint and statemine
+/// Common constants of statemint and sherpax
 mod constants {
 	use super::types::BlockNumber;
 	use sp_runtime::Perbill;

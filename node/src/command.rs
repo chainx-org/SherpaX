@@ -19,8 +19,7 @@ use crate::{
     chain_spec,
     cli::{Cli, RelayChainCli, Subcommand},
     service::{
-        StatemineRuntimeExecutor, new_partial,
-        RococoParachainRuntimeExecutor, ShellRuntimeExecutor,
+        new_partial, SherpaxRuntimeExecutor,
     },
 };
 use codec::Encode;
@@ -37,29 +36,21 @@ use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::Block as BlockT;
 use std::{io::Write, net::SocketAddr};
 
-// default to the Statemint/Statemine/Westmint id
-const DEFAULT_PARA_ID: u32 = 1000;
+const DEFAULT_PARA_ID: u32 = 2000;
 
 trait IdentifyChain {
-    fn is_shell(&self) -> bool;
-    fn is_statemine(&self) -> bool;
+    fn is_sherpax(&self) -> bool;
 }
 
 impl IdentifyChain for dyn sc_service::ChainSpec {
-    fn is_shell(&self) -> bool {
-        self.id().starts_with("shell")
-    }
-    fn is_statemine(&self) -> bool {
-        self.id().starts_with("statemine")
+    fn is_sherpax(&self) -> bool {
+        self.id().starts_with("sherpax")
     }
 }
 
 impl<T: sc_service::ChainSpec + 'static> IdentifyChain for T {
-    fn is_shell(&self) -> bool {
-        <dyn sc_service::ChainSpec>::is_shell(self)
-    }
-    fn is_statemine(&self) -> bool {
-        <dyn sc_service::ChainSpec>::is_statemine(self)
+    fn is_sherpax(&self) -> bool {
+        <dyn sc_service::ChainSpec>::is_sherpax(self)
     }
 }
 
@@ -68,25 +59,17 @@ fn load_spec(
     para_id: ParaId,
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
     Ok(match id {
-        "shell" => Box::new(chain_spec::get_shell_chain_spec(para_id)),
-        "statemine-dev" => Box::new(chain_spec::statemine_development_config(para_id)),
-        "statemine-local" => Box::new(chain_spec::statemine_local_config(para_id)),
+        "sherpax-dev" => Box::new(chain_spec::sherpax_development_config(para_id)),
+        "sherpax-local" => Box::new(chain_spec::sherpax_local_config(para_id)),
         // the chain spec as used for generating the upgrade genesis values
-        "statemine-genesis" => Box::new(chain_spec::statemine_config(para_id)),
+        "sherpax-genesis" => Box::new(chain_spec::sherpax_config(para_id)),
         // the shell-based chain spec as used for syncing
-        // "statemine" => Box::new(chain_spec::ChainSpec::from_json_bytes(
-        //     &include_bytes!("../res/statemine.json")[..],
+        // "sherpax" => Box::new(chain_spec::ChainSpec::from_json_bytes(
+        //     &include_bytes!("../res/sherpax.json")[..],
         // )?),
-        "" => Box::new(chain_spec::get_chain_spec(para_id)),
+        // "" => Box::new(chain_spec::get_chain_spec(para_id)),
         path => {
-            let chain_spec = chain_spec::ChainSpec::from_json_file(path.into())?;
-            if chain_spec.is_statemine() {
-                Box::new(chain_spec::StatemineChainSpec::from_json_file(path.into())?)
-            } else if chain_spec.is_shell() {
-                Box::new(chain_spec::ShellChainSpec::from_json_file(path.into())?)
-            } else {
-                Box::new(chain_spec)
-            }
+            Box::new(chain_spec::SherpaxChainSpec::from_json_file(path.into())?)
         }
     })
 }
@@ -126,14 +109,8 @@ impl SubstrateCli for Cli {
         load_spec(id, self.run.parachain_id.unwrap_or(DEFAULT_PARA_ID).into())
     }
 
-    fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-        if chain_spec.is_statemine() {
-            &statemine_runtime::VERSION
-        } else if chain_spec.is_shell() {
-            &shell_runtime::VERSION
-        } else {
-            &rococo_parachain_runtime::VERSION
-        }
+    fn native_runtime_version(_chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
+        &sherpax_runtime::VERSION
     }
 }
 
@@ -190,37 +167,17 @@ fn extract_genesis_wasm(chain_spec: &Box<dyn sc_service::ChainSpec>) -> Result<V
 macro_rules! construct_async_run {
     (|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
         let runner = $cli.create_runner($cmd)?;
-        if runner.config().chain_spec.is_statemine() {
+        if runner.config().chain_spec.is_sherpax() {
             runner.async_run(|$config| {
-                let $components = new_partial::<statemine_runtime::RuntimeApi, StatemineRuntimeExecutor, _>(
+                let $components = new_partial::<sherpax_runtime::RuntimeApi, SherpaxRuntimeExecutor, _>(
                     &$config,
-                    crate::service::statemint_build_import_queue,
-                )?;
-                let task_manager = $components.task_manager;
-                { $( $code )* }.map(|v| (v, task_manager))
-            })
-        } else if runner.config().chain_spec.is_shell() {
-            runner.async_run(|$config| {
-                let $components = new_partial::<shell_runtime::RuntimeApi, ShellRuntimeExecutor, _>(
-                    &$config,
-                    crate::service::shell_build_import_queue,
+                    crate::service::sherpax_build_import_queue,
                 )?;
                 let task_manager = $components.task_manager;
                 { $( $code )* }.map(|v| (v, task_manager))
             })
         } else {
-            runner.async_run(|$config| {
-                let $components = new_partial::<
-                    rococo_parachain_runtime::RuntimeApi,
-                    RococoParachainRuntimeExecutor,
-                    _
-                >(
-                    &$config,
-                    crate::service::rococo_parachain_build_import_queue,
-                )?;
-                let task_manager = $components.task_manager;
-                { $( $code )* }.map(|v| (v, task_manager))
-            })
+            Err(sc_service::Error::Other("only support sherpax chainspec".to_owned()).into())
         }
     }}
 }
@@ -362,25 +319,13 @@ pub fn run() -> Result<()> {
                     }
                 );
 
-                if config.chain_spec.is_statemine() {
-                    crate::service::start_statemint_node::<statemine_runtime::RuntimeApi, StatemineRuntimeExecutor>(
-                        config,
-                        polkadot_config,
-                        id,
-                    )
-                        .await
-                        .map(|r| r.0)
-                        .map_err(Into::into)
-                } else if config.chain_spec.is_shell() {
-                    crate::service::start_shell_node(config, polkadot_config, id)
+                if config.chain_spec.is_sherpax() {
+                    crate::service::start_sherpax_parachain_node(config, polkadot_config, id)
                         .await
                         .map(|r| r.0)
                         .map_err(Into::into)
                 } else {
-                    crate::service::start_rococo_parachain_node(config, polkadot_config, id)
-                        .await
-                        .map(|r| r.0)
-                        .map_err(Into::into)
+                    Err(sc_service::Error::Other("only support sherpax chainspec".to_owned()).into())
                 }
             })
         }

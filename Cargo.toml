@@ -6,7 +6,5 @@ members = [
 	"node",
 	"primitives",
 	"runtime/common",
-	"runtime/rococo",
-	"runtime/shell",
-	"runtime/statemine"
+	"runtime/sherpax"
 ]

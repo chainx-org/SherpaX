@@ -1,13 +1,13 @@
 [package]
-name = "dev-parachain-primitives"
-version = "0.1.0"
+name = "sherpax-primitives"
+version = "1.0.0"
 authors = ["ChainX Developers"]
 edition = "2018"
 
 [dependencies]
 # Substrate dependencies
-sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.8' }
-sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.8' }
+sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.9' }
+sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false, branch = 'polkadot-v0.9.9' }
 
 [features]
 default = [ "std" ]
