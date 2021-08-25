@@ -111,7 +111,7 @@ parameter_types! {
 		})
 		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
 		.build_or_panic();
-	pub const SS58Prefix: u8 = 42;
+	pub const SS58Prefix: u8 = 44;
 }
 
 impl frame_system::Config for Runtime {
@@ -141,7 +141,7 @@ impl frame_system::Config for Runtime {
 	type Version = Version;
 	/// Converts a module to an index of this module in the runtime.
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type DbWeight = ();
@@ -219,6 +219,31 @@ impl cumulus_pallet_xcm::Config for Runtime {
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 }
 
+parameter_types! {
+	pub const ExistentialDeposit: u128 = 500;
+	pub const MaxLocks: u32 = 50;
+	pub const MaxReserves: u32 = 50;
+}
+
+impl pallet_balances::Config for Runtime {
+	type MaxLocks = MaxLocks;
+	/// The type for recording an account's balance.
+	type Balance = Balance;
+	/// The ubiquitous event type.
+	type Event = Event;
+	type DustRemoval = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
+	type MaxReserves = MaxReserves;
+	type ReserveIdentifier = [u8; 8];
+}
+
+impl pallet_sudo::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+}
+
 construct_runtime! {
 	pub enum Runtime where
 		Block = Block,
@@ -228,35 +253,11 @@ construct_runtime! {
 		System: frame_system::{Pallet, Call, Storage, Config, Event<T>},
 		ParachainSystem: cumulus_pallet_parachain_system::{Pallet, Call, Config, Storage, Inherent, Event<T>},
 		ParachainInfo: parachain_info::{Pallet, Storage, Config},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 
 		// DMP handler.
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin},
-	}
-}
-
-/// Simple implementation which fails any transaction which is signed.
-#[derive(Eq, PartialEq, Clone, Default, sp_core::RuntimeDebug, codec::Encode, codec::Decode)]
-pub struct DisallowSigned;
-impl sp_runtime::traits::SignedExtension for DisallowSigned {
-	const IDENTIFIER: &'static str = "DisallowSigned";
-	type AccountId = AccountId;
-	type Call = Call;
-	type AdditionalSigned = ();
-	type Pre = ();
-	fn additional_signed(
-		&self,
-	) -> sp_std::result::Result<(), sp_runtime::transaction_validity::TransactionValidityError> {
-		Ok(())
-	}
-	fn validate(
-		&self,
-		_who: &Self::AccountId,
-		_call: &Self::Call,
-		_info: &sp_runtime::traits::DispatchInfoOf<Self::Call>,
-		_len: usize,
-	) -> TransactionValidity {
-		let i = sp_runtime::transaction_validity::InvalidTransaction::BadProof;
-		Err(sp_runtime::transaction_validity::TransactionValidityError::Invalid(i))
+		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
 	}
 }
 
@@ -265,6 +266,8 @@ pub type Signature = sp_runtime::MultiSignature;
 /// Some way of identifying an account on the chain. We intentionally make it equivalent
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as sp_runtime::traits::Verify>::Signer as sp_runtime::traits::IdentifyAccount>::AccountId;
+/// Balance of an account.
+pub type Balance = u128;
 /// Index of a transaction in the chain.
 pub type Index = u32;
 /// A hash of some data used by the chain.
@@ -282,7 +285,14 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
-pub type SignedExtra = DisallowSigned;
+pub type SignedExtra = (
+	frame_system::CheckSpecVersion<Runtime>,
+	frame_system::CheckTxVersion<Runtime>,
+	frame_system::CheckGenesis<Runtime>,
+	frame_system::CheckEra<Runtime>,
+	frame_system::CheckNonce<Runtime>,
+	frame_system::CheckWeight<Runtime>
+);
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
 /// Extrinsic type that has already been checked.

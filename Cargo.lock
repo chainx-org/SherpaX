@@ -8924,6 +8924,8 @@ dependencies = [
  "hex",
  "hex-literal",
  "log",
+ "pallet-balances",
+ "pallet-sudo",
  "parachain-info",
  "parity-scale-codec",
  "polkadot-parachain",
