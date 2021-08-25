@@ -54,7 +54,7 @@ use frame_system::{
 use sp_runtime::Perbill;
 use runtime_common::{
 	impls::DealWithFees, AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index, Signature,
-	AVERAGE_ON_INITIALIZE_RATIO, HOURS, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO, SLOT_DURATION,
+	AVERAGE_ON_INITIALIZE_RATIO, HOURS, MINUTES, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
 
 #[cfg(any(feature = "std", test))]
@@ -272,6 +272,7 @@ parameter_types! {
 	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(33);
 	pub const Period: u32 = 6 * HOURS;
 	pub const Offset: u32 = 0;
+	pub const DevPeriod: u32 = 2 * MINUTES;
 }
 
 impl pallet_session::Config for Runtime {
@@ -279,8 +280,15 @@ impl pallet_session::Config for Runtime {
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
 	// we don't have stash and controller, thus we don't need the convert as well.
 	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;
+	#[cfg(feature = "sherpax-dev")]
+	type ShouldEndSession = pallet_session::PeriodicSessions<DevPeriod, Offset>;
+	#[cfg(not(feature = "sherpax-dev"))]
 	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
+	#[cfg(feature = "sherpax-dev")]
+	type NextSessionRotation = pallet_session::PeriodicSessions<DevPeriod, Offset>;
+	#[cfg(not(feature = "sherpax-dev"))]
 	type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+
 	type SessionManager = CollatorSelection;
 	// Essentially just Aura, but lets be pedantic.
 	type SessionHandler =
@@ -312,6 +320,9 @@ impl pallet_collator_selection::Config for Runtime {
 	type MinCandidates = MinCandidates;
 	type MaxInvulnerables = MaxInvulnerables;
 	// should be a multiple of session or things will get inconsistent
+	#[cfg(feature = "sherpax-dev")]
+	type KickThreshold = DevPeriod;
+	#[cfg(not(feature = "sherpax-dev"))]
 	type KickThreshold = Period;
 	type ValidatorId = <Self as frame_system::Config>::AccountId;
 	type ValidatorIdOf = pallet_collator_selection::IdentityCollator;

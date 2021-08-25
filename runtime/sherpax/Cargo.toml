@@ -109,3 +109,4 @@ std = [
 	"polkadot-parachain/std",
 	"polkadot-runtime-common/std"
 ]
+sherpax-dev = []
