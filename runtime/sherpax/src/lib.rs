@@ -88,7 +88,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("sherpax"),
 	impl_name: create_runtime_str!("sherpax"),
 	authoring_version: 1,
-	spec_version: 2,
+	spec_version: 100,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -330,6 +330,22 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
+parameter_types! {
+    pub const CidsLimit: u32 = 500;
+    pub const MaxCardSize: u32 = 1024 * 1024;
+}
+
+impl pallet_coming_id::Config for Runtime {
+	type Event = Event;
+	type MaxCardSize = MaxCardSize;
+	type WeightInfo = ();
+}
+
+impl pallet_coming_nft::Config for Runtime {
+	type ComingNFT = ComingId;
+	type WeightInfo = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -361,6 +377,9 @@ construct_runtime!(
 		// Handy utilities.
 		Utility: pallet_utility::{Pallet, Call, Event} = 40,
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 41,
+
+		ComingId: pallet_coming_id::{Pallet, Call, Config<T>, Storage, Event<T>} = 50,
+        ComingNFT: pallet_coming_nft::{Pallet, Call} = 51,
 	}
 );
 

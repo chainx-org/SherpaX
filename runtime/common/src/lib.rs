@@ -19,7 +19,7 @@ pub mod impls;
 pub use types::*;
 pub use constants::*;
 
-/// Common types of statemint and sherpax.
+/// Common types of SherpaX.
 mod types {
 	use sp_runtime::traits::{Verify, IdentifyAccount, BlakeTwo256};
 

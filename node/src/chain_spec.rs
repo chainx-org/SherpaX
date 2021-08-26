@@ -264,6 +264,12 @@ fn sherpax_genesis(
         aura: Default::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
-        sudo: sherpax_runtime::SudoConfig { key: root_key },
+        sudo: sherpax_runtime::SudoConfig { key: root_key.clone() },
+        coming_id: sherpax_runtime::ComingIdConfig {
+            // Assign network admin rights.
+            high_admin_key: root_key.clone(),
+            medium_admin_key: root_key.clone(),
+            low_admin_key: root_key,
+        },
     }
 }

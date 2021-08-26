@@ -5,14 +5,15 @@ authors = ["ChainX Developers"]
 edition = "2018"
 
 [dependencies]
-serde = { version = "1.0.101", optional = true, features = ["derive"] }
+serde = { version = "1.0.119", optional = true, features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive", "max-encoded-len"] }
 log = { version = "0.4.14", default-features = false }
 smallvec = "1.6.1"
 hex-literal = { version = '0.3.1', optional = true }
 
 runtime-common = { path = "../common", default-features = false }
-sherpax-primitives = { path = "../../primitives", default-features = false }
+pallet-coming-id = { path = "../../pallets/pallet-coming-id", default-features = false }
+pallet-coming-nft = { path = "../../pallets/pallet-coming-nft", default-features = false }
 
 # Substrate dependencies
 sp-std = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.9" }
@@ -71,7 +72,8 @@ std = [
 	"log/std",
 
 	"runtime-common/std",
-	"sherpax-primitives/std",
+	"pallet-coming-id/std",
+	"pallet-coming-nft/std",
 
 	"sp-std/std",
 	"sp-api/std",

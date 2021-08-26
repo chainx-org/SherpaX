@@ -9,7 +9,7 @@ targets = ['x86_64-unknown-linux-gnu']
 
 [dependencies]
 # External dependencies
-codec = { package = 'parity-scale-codec', version = '2.0.0', features = ['derive'], default-features = false }
+codec = { package = 'parity-scale-codec', version = '2.0.0', features = ["derive", "max-encoded-len"], default-features = false }
 
 # Substrate dependencies
 sp-consensus-aura = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.9" }
@@ -28,9 +28,6 @@ polkadot-primitives = { git = 'https://github.com/paritytech/polkadot', default-
 
 # Cumulus dependencies
 pallet-collator-selection = { git = "https://github.com/paritytech/cumulus", default-features = false, branch = "polkadot-v0.9.9" }
-
-# Local dependencies
-sherpax-primitives = { path = "../../primitives", default-features = false }
 
 [dev-dependencies]
 serde = { version = "1.0.119" }
@@ -56,5 +53,4 @@ std = [
 	'polkadot-runtime-common/std',
 	'polkadot-primitives/std',
 	'pallet-collator-selection/std',
-	'sherpax-primitives/std',
 ]

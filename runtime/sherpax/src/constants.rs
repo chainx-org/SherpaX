@@ -14,7 +14,7 @@
 // limitations under the License.
 
 pub mod currency {
-	use sherpax_primitives::Balance;
+	use runtime_common::Balance;
 
 	/// The existential deposit.
 	pub const EXISTENTIAL_DEPOSIT: Balance = CENTS / 100;
@@ -30,7 +30,7 @@ pub mod currency {
 
 /// Fee-related.
 pub mod fee {
-	use sherpax_primitives::Balance;
+	use runtime_common::Balance;
 	pub use sp_runtime::Perbill;
 	use frame_support::weights::{
 		constants::ExtrinsicBaseWeight, WeightToFeeCoefficient, WeightToFeeCoefficients,

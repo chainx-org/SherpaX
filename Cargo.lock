@@ -4766,6 +4766,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-coming-id"
+version = "1.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "log",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-storage",
+]
+
+[[package]]
+name = "pallet-coming-nft"
+version = "1.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-coming-id",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-democracy"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.9#91061a7d925b5bc597804293da283477512ba4ff"
@@ -7480,7 +7515,6 @@ dependencies = [
  "polkadot-primitives",
  "polkadot-runtime-common",
  "serde",
- "sherpax-primitives",
  "sp-consensus-aura",
  "sp-core",
  "sp-io",
@@ -8987,14 +9021,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sherpax-primitives"
-version = "1.0.0"
-dependencies = [
- "sp-core",
- "sp-runtime",
-]
-
-[[package]]
 name = "sherpax-runtime"
 version = "1.0.0"
 dependencies = [
@@ -9013,6 +9039,8 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-collator-selection",
+ "pallet-coming-id",
+ "pallet-coming-nft",
  "pallet-multisig",
  "pallet-randomness-collective-flip",
  "pallet-session",
@@ -9027,7 +9055,6 @@ dependencies = [
  "polkadot-runtime-common",
  "runtime-common",
  "serde",
- "sherpax-primitives",
  "smallvec 1.6.1",
  "sp-api",
  "sp-block-builder",
