@@ -271,5 +271,6 @@ fn sherpax_genesis(
             medium_admin_key: root_key.clone(),
             low_admin_key: root_key,
         },
+        ethereum_chain_id: sherpax_runtime::EthereumChainIdConfig { chain_id: 1500u64 },
     }
 }

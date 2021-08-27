@@ -14,6 +14,7 @@ hex-literal = { version = '0.3.1', optional = true }
 runtime-common = { path = "../common", default-features = false }
 pallet-coming-id = { path = "../../pallets/pallet-coming-id", default-features = false }
 pallet-coming-nft = { path = "../../pallets/pallet-coming-nft", default-features = false }
+pallet-ethereum-chain-id = { path = "../../pallets/ethereum-chain-id", default-features = false }
 
 # Substrate dependencies
 sp-std = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.9" }
@@ -74,6 +75,7 @@ std = [
 	"runtime-common/std",
 	"pallet-coming-id/std",
 	"pallet-coming-nft/std",
+	"pallet-ethereum-chain-id/std",
 
 	"sp-std/std",
 	"sp-api/std",

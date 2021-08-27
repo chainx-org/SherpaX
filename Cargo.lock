@@ -4851,6 +4851,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-ethereum-chain-id"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.9#91061a7d925b5bc597804293da283477512ba4ff"
@@ -9041,6 +9051,7 @@ dependencies = [
  "pallet-collator-selection",
  "pallet-coming-id",
  "pallet-coming-nft",
+ "pallet-ethereum-chain-id",
  "pallet-multisig",
  "pallet-randomness-collective-flip",
  "pallet-session",

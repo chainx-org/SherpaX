@@ -346,6 +346,9 @@ impl pallet_coming_nft::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl pallet_ethereum_chain_id::Config for Runtime {}
+
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -380,6 +383,7 @@ construct_runtime!(
 
 		ComingId: pallet_coming_id::{Pallet, Call, Config<T>, Storage, Event<T>} = 50,
         ComingNFT: pallet_coming_nft::{Pallet, Call} = 51,
+        EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config} = 52,
 	}
 );
 
