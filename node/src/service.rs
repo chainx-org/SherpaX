@@ -172,6 +172,7 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
         + sp_block_builder::BlockBuilder<Block>
         + cumulus_primitives_core::CollectCollationInfo<Block>
         + pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+        + pallet_coming_id_rpc::ComingIdRuntimeApi<Block, AccountId>
         + substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
         sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
         Executor: sc_executor::NativeExecutionDispatch + 'static,

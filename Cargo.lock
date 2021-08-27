@@ -5008,6 +5008,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-coming-id-rpc"
+version = "1.1.0"
+dependencies = [
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "pallet-coming-id-rpc-runtime-api",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-rpc",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-coming-id-rpc-runtime-api"
+version = "1.1.0"
+dependencies = [
+ "pallet-coming-id",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-core",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-coming-nft"
 version = "1.1.0"
 dependencies = [
@@ -9362,6 +9389,8 @@ dependencies = [
  "hex-literal",
  "jsonrpc-core",
  "log",
+ "pallet-coming-id",
+ "pallet-coming-id-rpc",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "parking_lot 0.9.0",
@@ -9430,6 +9459,7 @@ dependencies = [
  "pallet-balances",
  "pallet-collator-selection",
  "pallet-coming-id",
+ "pallet-coming-id-rpc-runtime-api",
  "pallet-coming-nft",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",

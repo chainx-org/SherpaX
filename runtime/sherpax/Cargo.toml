@@ -13,6 +13,7 @@ hex-literal = { version = '0.3.1', optional = true }
 
 runtime-common = { path = "../common", default-features = false }
 pallet-coming-id = { path = "../../pallets/pallet-coming-id", default-features = false }
+pallet-coming-id-rpc-runtime-api = { path = "../../pallets/pallet-coming-id/rpc/runtime-api", default-features = false }
 pallet-coming-nft = { path = "../../pallets/pallet-coming-nft", default-features = false }
 
 # EVM
@@ -88,6 +89,7 @@ std = [
 
 	"runtime-common/std",
 	"pallet-coming-id/std",
+	"pallet-coming-id-rpc-runtime-api/std",
 	"pallet-coming-nft/std",
 	"pallet-ethereum-chain-id/std",
 	"pallet-evm/std",

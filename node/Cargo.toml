@@ -78,5 +78,8 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "r
 runtime-common = { path = "../runtime/common" }
 sherpax-runtime = { path = "../runtime/sherpax" }
 
+pallet-coming-id = { path = "../pallets/pallet-coming-id" }
+pallet-coming-id-rpc = { path = "../pallets/pallet-coming-id/rpc" }
+
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.9" }

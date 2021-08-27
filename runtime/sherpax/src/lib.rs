@@ -25,7 +25,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 pub mod constants;
 
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, Bytes};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT},
@@ -57,6 +57,7 @@ use runtime_common::{
 	AVERAGE_ON_INITIALIZE_RATIO, HOURS, MINUTES, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO,
 	SLOT_DURATION, WEIGHT_PER_SECOND, opaque
 };
+use pallet_coming_id::{Cid, CidDetails};
 
 // evm
 mod precompiles;
@@ -612,6 +613,24 @@ impl_runtime_apis! {
 	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
 		fn collect_collation_info() -> cumulus_primitives_core::CollationInfo {
 			ParachainSystem::collect_collation_info()
+		}
+	}
+
+	impl pallet_coming_id_rpc_runtime_api::ComingIdApi<Block, AccountId> for Runtime {
+		fn get_account_id(cid: Cid) -> Option<AccountId> {
+			ComingId::get_account_id(cid)
+		}
+
+		fn get_cids(account: AccountId) -> Vec<Cid> {
+		ComingId::get_cids(account)
+		}
+
+		fn get_bond_data(cid: Cid) -> Option<CidDetails<AccountId>> {
+			ComingId::get_bond_data(cid)
+		}
+
+		fn get_card(cid: Cid) -> Option<Bytes> {
+			ComingId::get_card(cid)
 		}
 	}
 
