@@ -82,8 +82,8 @@ pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn sherpax_session_keys(keys: AuraId) -> sherpax_runtime::opaque::SessionKeys {
-    sherpax_runtime::opaque::SessionKeys { aura: keys }
+pub fn sherpax_session_keys(keys: AuraId) -> sherpax_runtime::SessionKeys {
+    sherpax_runtime::SessionKeys { aura: keys }
 }
 
 pub fn sherpax_development_config(id: ParaId) -> SherpaxChainSpec {

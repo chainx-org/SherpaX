@@ -38,10 +38,8 @@ use sp_runtime::traits::BlakeTwo256;
 use std::sync::Arc;
 use substrate_prometheus_endpoint::Registry;
 
-type BlockNumber = u32;
-type Header = sp_runtime::generic::Header<BlockNumber, sp_runtime::traits::BlakeTwo256>;
-pub type Block = sp_runtime::generic::Block<Header, sp_runtime::OpaqueExtrinsic>;
-type Hash = sp_core::H256;
+use crate::rpc;
+pub use runtime_common::{AccountId, Balance, Block, Hash, Header, Index as Nonce};
 
 // Native SherpaX executor instance.
 native_executor_instance!(
@@ -155,7 +153,7 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
     parachain_config: Configuration,
     polkadot_config: Configuration,
     id: ParaId,
-    rpc_ext_builder: RB,
+    _rpc_ext_builder: RB,
     build_import_queue: BIQ,
     build_consensus: BIC,
 ) -> sc_service::error::Result<(TaskManager, Arc<TFullClient<Block, RuntimeApi, Executor>>)>
@@ -172,7 +170,9 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
             StateBackend = sc_client_api::StateBackendFor<TFullBackend<Block>, Block>,
         > + sp_offchain::OffchainWorkerApi<Block>
         + sp_block_builder::BlockBuilder<Block>
-        + cumulus_primitives_core::CollectCollationInfo<Block>,
+        + cumulus_primitives_core::CollectCollationInfo<Block>
+        + pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
+        + substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
         sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
         Executor: sc_executor::NativeExecutionDispatch + 'static,
         RB: Fn(
@@ -244,8 +244,20 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
             warp_sync: None,
         })?;
 
-    let rpc_client = client.clone();
-    let rpc_extensions_builder = Box::new(move |_, _| rpc_ext_builder(rpc_client.clone()));
+    let rpc_extensions_builder = {
+        let client = client.clone();
+        let transaction_pool = transaction_pool.clone();
+
+        Box::new(move |deny_unsafe, _| {
+            let deps = rpc::FullDeps {
+                client: client.clone(),
+                pool: transaction_pool.clone(),
+                deny_unsafe,
+            };
+
+            Ok(rpc::create_full(deps))
+        })
+    };
 
     sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         on_demand: None,

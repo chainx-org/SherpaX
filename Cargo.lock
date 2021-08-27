@@ -9383,6 +9383,7 @@ dependencies = [
  "sc-telemetry",
  "sc-tracing",
  "sc-transaction-pool",
+ "sc-transaction-pool-api",
  "serde",
  "sherpax-runtime",
  "sp-api",
@@ -9402,6 +9403,7 @@ dependencies = [
  "sp-trie",
  "structopt",
  "substrate-build-script-utils",
+ "substrate-frame-rpc-system",
  "substrate-prometheus-endpoint",
  "trie-root 0.15.2",
 ]
