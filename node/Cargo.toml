@@ -81,5 +81,16 @@ sherpax-runtime = { path = "../runtime/sherpax" }
 pallet-coming-id = { path = "../pallets/pallet-coming-id" }
 pallet-coming-id-rpc = { path = "../pallets/pallet-coming-id/rpc" }
 
+# EVM
+jsonrpc-pubsub = "15.0.0"
+fp-consensus = { git = "https://github.com/purestake/frontier", branch = "polkadot-v0.9.9" }
+fp-rpc = { git = "https://github.com/purestake/frontier", branch = "polkadot-v0.9.9" }
+fc-consensus  = { git = "https://github.com/purestake/frontier", branch = "polkadot-v0.9.9" }
+fc-rpc-core = { git = "https://github.com/purestake/frontier", branch = "polkadot-v0.9.9" }
+fc-rpc = { git = "https://github.com/purestake/frontier", branch = "polkadot-v0.9.9" }
+fc-mapping-sync = { git = "https://github.com/purestake/frontier", branch = "polkadot-v0.9.9" }
+fc-db = { git = "https://github.com/purestake/frontier", branch = "polkadot-v0.9.9" }
+pallet-ethereum = { git = "https://github.com/purestake/frontier", branch = "polkadot-v0.9.9" }
+
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.9" }
