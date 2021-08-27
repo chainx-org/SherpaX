@@ -401,7 +401,6 @@ fn migrate_to_new_cid_details_should_work() {
     s.top = data.into_iter().collect();
 
     sp_io::TestExternalities::new(s).execute_with(|| {
-        set_pallet_version();
 
         assert_eq!(OldDistributed::get(cid1), Some(old_cid_details_1));
         assert_eq!(OldDistributed::get(cid2), Some(old_cid_details_2));
@@ -433,75 +432,4 @@ fn migrate_to_new_cid_details_should_work() {
             })
         );
     })
-}
-
-fn set_pallet_version() {
-    use codec::Encode;
-    use frame_support::traits::{PalletVersion, PALLET_VERSION_STORAGE_KEY_POSTFIX};
-    fn get_pallet_version_storage_key_for_pallet(pallet: &str) -> [u8; 32] {
-        let pallet_name = sp_io::hashing::twox_128(pallet.as_bytes());
-        let postfix = sp_io::hashing::twox_128(PALLET_VERSION_STORAGE_KEY_POSTFIX);
-
-        let mut final_key = [0u8; 32];
-        final_key[..16].copy_from_slice(&pallet_name);
-        final_key[16..].copy_from_slice(&postfix);
-
-        final_key
-    }
-    /// A version that we will check for in the tests
-    const SOME_TEST_VERSION: PalletVersion = PalletVersion {
-        major: 1,
-        minor: 0,
-        patch: 0,
-    };
-    let key = get_pallet_version_storage_key_for_pallet("ComingId");
-    sp_io::storage::set(&key, &SOME_TEST_VERSION.encode());
-}
-
-#[test]
-fn crate_to_pallet_version() {
-    use codec::Decode;
-    use frame_support::traits::{
-        // GetPalletVersion,
-        OnRuntimeUpgrade,
-        PalletVersion,
-        PALLET_VERSION_STORAGE_KEY_POSTFIX,
-    };
-    use hex_literal::hex;
-    use sp_core::hexdisplay::HexDisplay;
-
-    fn get_pallet_version_storage_key_for_pallet(pallet: &str) -> [u8; 32] {
-        let pallet_name = sp_io::hashing::twox_128(pallet.as_bytes());
-        let postfix = sp_io::hashing::twox_128(PALLET_VERSION_STORAGE_KEY_POSTFIX);
-
-        let mut final_key = [0u8; 32];
-        final_key[..16].copy_from_slice(&pallet_name);
-        final_key[16..].copy_from_slice(&postfix);
-
-        final_key
-    }
-
-    new_test_ext(ADMIN).execute_with(|| {
-        // println!("{:?}", ComingId::current_version());
-        // println!("{:?}", ComingId::storage_version());
-
-        AllPallets::on_runtime_upgrade();
-
-        // println!("{:?}", ComingId::storage_version());
-
-        let key = get_pallet_version_storage_key_for_pallet("ComingId");
-
-        // ComingId PalletVersion key: 5b70a1d7cc1cf466409b2ff6b213f6af878d434d6125b40443fe11fd292d13a4
-        // println!("{:?}", HexDisplay::from(&key));
-        assert_eq!(
-            "5b70a1d7cc1cf466409b2ff6b213f6af878d434d6125b40443fe11fd292d13a4",
-            format!("{}", HexDisplay::from(&key))
-        );
-
-        let value = hex!["01000000"];
-        let version = PalletVersion::decode(&mut &value[..]).unwrap();
-        // println!("{:?}", version)
-
-        assert_eq!(PalletVersion::new(1, 0, 0), version);
-    });
 }

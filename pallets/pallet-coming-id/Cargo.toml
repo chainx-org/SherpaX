@@ -21,12 +21,9 @@ frame-system = { git = 'https://github.com/paritytech/substrate', branch = "polk
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9",default-features = false, optional = true }
 
 [dev-dependencies]
-codec = { package = "parity-scale-codec", version = "2.0.0" }
+hex-literal = { version = "0.3.1" }
 serde = { version = "1.0.119" }
-hex-literal = { version = "0.3.1"}
-sp-core = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
 sp-io = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
-sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
 sp-storage = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
 
 [features]

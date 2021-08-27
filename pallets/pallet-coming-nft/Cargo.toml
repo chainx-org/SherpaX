@@ -24,7 +24,6 @@ pallet-coming-id = { version = "1.1.0", default-features = false, path = "../pal
 [dev-dependencies]
 serde = { version = "1.0.119" }
 sp-io = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
-sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
 
 [features]
 default = ['std']
