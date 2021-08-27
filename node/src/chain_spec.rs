@@ -21,7 +21,7 @@ use runtime_common::{AccountId, AuraId, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
+use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public, H160, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 /// Helper function to generate a crypto pair from seed
@@ -114,6 +114,30 @@ pub fn sherpax_development_config(id: ParaId) -> SherpaxChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 id,
+                vec![
+                    // Alith
+                    H160::from(hex_literal::hex!["f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac"]),
+                    // Baltathar
+                    H160::from(hex_literal::hex!["3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0"]),
+                    // Charleth
+                    H160::from(hex_literal::hex!["798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc"]),
+                    // Dorothy
+                    H160::from(hex_literal::hex!["773539d4Ac0e786233D90A233654ccEE26a613D9"]),
+                    // Ethan
+                    H160::from(hex_literal::hex!["Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB"]),
+                    // Faith
+                    H160::from(hex_literal::hex!["C0F0f4ab324C46e55D02D0033343B4Be8A55532d"]),
+                    // Goliath
+                    H160::from(hex_literal::hex!["7BF369283338E12C90514468aa3868A551AB2929"]),
+                    // Heath
+                    H160::from(hex_literal::hex!["931f3600a299fd9B24cEfB3BfF79388D19804BeA"]),
+                    // Ida
+                    H160::from(hex_literal::hex!["C41C5F1123ECCd5ce233578B2e7ebd5693869d73"]),
+                    // Judith
+                    H160::from(hex_literal::hex!["2898FE7a42Be376C8BC7AF536A940F7Fd5aDd423"]),
+                    // Gerald
+                    H160::from(hex_literal::hex!["6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b"]),
+                ],
             )
         },
         vec![],
@@ -166,6 +190,30 @@ pub fn sherpax_local_config(id: ParaId) -> SherpaxChainSpec {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 id,
+                vec![
+                    // Alith
+                    H160::from(hex_literal::hex!["f24FF3a9CF04c71Dbc94D0b566f7A27B94566cac"]),
+                    // Baltathar
+                    H160::from(hex_literal::hex!["3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0"]),
+                    // Charleth
+                    H160::from(hex_literal::hex!["798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc"]),
+                    // Dorothy
+                    H160::from(hex_literal::hex!["773539d4Ac0e786233D90A233654ccEE26a613D9"]),
+                    // Ethan
+                    H160::from(hex_literal::hex!["Ff64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB"]),
+                    // Faith
+                    H160::from(hex_literal::hex!["C0F0f4ab324C46e55D02D0033343B4Be8A55532d"]),
+                    // Goliath
+                    H160::from(hex_literal::hex!["7BF369283338E12C90514468aa3868A551AB2929"]),
+                    // Heath
+                    H160::from(hex_literal::hex!["931f3600a299fd9B24cEfB3BfF79388D19804BeA"]),
+                    // Ida
+                    H160::from(hex_literal::hex!["C41C5F1123ECCd5ce233578B2e7ebd5693869d73"]),
+                    // Judith
+                    H160::from(hex_literal::hex!["2898FE7a42Be376C8BC7AF536A940F7Fd5aDd423"]),
+                    // Gerald
+                    H160::from(hex_literal::hex!["6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b"]),
+                ],
             )
         },
         vec![],
@@ -193,28 +241,17 @@ pub fn sherpax_config(id: ParaId) -> SherpaxChainSpec {
         move || {
             sherpax_genesis(
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
-                // initial collators.
+                // TODO: initial 4 collators.
                 vec![(
-                         hex!("50673d59020488a4ffc9d8c6de3062a65977046e6990915617f85fef6d349730").into(),
-                         hex!("50673d59020488a4ffc9d8c6de3062a65977046e6990915617f85fef6d349730").unchecked_into()
-                     ),
-                     (
-                         hex!("fe8102dbc244e7ea2babd9f53236d67403b046154370da5c3ea99def0bd0747a").into(),
-                         hex!("fe8102dbc244e7ea2babd9f53236d67403b046154370da5c3ea99def0bd0747a").unchecked_into()
-                     ),
-                     (
-                         hex!("38144b5398e5d0da5ec936a3af23f5a96e782f676ab19d45f29075ee92eca76a").into(),
-                         hex!("38144b5398e5d0da5ec936a3af23f5a96e782f676ab19d45f29075ee92eca76a").unchecked_into()
-                     ),
-                     (
-                         hex!("3253947640e309120ae70fa458dcacb915e2ddd78f930f52bd3679ec63fc4415").into(),
-                         hex!("3253947640e309120ae70fa458dcacb915e2ddd78f930f52bd3679ec63fc4415").unchecked_into()
-                     ),
+                         hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").into(),
+                         hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").unchecked_into()
+                     )
                 ],
                 vec![
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
                 ],
                 id,
+                vec![]
             )
         },
         vec![],
@@ -233,6 +270,7 @@ fn sherpax_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
+    addresses: Vec<H160>,
 ) -> sherpax_runtime::GenesisConfig {
     sherpax_runtime::GenesisConfig {
         system: sherpax_runtime::SystemConfig {
@@ -272,5 +310,22 @@ fn sherpax_genesis(
             low_admin_key: root_key,
         },
         ethereum_chain_id: sherpax_runtime::EthereumChainIdConfig { chain_id: 1500u64 },
+        evm: sherpax_runtime::EVMConfig {
+            accounts: addresses
+                .into_iter()
+                .map(|addr| {
+                    (
+                        addr,
+                        sherpax_runtime::GenesisAccount {
+                            balance: U256::from(1_000_000_000_000_000_000_000u128),
+                            nonce: Default::default(),
+                            code: Default::default(),
+                            storage: Default::default(),
+                        },
+                    )
+                })
+                .collect()
+        },
+        ethereum: sherpax_runtime::EthereumConfig {},
     }
 }
