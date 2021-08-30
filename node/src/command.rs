@@ -19,7 +19,7 @@ use crate::{
     chain_spec,
     cli::{Cli, RelayChainCli, Subcommand},
     service::{
-        new_partial, SherpaxRuntimeExecutor,
+        new_partial, SherpaxRuntimeExecutor, frontier_database_dir
     },
 };
 use codec::Encode;
@@ -214,6 +214,13 @@ pub fn run() -> Result<()> {
         Some(Subcommand::PurgeChain(cmd)) => {
             let runner = cli.create_runner(cmd)?;
             runner.sync_run(|config| {
+                // Remove Frontier offchain db
+                let frontier_database_config = sc_service::DatabaseConfig::RocksDb {
+                    path: frontier_database_dir(&config),
+                    cache_size: 0,
+                };
+                cmd.base.run(frontier_database_config)?;
+
                 let polkadot_cli = RelayChainCli::new(
                     &config,
                     [RelayChainCli::executable_name().to_string()]
