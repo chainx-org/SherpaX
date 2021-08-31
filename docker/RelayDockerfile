@@ -1,0 +1,13 @@
+FROM ubuntu:20.04
+LABEL description="This is the build stage for SherpaX Relay Chain"
+
+COPY ./polkadot /usr/local/bin
+COPY ./config /usr/local/config
+
+EXPOSE 30333 9933 9944
+VOLUME ["/data"]
+
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/polkadot"]
+CMD ["/usr/local/bin/polkadot"]

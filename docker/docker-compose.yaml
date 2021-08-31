@@ -1,0 +1,95 @@
+version: '3.7'
+services:
+  node_alice:
+    image: "comingweb3/polkadot:v0.9.9"
+    ports:
+      - "30333:30333"
+      - "9944:9944"
+    volumes:
+      - "./data-alice:/data"
+    command: >
+      --alice
+      --port 30033
+      --ws-port 9944
+      -d /data
+      --rpc-cors all
+      --unsafe-rpc-external
+      --unsafe-ws-external
+      --rpc-methods=unsafe
+      --chain /usr/local/config/rococo-local-raw.json
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.1
+        aliases:
+          - alice
+
+  node_bob:
+    image: "comingweb3/polkadot:v0.9.9"
+    ports:
+      - "30334:30333"
+      - "9945:9944"
+    volumes:
+      - "./data-bob:/data"
+    command: >
+      --bob
+      --port 30033
+      --ws-port 9944
+      -d /data
+      --rpc-cors all
+      --unsafe-rpc-external
+      --unsafe-ws-external
+      --chain /usr/local/config/rococo-local-raw.json
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.2
+        aliases:
+          - bob
+
+  node_sherpax:
+    image: "comingweb3/sherpax:v0.9.9"
+    ports:
+      - "30345:30333"
+      - "30346:30334"
+      - "9977:9944"
+      - "8545:8545"
+    volumes:
+      - "./data-sherpax:/data"
+    command: >
+      --name sherpax
+      --port 30033
+      --ws-port 9944
+      --rpc-port 8545
+      --rpc-cors all
+      --unsafe-rpc-external
+      --unsafe-ws-external
+      --rpc-methods=unsafe
+      --ws-max-connections 10000
+      --parachain-id 2000
+      --validator
+      --discover-local
+      -d /data
+      -lruntime=trace,sync=debug,aura=debug,cumulus=trace,parachain=trace,evm=trace
+      --chain /usr/local/config/sherpax.json
+      --alice
+      --force-authoring
+      --
+      --chain /usr/local/config/rococo-local-raw.json
+      --execution=wasm
+      --discover-local
+      --port 30334
+      --no-beefy
+    networks:
+      testing_net:
+        ipv4_address: 172.28.1.50
+        aliases:
+          - sherpax
+    depends_on:
+      - node_alice
+      - node_bob
+
+networks:
+  testing_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16

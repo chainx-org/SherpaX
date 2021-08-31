@@ -1,0 +1,15 @@
+FROM ubuntu:20.04
+LABEL description="This is the build stage for SherpaX Chain."
+
+COPY ./sherpax /usr/local/bin
+COPY ./config /usr/local/config
+
+
+EXPOSE 30333 30334 9933 9944
+
+VOLUME ["/data"]
+
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/sherpax"]
+CMD ["--dev"]
