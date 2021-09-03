@@ -36,7 +36,7 @@ impl<T> Precompile for Withdraw<T>
         log::debug!(target: "evm", "withdraw: from: {:?}", from);
 
         let address_account_id = T::AddressMapping::into_account_id(from);
-        log::debug!(target: "evm", "withdraw: source: {:?}", address_account_id);
+        log::debug!(target: "evm", "withdraw: source: {:?}", HexDisplay::from(&address_account_id.encode()));
 
         let mut target = [0u8; 32];
         target[0..32].copy_from_slice(&input[20..52]);
