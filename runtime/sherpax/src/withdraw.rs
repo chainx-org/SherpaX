@@ -4,7 +4,7 @@ use frame_support::traits::{Currency, ExistenceRequirement};
 use core::marker::PhantomData;
 use evm::{executor::PrecompileOutput, Context, ExitError, ExitSucceed};
 use pallet_evm::{Precompile, AddressMapping};
-use sp_core::{H160, U256};
+use sp_core::{H160, U256, hexdisplay::HexDisplay};
 use sp_runtime::{traits::UniqueSaturatedInto, AccountId32};
 use codec::{Encode, Decode};
 use frame_support::log;
@@ -42,7 +42,7 @@ impl<T> Precompile for Withdraw<T>
         target[0..32].copy_from_slice(&input[20..52]);
         let dest = T::AccountId::decode(&mut &AccountId32::new(target).encode()[..])
             .map_err(|_| ExitError::Other("decode failed".into()))?;
-        log::debug!(target: "evm", "withdraw: target: {:?}", target);
+        log::debug!(target: "evm", "withdraw: target: {:?}", HexDisplay::from(&target));
 
         let value = U256::from_big_endian(&input[52..84])
             .low_u128().unique_saturated_into();

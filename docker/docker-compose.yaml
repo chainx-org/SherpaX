@@ -68,7 +68,7 @@ services:
       --validator
       --discover-local
       -d /data
-      -lruntime=trace,sync=debug,aura=debug,cumulus=trace,parachain=trace,evm=trace
+      -lruntime=trace,evm=trace
       --chain /usr/local/config/sherpax.json
       --alice
       --force-authoring
