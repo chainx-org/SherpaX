@@ -61,6 +61,7 @@ use pallet_coming_id::{Cid, CidDetails};
 
 // evm
 mod precompiles;
+mod withdraw;
 use precompiles::SherpaxPrecompiles;
 
 #[cfg(feature = "std")]

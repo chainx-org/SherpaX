@@ -58,6 +58,7 @@ where
             a if a == hash(8) => Some(Bn128Pairing::execute(input, target_gas, context)),
             // Non Ethereum precompiles
             a if a == hash(1024) => Some(Dispatch::<R>::execute(input, target_gas, context)),
+            a if a == hash(1025) => Some(crate::withdraw::Withdraw::<R>::execute(input, target_gas, context)),
             _ => None,
         }
     }
