@@ -8,5 +8,6 @@ members = [
 	"pallets/pallet-coming-nft",
 	"pallets/ethereum-chain-id",
 	"runtime/common",
+	"runtime/basic",
 	"runtime/sherpax"
 ]

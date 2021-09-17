@@ -19,7 +19,8 @@ use crate::{
     chain_spec,
     cli::{Cli, RelayChainCli, Subcommand},
     service::{
-        new_partial, SherpaxRuntimeExecutor, frontier_database_dir
+        new_partial, SherpaxRuntimeExecutor, frontier_database_dir,
+        new_basic_partial, BasicRuntimeExecutor
     },
 };
 use codec::Encode;
@@ -39,16 +40,25 @@ use std::{io::Write, net::SocketAddr};
 const DEFAULT_PARA_ID: u32 = 2000;
 
 trait IdentifyChain {
+    fn is_basic(&self) -> bool;
     fn is_sherpax(&self) -> bool;
 }
 
 impl IdentifyChain for dyn sc_service::ChainSpec {
+    fn is_basic(&self) -> bool {
+        self.id().starts_with("sherpax-basic")
+    }
+
     fn is_sherpax(&self) -> bool {
         self.id().starts_with("sherpax")
     }
 }
 
 impl<T: sc_service::ChainSpec + 'static> IdentifyChain for T {
+    fn is_basic(&self) -> bool {
+        <dyn sc_service::ChainSpec>::is_basic(self)
+    }
+
     fn is_sherpax(&self) -> bool {
         <dyn sc_service::ChainSpec>::is_sherpax(self)
     }
@@ -68,8 +78,14 @@ fn load_spec(
         //     &include_bytes!("../res/sherpax.json")[..],
         // )?),
         // "" => Box::new(chain_spec::get_chain_spec(para_id)),
+        "basic" => Box::new(chain_spec::basic_config(para_id)),
         path => {
-            Box::new(chain_spec::SherpaxChainSpec::from_json_file(path.into())?)
+            match chain_spec::SherpaxChainSpec::from_json_file(path.into()) {
+                Ok(spec) => Box::new(spec),
+                Err(_) => {
+                    Box::new(chain_spec::BasicChainSpec::from_json_file(path.into())?)
+                }
+            }
         }
     })
 }
@@ -109,8 +125,12 @@ impl SubstrateCli for Cli {
         load_spec(id, self.run.parachain_id.unwrap_or(DEFAULT_PARA_ID).into())
     }
 
-    fn native_runtime_version(_chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-        &sherpax_runtime::VERSION
+    fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
+        if chain_spec.is_basic() {
+            &basic_runtime::VERSION
+        } else {
+            &sherpax_runtime::VERSION
+        }
     }
 }
 
@@ -172,6 +192,15 @@ macro_rules! construct_async_run {
                 let $components = new_partial::<sherpax_runtime::RuntimeApi, SherpaxRuntimeExecutor, _>(
                     &$config,
                     crate::service::sherpax_build_import_queue,
+                )?;
+                let task_manager = $components.task_manager;
+                { $( $code )* }.map(|v| (v, task_manager))
+            })
+        } else if runner.config().chain_spec.is_basic() {
+            runner.async_run(|$config| {
+                let $components = new_basic_partial::<basic_runtime::RuntimeApi, BasicRuntimeExecutor, _>(
+                    &$config,
+                    crate::service::basic_build_import_queue,
                 )?;
                 let task_manager = $components.task_manager;
                 { $( $code )* }.map(|v| (v, task_manager))
@@ -326,13 +355,18 @@ pub fn run() -> Result<()> {
                     }
                 );
 
-                if config.chain_spec.is_sherpax() {
+                if config.chain_spec.is_basic() {
+                    crate::service::start_basic_parachain_node(config, polkadot_config, id)
+                        .await
+                        .map(|r| r.0)
+                        .map_err(Into::into)
+                } else if config.chain_spec.is_sherpax() {
                     crate::service::start_sherpax_parachain_node(config, polkadot_config, id)
                         .await
                         .map(|r| r.0)
                         .map_err(Into::into)
                 } else {
-                    Err(sc_service::Error::Other("only support sherpax chainspec".to_owned()).into())
+                    Err(sc_service::Error::Other("only support sherpax-basic and sherpax chainspec".to_owned()).into())
                 }
             })
         }

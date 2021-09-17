@@ -77,6 +77,7 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "r
 # Parachain dependencies
 runtime-common = { path = "../runtime/common" }
 sherpax-runtime = { path = "../runtime/sherpax" }
+basic-runtime = { path = "../runtime/basic" }
 
 pallet-coming-id = { path = "../pallets/pallet-coming-id" }
 pallet-coming-id-rpc = { path = "../pallets/pallet-coming-id/rpc" }

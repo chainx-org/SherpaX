@@ -329,3 +329,90 @@ fn sherpax_genesis(
         ethereum: sherpax_runtime::EthereumConfig {},
     }
 }
+
+/// Generate the session keys from individual elements.
+///
+/// The input must be a tuple of individual keys (a single arg for now since we have just one key).
+pub fn sherpax_basic_session_keys(keys: AuraId) -> basic_runtime::SessionKeys {
+    basic_runtime::SessionKeys { aura: keys }
+}
+
+/// Specialized `ChainSpec` for the normal parachain runtime.
+pub type BasicChainSpec = sc_service::GenericChainSpec<basic_runtime::GenesisConfig, Extensions>;
+
+pub fn basic_config(id: ParaId) -> BasicChainSpec {
+    let mut properties = sc_chain_spec::Properties::new();
+    properties.insert("tokenSymbol".into(), "KSX".into());
+    properties.insert("tokenDecimals".into(), 18.into());
+
+    BasicChainSpec::from_genesis(
+        // Name
+        "SherpaX",
+        // ID
+        "sherpax-basic",
+        ChainType::Live,
+        move || {
+            basic_genesis(
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // TODO: initial 4 collators.
+                vec![(
+                    hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").into(),
+                    hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").unchecked_into()
+                )
+                ],
+                vec![
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                ],
+                id,
+            )
+        },
+        vec![],
+        None,
+        None,
+        Some(properties),
+        Extensions {
+            relay_chain: "kusama".into(),
+            para_id: id.into(),
+        },
+    )
+}
+
+fn basic_genesis(
+    root_key: AccountId,
+    invulnerables: Vec<(AccountId, AuraId)>,
+    endowed_accounts: Vec<AccountId>,
+    id: ParaId,
+) -> basic_runtime::GenesisConfig {
+    basic_runtime::GenesisConfig {
+        system: basic_runtime::SystemConfig {
+            code: basic_runtime::WASM_BINARY
+                .expect("WASM binary was not build, please build it!")
+                .to_vec(),
+            changes_trie_config: Default::default(),
+        },
+        balances: basic_runtime::BalancesConfig {
+            balances: endowed_accounts
+                .iter()
+                .cloned()
+                .map(|k| (k, SHERPAX_UNITS * 4096))
+                .collect(),
+        },
+        parachain_info: basic_runtime::ParachainInfoConfig { parachain_id: id },
+        collator_selection: basic_runtime::CollatorSelectionConfig {
+            invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
+            candidacy_bond: SHERPAX_ED * 16,
+            ..Default::default()
+        },
+        session: basic_runtime::SessionConfig {
+            keys: invulnerables.iter().cloned().map(|(acc, aura)| (
+                acc.clone(), // account id
+                acc.clone(), // validator id
+                sherpax_basic_session_keys(aura), // session keys
+            )).collect()
+        },
+        aura: Default::default(),
+        aura_ext: Default::default(),
+        parachain_system: Default::default(),
+        sudo: basic_runtime::SudoConfig { key: root_key.clone() },
+    }
+}
