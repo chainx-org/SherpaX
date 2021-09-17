@@ -79,13 +79,11 @@ fn load_spec(
         // )?),
         // "" => Box::new(chain_spec::get_chain_spec(para_id)),
         "basic" => Box::new(chain_spec::basic_config(para_id)),
+        path if path.contains("basic") => {
+            Box::new(chain_spec::BasicChainSpec::from_json_file(path.into())?)
+        }
         path => {
-            match chain_spec::SherpaxChainSpec::from_json_file(path.into()) {
-                Ok(spec) => Box::new(spec),
-                Err(_) => {
-                    Box::new(chain_spec::BasicChainSpec::from_json_file(path.into())?)
-                }
-            }
+            Box::new(chain_spec::SherpaxChainSpec::from_json_file(path.into())?)
         }
     })
 }
@@ -206,7 +204,7 @@ macro_rules! construct_async_run {
                 { $( $code )* }.map(|v| (v, task_manager))
             })
         } else {
-            Err(sc_service::Error::Other("only support sherpax chainspec".to_owned()).into())
+            Err(sc_service::Error::Other("only support sherpax-basic and sherpax chainspec".to_owned()).into())
         }
     }}
 }

@@ -355,10 +355,11 @@ pub fn basic_config(id: ParaId) -> BasicChainSpec {
             basic_genesis(
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 // TODO: initial 4 collators.
-                vec![(
-                    hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").into(),
-                    hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").unchecked_into()
-                )
+                vec![
+                    (
+                        get_account_id_from_seed::<sr25519::Public>("Alice"),
+                        get_collator_keys_from_seed("Alice"),
+                    )
                 ],
                 vec![
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
