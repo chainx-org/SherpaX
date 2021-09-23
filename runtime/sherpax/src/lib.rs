@@ -409,6 +409,11 @@ impl pallet_ethereum::Config for Runtime {
 	type StateRoot = pallet_ethereum::IntermediateStateRoot;
 }
 
+impl pallet_deposit::Config for Runtime {
+	type Currency = Balances;
+	type ComingNFT = ComingId;
+	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -450,6 +455,9 @@ construct_runtime!(
 		EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config} = 60,
 		EVM: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 61,
 		Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, ValidateUnsigned} = 62,
+
+		// Deposit balance and cid from substrate account to ethereum address
+		Deposit: pallet_deposit::{Pallet, Call} = 66
 	}
 );
 

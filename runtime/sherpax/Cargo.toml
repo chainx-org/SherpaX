@@ -15,6 +15,7 @@ runtime-common = { path = "../common", default-features = false }
 pallet-coming-id = { path = "../../pallets/pallet-coming-id", default-features = false }
 pallet-coming-id-rpc-runtime-api = { path = "../../pallets/pallet-coming-id/rpc/runtime-api", default-features = false }
 pallet-coming-nft = { path = "../../pallets/pallet-coming-nft", default-features = false }
+pallet-deposit = { path = "../../pallets/deposit", default-features = false }
 
 # EVM
 pallet-ethereum-chain-id = { path = "../../pallets/ethereum-chain-id", default-features = false }
@@ -91,6 +92,7 @@ std = [
 	"pallet-coming-id/std",
 	"pallet-coming-id-rpc-runtime-api/std",
 	"pallet-coming-nft/std",
+	"pallet-deposit/std",
 	"pallet-ethereum-chain-id/std",
 	"pallet-evm/std",
 	"pallet-ethereum/std",
