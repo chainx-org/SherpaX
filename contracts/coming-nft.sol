@@ -2,8 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+// 2020.10.09
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Strings.sol";
 import "./precompile.sol";
 
 contract ComingNFT is ERC721Enumerable {
@@ -24,25 +25,106 @@ contract ComingNFT is ERC721Enumerable {
         return "https://miniscan.coming.chat/NFTDetail?";
     }
 
-    function mint(address to, uint256 cid) public _validCid(cid) {
-        require(Coming.isOwnerOfCid(msg.sender, cid), "Mismatch cid onwer");
+    /**
+     * @dev See {IERC721-approve}.
+     */
+    function approve(address to, uint256 cid) public override {
+        address owner = ERC721.ownerOf(cid);
+        require(to != owner, "ERC721: approval to current owner");
 
-        _mint(to, cid);
+        require(
+            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
+            "ERC721: approve caller is not owner nor approved for all"
+        );
+
+        _approve(to, cid);
+
+        //require(Coming.approve(_msgSender(), to, cid), "Invalid Approve");
     }
 
-    function withdrawCid(address from, bytes32 substrate, uint256 cid) public {
 
-        require(Coming.withdrawCid(from, substrate, cid), "Invalid WithdrawCid");
+    /**
+     * @dev See {IERC721-setApprovalForAll}.
+     */
+    function setApprovalForAll(address operator, bool approved) public override {
+        _setApprovalForAll(_msgSender(), operator, approved);
+
+        //require(Coming.setApprovalForAll(_msgSender(), operator, approved), "Invalid SetApprovalForAll");
+    }
+
+
+    /**
+     * @dev See {IERC721-transferFrom}.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 cid
+    ) public _validCid(cid) override {
+        //solhint-disable-next-line max-line-length
+        require(_isApprovedOrOwner(_msgSender(), cid), "ERC721: transfer caller is not owner nor approved");
+
+        _transfer(from, to, cid);
+
+        require(Coming.transferFrom(_msgSender(), from, to, cid), "Invalid TransferFrom");
+    }
+
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 cid,
+        bytes memory _data
+    ) public _validCid(cid) override {
+        require(_isApprovedOrOwner(_msgSender(), cid), "ERC721: transfer caller is not owner nor approved");
+        _safeTransfer(from, to, cid, _data);
+
+        require(Coming.transferFrom(_msgSender(), from, to, cid), "Invalid SafeTransferFrom");
+    }
+
+    function isMatchApproval(
+        uint256 cid
+    ) public view returns (bool) {
+        return Coming.isOperatorOfCid(getApproved(cid), cid);
+    }
+
+    function isMatchApprovalAll(
+        address owner,
+        address operator
+    ) public view returns (bool) {
+        bool inner = Coming.isApprovedForAll(owner, operator);
+
+        return isApprovedForAll(owner, operator) == inner;
+    }
+
+    function mint(
+        uint256 cid
+    ) public _validCid(cid) {
+        require(Coming.isOwnerOfCid(_msgSender(), cid), "Mismatch Cid owner");
+
+        _mint(_msgSender(), cid);
+    }
+
+    function withdrawCid(
+        bytes32 substrate,
+        uint256 cid
+    ) public {
+
+        require(Coming.withdrawCid(_msgSender(), substrate, cid), "Invalid WithdrawCid");
 
         _burn(cid);
 
-        emit WithdrawCid(from, substrate, cid);
+        emit WithdrawCid(_msgSender(), substrate, cid);
     }
 
-    function withdrawBalance(address from, bytes32 substrate, uint256 value) public {
-        require(Coming.withdrawBalance(from, substrate, value), "Invalid WithdrawBalance");
+    function withdrawBalance(
+        bytes32 substrate,
+        uint256 value
+    ) public {
+        require(Coming.withdrawBalance(_msgSender(), substrate, value), "Invalid WithdrawBalance");
 
-        emit WithdrawBalance(from, substrate, value);
+        emit WithdrawBalance(_msgSender(), substrate, value);
     }
-
 }

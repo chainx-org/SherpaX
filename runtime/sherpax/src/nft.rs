@@ -14,6 +14,7 @@ pub struct NFT<T: pallet_evm::Config + pallet_coming_nft::Config> {
     _marker: PhantomData<T>,
 }
 
+// TODO: better return
 impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
 {
     fn process(
@@ -64,7 +65,82 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
                 log::debug!(target: "coming-nft", "match owner: success");
 
                 Ok(())
-            }
+            },
+            // match operator of cid
+            // input = from(evm address, 20 bytes) + cid(8 bytes) + padding(1 bytes)
+            29 => {
+                log::debug!(target: "coming-nft", "match operator: call");
+
+                Self::process_match_operator(input)
+                    .map_err(|err| {
+                        log::warn!(target: "coming-nft", "match operator: err = {:?}", err);
+                        err
+                    })?;
+
+                log::debug!(target: "coming-nft", "match operator: success");
+
+                Ok(())
+            },
+            // get approved for all
+            // input = owner(evm address, 20 bytes) + operator(evm address, 20 bytes)
+            40 => {
+                log::debug!(target: "coming-nft", "get approved: call");
+
+                Self::process_get_approved(input)
+                    .map_err(|err| {
+                        log::warn!(target: "coming-nft", "get approved: err = {:?}", err);
+                        err
+                    })?;
+
+                log::debug!(target: "coming-nft", "get approved: success");
+
+                Ok(())
+            },
+            // transferFrom cid
+            // input = operator(evm address, 20 bytes) + from(evm address, 20 bytes) + to(evm address, 20 bytes) + cid(8 bytes)
+            68 => {
+                log::debug!(target: "coming-nft", "transfer from: call");
+
+                Self::process_transfer_from(input)
+                    .map_err(|err| {
+                        log::warn!(target: "coming-nft", "transfer from: err = {:?}", err);
+                        err
+                    })?;
+
+                log::debug!(target: "coming-nft", "transfer from: success");
+
+                Ok(())
+            },
+            // approve
+            // input = owner(evm address, 20 bytes) + operator(evm address, 20 bytes) + cid(8 bytes)
+            48 => {
+                log::debug!(target: "coming-nft", "approve: call");
+
+                Self::process_approve(input)
+                    .map_err(|err| {
+                        log::warn!(target: "coming-nft", "approve: err = {:?}", err);
+                        err
+                    })?;
+
+                log::debug!(target: "coming-nft", "approve: success");
+
+                Ok(())
+            },
+            // set approval for all
+            // input = owner(evm address, 20 bytes) + operator(evm address, 20 bytes) + approved(1 bytes)
+            41 => {
+                log::debug!(target: "coming-nft", "set approval all: call");
+
+                Self::process_set_approval_all(input)
+                    .map_err(|err| {
+                        log::warn!(target: "coming-nft", "approve: err = {:?}", err);
+                        err
+                    })?;
+
+                log::debug!(target: "coming-nft", "set approval all: success");
+
+                Ok(())
+            },
             _ => {
                 log::warn!(target: "coming-nft", "invalid input: {:?}", input);
 
@@ -108,6 +184,14 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
         cid[0..8].copy_from_slice(&value[0..8]);
 
         Ok(u64::from_be_bytes(cid))
+    }
+
+    fn parse_approved(value: &u8) -> Result<bool, ExitError> {
+        match value {
+            0 => Ok(false),
+            1 => Ok(true),
+            _ => Err(ExitError::Other("invalid approved".into()))
+        }
     }
 
     fn process_withdraw_balance(
@@ -158,6 +242,81 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
             Some(owner) if owner == from => Ok(()),
             _ => Err(ExitError::Other("mismatch cid owner".into()))
         }
+    }
+
+    fn process_match_operator(
+        input: &[u8]
+    ) -> Result<(), ExitError> {
+        let from = Self::account_from_address(&input[0..20])?;
+        let cid = Self::parse_cid(&input[20..28])?;
+
+        match T::ComingNFT::get_approved(cid) {
+            Some(operator) if operator == from => Ok(()),
+            _ => Err(ExitError::Other("mismatch cid operator".into()))
+        }
+    }
+
+    fn process_get_approved(
+        input: &[u8]
+    ) -> Result<(), ExitError> {
+        let owner = Self::account_from_address(&input[0..20])?;
+        let operator = Self::account_from_address(&input[20..40])?;
+
+        if T::ComingNFT::is_approved_for_all(&owner, &operator) {
+            Ok(())
+        } else {
+            Err(ExitError::Other("is_approved_for_all is false".into()))
+        }
+    }
+
+    fn process_transfer_from(
+        input: &[u8]
+    ) -> Result<(), ExitError> {
+        let operator = Self::account_from_address(&input[0..20])?;
+        let from = Self::account_from_address(&input[20..40])?;
+        let to = Self::account_from_address(&input[40..60])?;
+        let cid = Self::parse_cid(&input[60..68])?;
+
+        T::ComingNFT::transfer_from(
+            &operator,
+            &from,
+            &to,
+            cid
+        ).map_err(|err| {
+            ExitError::Other(sp_std::borrow::Cow::Borrowed(err.into()))
+        })
+    }
+
+    fn process_approve(
+        input: &[u8]
+    ) -> Result<(), ExitError> {
+        let owner = Self::account_from_address(&input[0..20])?;
+        let operator = Self::account_from_address(&input[20..40])?;
+        let cid = Self::parse_cid(&input[40..48])?;
+
+        T::ComingNFT::approve(
+            &owner,
+            &operator,
+            cid,
+        ).map_err(|err| {
+            ExitError::Other(sp_std::borrow::Cow::Borrowed(err.into()))
+        })
+    }
+
+    fn process_set_approval_all(
+        input: &[u8]
+    ) -> Result<(), ExitError> {
+        let owner = Self::account_from_address(&input[0..20])?;
+        let operator = Self::account_from_address(&input[20..40])?;
+        let approved = Self::parse_approved(&input[41])?;
+
+        T::ComingNFT::set_approval_for_all(
+            &owner,
+            &operator,
+            approved,
+        ).map_err(|err| {
+            ExitError::Other(sp_std::borrow::Cow::Borrowed(err.into()))
+        })
     }
 }
 
