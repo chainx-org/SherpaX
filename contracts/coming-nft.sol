@@ -34,6 +34,8 @@ contract ComingNFT is ERC721Enumerable {
 
         require(Coming.withdrawCid(from, substrate, cid), "Invalid WithdrawCid");
 
+        _burn(cid);
+
         emit WithdrawCid(from, substrate, cid);
     }
 
