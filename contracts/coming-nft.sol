@@ -40,6 +40,8 @@ library Coming {
         uint256 cid
     ) public returns (bool) {
         require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+        require(isOwnerOfCid(from, cid), "Mismatch Cid Owner");
+
         uint64 valid_cid = uint64(cid);
 
         (bool success, bytes memory returnData) = precompile.call(abi.encodePacked(from, substrate, valid_cid));
@@ -62,6 +64,7 @@ library Coming {
         uint256 cid
     ) public view returns (bool) {
         require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+
         uint64 valid_cid = uint64(cid);
 
         (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(from, valid_cid));
@@ -84,6 +87,7 @@ library Coming {
         uint256 cid
     ) public view returns (bool) {
         require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+
         uint64 valid_cid = uint64(cid);
         bool padding = true;
 
@@ -130,6 +134,8 @@ library Coming {
         uint256 cid
     ) public view returns (bool) {
         require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+        require(isOperatorOfCid(operator, cid), "Mismatch Cid Operator");
+
         uint64 valid_cid = uint64(cid);
 
         (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(operator, from, to, valid_cid));
@@ -155,6 +161,8 @@ library Coming {
         uint256 cid
     ) public view returns (bool) {
         require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+        require(isOwnerOfCid(owner, cid), "Mismatch Cid Owner");
+
         uint64 valid_cid = uint64(cid);
 
         (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(owner, to, valid_cid));
@@ -192,7 +200,6 @@ library Coming {
 }
 
 contract ComingNFT is ERC721Enumerable {
-    
     event WithdrawBalance(address indexed from, bytes32 indexed substrate, uint256 value);
     event WithdrawCid(address indexed from, bytes32 indexed substrate, uint256 cid);
 
