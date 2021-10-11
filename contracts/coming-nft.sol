@@ -5,9 +5,194 @@ pragma solidity ^0.8.0;
 // 2020.10.09
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Strings.sol";
-import "./precompile.sol";
+
+library Coming {
+    address constant private precompile = address(0x401);
+    // input = 20 + 32 + 32 = 84 bytes
+    // evm account transfer balance to substrate account
+    // @from is the current owner of balance
+    // @substrate is substrate account public key
+    // @value is amount of balance
+    function withdrawBalance(
+        address from,
+        bytes32 substrate,
+        uint256 value
+    ) public returns (bool) {
+        (bool success, bytes memory returnData) = precompile.call(abi.encodePacked(from, substrate, value));
+
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+
+        return abi.decode(returnData, (bool));
+    }
+
+    // input = 20 + 32 + 8 = 60 bytes
+    // evm account transfer c-card to substrate account
+    // @from is the current owner of c-card
+    // @substrate is substrate account public key
+    // @cid is the cid of c-card
+    function withdrawCid(
+        address from,
+        bytes32 substrate,
+        uint256 cid
+    ) public returns (bool) {
+        require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+        uint64 valid_cid = uint64(cid);
+
+        (bool success, bytes memory returnData) = precompile.call(abi.encodePacked(from, substrate, valid_cid));
+
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+
+        return abi.decode(returnData, (bool));
+    }
+
+    // input = 20 + 8 = 28 bytes
+    // check if mapping account of the specified address and the owner of c-card match
+    // @from is the specified address
+    // @cid is the cid of c-card
+    function isOwnerOfCid(
+        address from,
+        uint256 cid
+    ) public view returns (bool) {
+        require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+        uint64 valid_cid = uint64(cid);
+
+        (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(from, valid_cid));
+
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+
+        return abi.decode(returnData, (bool));
+    }
+
+    // input = 20 + 8 + 1 padding = 29 bytes
+    // check if mapping account of the specified address and the operator of c-card match
+    // @from is the specified address
+    // @cid is the cid of c-card
+    function isOperatorOfCid(
+        address from,
+        uint256 cid
+    ) public view returns (bool) {
+        require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+        uint64 valid_cid = uint64(cid);
+        bool padding = true;
+
+        (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(from, valid_cid, padding));
+
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+
+        return abi.decode(returnData, (bool));
+    }
+
+    // input = 20 + 20 = 40 bytes
+    // check if inner owner and operator match
+    // @owner is the evm address
+    // @operator is the evm address
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) public view returns (bool) {
+        (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(owner, operator));
+
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+
+        return abi.decode(returnData, (bool));
+    }
+
+    // input = 20 + 20 + 20 + 8= 68 bytes
+    // transferFrom c-card between evm account
+    // @operator is spender of c-card
+    // @from is the owner of c-card
+    // @to is the receiver of c-card
+    // @cid is the cid of c-card
+    function transferFrom(
+        address operator,
+        address from,
+        address to,
+        uint256 cid
+    ) public view returns (bool) {
+        require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+        uint64 valid_cid = uint64(cid);
+
+        (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(operator, from, to, valid_cid));
+
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+
+        return abi.decode(returnData, (bool));
+
+    }
+
+    // input = 20 + 20 + 8= 48 bytes
+    // gives permission to `to` to transfer `cid` c-card to another account
+    // @owner is the owner of c-card
+    // @to is the spender of c-card
+    // @cid is the cid of c-card
+    function approve (
+        address owner,
+        address to,
+        uint256 cid
+    ) public view returns (bool) {
+        require(100_000 <= cid && cid < 1_000_000_000_000, "Require 100_000 <= cid < 1_000_000_000_000.");
+        uint64 valid_cid = uint64(cid);
+
+        (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(owner, to, valid_cid));
+
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+
+        return abi.decode(returnData, (bool));
+
+    }
+
+    // input = 20 + 20 + 1= 41 bytes
+    // approve or remove `operator` as an operator for the caller
+    // @owner is the owner of c-card
+    // @operator is the spender of c-card
+    // @approved is true or false
+    function setApprovalForAll (
+        address owner,
+        address operator,
+        bool approved
+    ) public view returns (bool) {
+        (bool success, bytes memory returnData) = precompile.staticcall(abi.encodePacked(owner, operator, approved));
+
+        assembly {
+            if eq(success, 0) {
+                revert(add(returnData, 0x20), returndatasize())
+            }
+        }
+
+        return abi.decode(returnData, (bool));
+    }
+}
 
 contract ComingNFT is ERC721Enumerable {
+    
     event WithdrawBalance(address indexed from, bytes32 indexed substrate, uint256 value);
     event WithdrawCid(address indexed from, bytes32 indexed substrate, uint256 cid);
 
@@ -39,7 +224,7 @@ contract ComingNFT is ERC721Enumerable {
 
         _approve(to, cid);
 
-        //require(Coming.approve(_msgSender(), to, cid), "Invalid Approve");
+        require(Coming.approve(_msgSender(), to, cid), "Invalid Approve");
     }
 
 
@@ -49,7 +234,7 @@ contract ComingNFT is ERC721Enumerable {
     function setApprovalForAll(address operator, bool approved) public override {
         _setApprovalForAll(_msgSender(), operator, approved);
 
-        //require(Coming.setApprovalForAll(_msgSender(), operator, approved), "Invalid SetApprovalForAll");
+        require(Coming.setApprovalForAll(_msgSender(), operator, approved), "Invalid SetApprovalForAll");
     }
 
 
@@ -102,7 +287,7 @@ contract ComingNFT is ERC721Enumerable {
     function mint(
         uint256 cid
     ) public _validCid(cid) {
-        require(Coming.isOwnerOfCid(_msgSender(), cid), "Mismatch Cid owner");
+        require(Coming.isOwnerOfCid(_msgSender(), cid), "Mismatch Cid Owner");
 
         _mint(_msgSender(), cid);
     }

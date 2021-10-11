@@ -9,17 +9,18 @@ use sp_runtime::{traits::UniqueSaturatedInto, AccountId32};
 use codec::{Encode, Decode};
 use frame_support::log;
 use pallet_coming_id::ComingNFT;
+use sp_std::vec;
 
 pub struct NFT<T: pallet_evm::Config + pallet_coming_nft::Config> {
     _marker: PhantomData<T>,
 }
 
-// TODO: better return
+
 impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
 {
     fn process(
         input: &[u8]
-    ) -> Result<(), ExitError>{
+    ) -> Result<bool, ExitError>{
         match input.len() {
             // withdraw balance
             // input = from(evm address, 20 bytes) + to(substrate pubkey, 32 bytes) + value(32 bytes)
@@ -34,7 +35,7 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
 
                 log::debug!(target: "coming-nft", "withdraw balance: success");
 
-                Ok(())
+                Ok(true)
             },
             // withdraw cid
             // input = from(evm address, 20 bytes) + to(substrate pubkey, 32 bytes) + cid(8 bytes)
@@ -49,52 +50,52 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
 
                 log::debug!(target: "coming-nft", "withdraw cid: success");
 
-                Ok(())
+                Ok(true)
             },
             // match owner
             // input = from(evm address, 20 bytes) + cid(8 bytes)
             28 => {
                 log::debug!(target: "coming-nft", "match owner: call");
 
-                Self::process_match_owner(input)
+                let is_match = Self::process_match_owner(input)
                     .map_err(|err| {
                         log::warn!(target: "coming-nft", "match owner: err = {:?}", err);
                         err
-                    })?;
+                })?;
 
-                log::debug!(target: "coming-nft", "match owner: success");
+                log::debug!(target: "coming-nft", "match owner: {:?}", is_match);
 
-                Ok(())
+                Ok(is_match)
             },
             // match operator of cid
             // input = from(evm address, 20 bytes) + cid(8 bytes) + padding(1 bytes)
             29 => {
                 log::debug!(target: "coming-nft", "match operator: call");
 
-                Self::process_match_operator(input)
+                let is_operator = Self::process_match_operator(input)
                     .map_err(|err| {
                         log::warn!(target: "coming-nft", "match operator: err = {:?}", err);
                         err
                     })?;
 
-                log::debug!(target: "coming-nft", "match operator: success");
+                log::debug!(target: "coming-nft", "match operator: {:?}", is_operator);
 
-                Ok(())
+                Ok(is_operator)
             },
             // get approved for all
             // input = owner(evm address, 20 bytes) + operator(evm address, 20 bytes)
             40 => {
                 log::debug!(target: "coming-nft", "get approved: call");
 
-                Self::process_get_approved(input)
+                let approved = Self::process_get_approved(input)
                     .map_err(|err| {
                         log::warn!(target: "coming-nft", "get approved: err = {:?}", err);
                         err
                     })?;
 
-                log::debug!(target: "coming-nft", "get approved: success");
+                log::debug!(target: "coming-nft", "get approved: {:?}", approved);
 
-                Ok(())
+                Ok(approved)
             },
             // transferFrom cid
             // input = operator(evm address, 20 bytes) + from(evm address, 20 bytes) + to(evm address, 20 bytes) + cid(8 bytes)
@@ -109,7 +110,7 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
 
                 log::debug!(target: "coming-nft", "transfer from: success");
 
-                Ok(())
+                Ok(true)
             },
             // approve
             // input = owner(evm address, 20 bytes) + operator(evm address, 20 bytes) + cid(8 bytes)
@@ -124,7 +125,7 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
 
                 log::debug!(target: "coming-nft", "approve: success");
 
-                Ok(())
+                Ok(true)
             },
             // set approval for all
             // input = owner(evm address, 20 bytes) + operator(evm address, 20 bytes) + approved(1 bytes)
@@ -139,7 +140,7 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
 
                 log::debug!(target: "coming-nft", "set approval all: success");
 
-                Ok(())
+                Ok(true)
             },
             _ => {
                 log::warn!(target: "coming-nft", "invalid input: {:?}", input);
@@ -234,39 +235,35 @@ impl<T: pallet_evm::Config + pallet_coming_nft::Config> NFT<T>
 
     fn process_match_owner(
         input: &[u8]
-    ) -> Result<(), ExitError> {
+    ) -> Result<bool, ExitError> {
         let from = Self::account_from_address(&input[0..20])?;
         let cid = Self::parse_cid(&input[20..28])?;
 
         match T::ComingNFT::owner_of_cid(cid) {
-            Some(owner) if owner == from => Ok(()),
-            _ => Err(ExitError::Other("mismatch cid owner".into()))
+            Some(owner) if owner == from => Ok(true),
+            _ => Ok(false)
         }
     }
 
     fn process_match_operator(
         input: &[u8]
-    ) -> Result<(), ExitError> {
+    ) -> Result<bool, ExitError> {
         let from = Self::account_from_address(&input[0..20])?;
         let cid = Self::parse_cid(&input[20..28])?;
 
         match T::ComingNFT::get_approved(cid) {
-            Some(operator) if operator == from => Ok(()),
-            _ => Err(ExitError::Other("mismatch cid operator".into()))
+            Some(operator) if operator == from => Ok(true),
+            _ => Ok(false)
         }
     }
 
     fn process_get_approved(
         input: &[u8]
-    ) -> Result<(), ExitError> {
+    ) -> Result<bool, ExitError> {
         let owner = Self::account_from_address(&input[0..20])?;
         let operator = Self::account_from_address(&input[20..40])?;
 
-        if T::ComingNFT::is_approved_for_all(&owner, &operator) {
-            Ok(())
-        } else {
-            Err(ExitError::Other("is_approved_for_all is false".into()))
-        }
+        Ok(T::ComingNFT::is_approved_for_all(&owner, &operator))
     }
 
     fn process_transfer_from(
@@ -335,12 +332,17 @@ impl<T> Precompile for NFT<T>
 
         const BASE_GAS_COST: u64 = 45_000;
 
-        Self::process(input)?;
+        // Refer: https://github.com/rust-ethereum/ethabi/blob/master/ethabi/src/encoder.rs#L144
+        let mut out = vec![0u8;32];
+
+        if Self::process(input)? {
+            out[31] = 1u8;
+        }
 
         Ok(PrecompileOutput {
             exit_status: ExitSucceed::Returned,
             cost: BASE_GAS_COST,
-            output: Default::default(),
+            output: out.to_vec(),
             logs: Default::default(),
         })
     }
