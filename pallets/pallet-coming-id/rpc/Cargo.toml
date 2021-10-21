@@ -8,15 +8,16 @@ version = "1.1.0"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
+# todo: jsonrpc 18.0.0
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 jsonrpc-core = "15.1.0"
 jsonrpc-core-client = "15.1.0"
 jsonrpc-derive = "15.1.0"
 
-sp-core = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
-sp-rpc = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
-sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
-sp-api = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
-sp-blockchain = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.9" }
+sp-core = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }
+sp-rpc = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }
+sp-runtime = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }
+sp-api = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }
+sp-blockchain = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }
 
 pallet-coming-id-rpc-runtime-api = { version = "1.1.0", path = "./runtime-api" }
