@@ -81,13 +81,13 @@ mkdir data
 echo "build basic chainspec"
 
 ./sherpax build-spec --disable-default-bootnode --chain basic >  ./config/basic.json
-./sherpax export-genesis-state --parachain-id 2000 --chain ./config/basic.json > ./config/basic.genesis
+./sherpax export-genesis-state --parachain-id 2013 --chain ./config/basic.json > ./config/basic.genesis
 ./sherpax export-genesis-wasm --chain ./config/basic.json > ./config/basic.wasm
 
 
 newParas="{\"paras\":[
         [
-            2000,
+            2013,
             {
                 \"genesis_head\": \"`cat ./config/basic.genesis`\",
                 \"validation_code\":\"`cat ./config/basic.wasm`\",
