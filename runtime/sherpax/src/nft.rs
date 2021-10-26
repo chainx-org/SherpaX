@@ -2,7 +2,7 @@
 
 use frame_support::traits::{Currency, ExistenceRequirement};
 use core::marker::PhantomData;
-use evm::{executor::PrecompileOutput, Context, ExitError, ExitSucceed};
+use fp_evm::{PrecompileOutput, Context, ExitError, ExitSucceed};
 use pallet_evm::{Precompile, AddressMapping};
 use sp_core::{H160, U256, hexdisplay::HexDisplay};
 use sp_runtime::{traits::UniqueSaturatedInto, AccountId32};

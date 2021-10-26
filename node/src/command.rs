@@ -19,7 +19,8 @@ use crate::{
     chain_spec,
     cli::{Cli, RelayChainCli, Subcommand},
     service::{
-        new_basic_partial, BasicRuntimeExecutor
+        new_basic_partial, BasicRuntimeExecutor,
+        new_partial, SherpaxRuntimeExecutor, frontier_database_dir,
     },
 };
 use codec::Encode;
@@ -67,14 +68,19 @@ fn load_spec(
     id: &str,
     para_id: ParaId,
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-    match id {
-        "basic-dev" => Ok(Box::new(chain_spec::basic_dev_config(para_id))),
-        "basic" => Ok(Box::new(chain_spec::basic_config(para_id))),
+    Ok(match id {
+        "sherpax-dev" => Box::new(chain_spec::sherpax_development_config(para_id)),
+        "sherpax-local" => Box::new(chain_spec::sherpax_local_config(para_id)),
+        "sherpax" => Box::new(chain_spec::sherpax_config(para_id)),
+        "basic-dev" => Box::new(chain_spec::basic_dev_config(para_id)),
+        "basic" => Box::new(chain_spec::basic_config(para_id)),
         path if path.contains("basic")  => {
-            Ok(Box::new(chain_spec::BasicChainSpec::from_json_file(path.into())?))
+            Box::new(chain_spec::BasicChainSpec::from_json_file(path.into())?)
         }
-        _ => Err("Only support basic runtime".into())
-    }
+        path => {
+            Box::new(chain_spec::SherpaxChainSpec::from_json_file(path.into())?)
+        }
+    })
 }
 
 impl SubstrateCli for Cli {
@@ -112,8 +118,12 @@ impl SubstrateCli for Cli {
         load_spec(id, self.run.parachain_id.unwrap_or(DEFAULT_PARA_ID).into())
     }
 
-    fn native_runtime_version(_chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-        &basic_runtime::VERSION
+    fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
+        if chain_spec.is_basic() {
+            &basic_runtime::VERSION
+        } else {
+            &sherpax_runtime::VERSION
+        }
     }
 }
 
@@ -170,7 +180,16 @@ fn extract_genesis_wasm(chain_spec: &Box<dyn sc_service::ChainSpec>) -> Result<V
 macro_rules! construct_async_run {
     (|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
         let runner = $cli.create_runner($cmd)?;
-        if runner.config().chain_spec.is_basic() {
+        if runner.config().chain_spec.is_sherpax() {
+            runner.async_run(|$config| {
+                let $components = new_partial::<sherpax_runtime::RuntimeApi, SherpaxRuntimeExecutor, _>(
+                    &$config,
+                    crate::service::sherpax_build_import_queue,
+                )?;
+                let task_manager = $components.task_manager;
+                { $( $code )* }.map(|v| (v, task_manager))
+            })
+        } else if runner.config().chain_spec.is_basic() {
             runner.async_run(|$config| {
                 let $components = new_basic_partial::<basic_runtime::RuntimeApi, BasicRuntimeExecutor, _>(
                     &$config,
@@ -217,6 +236,13 @@ pub fn run() -> Result<()> {
         Some(Subcommand::PurgeChain(cmd)) => {
             let runner = cli.create_runner(cmd)?;
             runner.sync_run(|config| {
+                // Remove Frontier offchain db
+                let frontier_database_config = sc_service::DatabaseSource::RocksDb {
+                    path: frontier_database_dir(&config),
+                    cache_size: 0,
+                };
+                cmd.base.run(frontier_database_config)?;
+
                 let polkadot_cli = RelayChainCli::new(
                     &config,
                     [RelayChainCli::executable_name().to_string()]
@@ -324,6 +350,11 @@ pub fn run() -> Result<()> {
 
                 if config.chain_spec.is_basic() {
                     crate::service::start_basic_parachain_node(config, polkadot_config, id)
+                        .await
+                        .map(|r| r.0)
+                        .map_err(Into::into)
+                } else if config.chain_spec.is_sherpax() {
+                    crate::service::start_sherpax_parachain_node(config, polkadot_config, id)
                         .await
                         .map(|r| r.0)
                         .map_err(Into::into)

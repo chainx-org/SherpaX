@@ -31,12 +31,12 @@ pub mod weights;
 pub type Cid = u64;
 pub type BondType = u16;
 
-#[derive(Clone, Eq, PartialEq, Encode, Decode)]
+#[derive(Clone, Eq, PartialEq, Encode, Decode, scale_info::TypeInfo)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
 pub struct BondData {
     pub bond_type: BondType,
-    pub data: Bytes,
+    pub data: Vec<u8>,
 }
 
 impl BondData {
@@ -45,13 +45,13 @@ impl BondData {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Encode, Decode)]
+#[derive(Clone, Eq, PartialEq, Encode, Decode, scale_info::TypeInfo)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
 pub struct CidDetails<AccountId> {
     pub owner: AccountId,
     pub bonds: Vec<BondData>,
-    pub card: Bytes,
+    pub card: Vec<u8>,
 }
 
 #[frame_support::pallet]
@@ -138,7 +138,6 @@ pub mod pallet {
     }
 
     #[pallet::event]
-    #[pallet::metadata(T::AccountId = "AccountId")]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         // recipient, cid
@@ -400,7 +399,7 @@ impl<T: Config> Pallet<T> {
 
     pub fn get_card(cid: Cid) -> Option<Bytes> {
         match Self::distributed(cid) {
-            Some(cid_details) if !cid_details.card.is_empty() => Some(cid_details.card),
+            Some(cid_details) if !cid_details.card.is_empty() => Some(Bytes::from(cid_details.card)),
             _ => None,
         }
     }

@@ -39,20 +39,25 @@ use sc_client_api::{
     backend::{StorageProvider, Backend, StateBackend},
     client::BlockchainEvents
 };
-use fc_rpc_core::types::{PendingTransactions, FilterPool};
+use sc_transaction_pool::{ChainApi, Pool};
+use fc_rpc_core::types::FilterPool;
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
-use fc_rpc::{StorageOverride, SchemaV1Override, OverrideHandle, RuntimeApiStorageOverride};
+use fc_rpc::{
+    StorageOverride, SchemaV1Override, OverrideHandle, RuntimeApiStorageOverride, EthBlockDataCache
+};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
 
 /// Full client dependencies
-pub struct FullDeps<C, P> {
+pub struct FullDeps<C, P, A: ChainApi> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
     pub pool: Arc<P>,
+    /// Graph pool instance.
+    pub graph: Arc<Pool<A>>,
     /// Whether to deny unsafe calls
     pub deny_unsafe: DenyUnsafe,
     /// The Node authority flag
@@ -61,8 +66,6 @@ pub struct FullDeps<C, P> {
     pub enable_dev_signer: bool,
     /// Network service
     pub network: Arc<NetworkService<Block, Hash>>,
-    /// Ethereum pending transactions.
-    pub pending_transactions: PendingTransactions,
     /// EthFilterApi pool.
     pub filter_pool: Option<FilterPool>,
     /// Backend.
@@ -72,8 +75,8 @@ pub struct FullDeps<C, P> {
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, BE>(
-    deps: FullDeps<C, P>,
+pub fn create_full<C, P, BE, A>(
+    deps: FullDeps<C, P, A>,
     subscription_task_executor: SubscriptionTaskExecutor
 ) -> RpcExtension
     where
@@ -92,7 +95,8 @@ pub fn create_full<C, P, BE>(
         BE: Backend<Block> + 'static,
         BE::State: StateBackend<BlakeTwo256>,
         C: StorageProvider<Block, BE> + BlockchainEvents<Block>,
-        C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>
+        C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+        A: ChainApi<Block = Block> + 'static,
 {
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
@@ -107,10 +111,10 @@ pub fn create_full<C, P, BE>(
     let FullDeps {
         client,
         pool,
+        graph,
         deny_unsafe,
         is_authority,
         network,
-        pending_transactions,
         filter_pool,
         backend,
         max_past_logs,
@@ -142,18 +146,21 @@ pub fn create_full<C, P, BE>(
         fallback: Box::new(RuntimeApiStorageOverride::new(client.clone())),
     });
 
+    let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
+
     io.extend_with(
         EthApiServer::to_delegate(EthApi::new(
             client.clone(),
             pool.clone(),
+            graph,
             sherpax_runtime::TransactionConverter,
             network.clone(),
-            pending_transactions.clone(),
             signers,
             overrides.clone(),
             backend.clone(),
             is_authority,
             max_past_logs,
+            block_data_cache.clone()
         ))
     );
 
@@ -166,6 +173,7 @@ pub fn create_full<C, P, BE>(
                 500 as usize, // max stored filters
                 overrides.clone(),
                 max_past_logs,
+                block_data_cache
             ))
         );
     }

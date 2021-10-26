@@ -41,7 +41,6 @@ use sp_version::RuntimeVersion;
 use constants::{currency::*, fee::WeightToFee};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::Contains,
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight},
 		DispatchClass, Weight,
@@ -115,16 +114,9 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 2;
 }
 
-pub struct BaseFilter;
-impl Contains<Call> for BaseFilter {
-	fn contains(_c: &Call) -> bool {
-		true
-	}
-}
-
 // Configure FRAME pallets to include in runtime.
 impl frame_system::Config for Runtime {
-	type BaseCallFilter = BaseFilter;
+	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = RuntimeBlockWeights;
 	type BlockLength = RuntimeBlockLength;
 	type AccountId = AccountId;

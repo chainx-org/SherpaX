@@ -17,7 +17,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::Decode;
-use evm::{executor::PrecompileOutput, Context, ExitError};
+use fp_evm::{PrecompileOutput, Context, ExitError};
 use frame_support::dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo};
 use pallet_evm::{Precompile, PrecompileSet};
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};

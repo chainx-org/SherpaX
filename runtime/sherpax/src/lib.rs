@@ -41,7 +41,6 @@ use sp_version::RuntimeVersion;
 use constants::{currency::*, fee::WeightToFee};
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::Contains,
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight},
 		DispatchClass, Weight,
@@ -134,16 +133,9 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 2;
 }
 
-pub struct BaseFilter;
-impl Contains<Call> for BaseFilter {
-	fn contains(_c: &Call) -> bool {
-		true
-	}
-}
-
 // Configure FRAME pallets to include in runtime.
 impl frame_system::Config for Runtime {
-	type BaseCallFilter = BaseFilter;
+	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = RuntimeBlockWeights;
 	type BlockLength = RuntimeBlockLength;
 	type AccountId = AccountId;
@@ -219,6 +211,7 @@ impl pallet_balances::Config for Runtime {
 parameter_types! {
 	/// Relay Chain `TransactionByteFee` / 10
 	pub const TransactionByteFee: Balance = 1 * MILLICENTS;
+	pub OperationalFeeMultiplier: u8 = 5;
 }
 
 impl pallet_transaction_payment::Config for Runtime {
@@ -227,6 +220,7 @@ impl pallet_transaction_payment::Config for Runtime {
 	type TransactionByteFee = TransactionByteFee;
 	type WeightToFee = WeightToFee;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
+	type OperationalFeeMultiplier = OperationalFeeMultiplier;
 }
 
 parameter_types! {
@@ -279,6 +273,7 @@ parameter_types! {
 	pub const Period: u32 = 6 * HOURS;
 	pub const Offset: u32 = 0;
 	pub const DevPeriod: u32 = 2 * MINUTES;
+	pub const MaxAuthorities: u32 = 100;
 }
 
 impl pallet_session::Config for Runtime {
@@ -307,6 +302,7 @@ impl pallet_session::Config for Runtime {
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
+	type MaxAuthorities = MaxAuthorities;
 }
 
 parameter_types! {
@@ -454,7 +450,7 @@ construct_runtime!(
 		// Ethereum compatibility
 		EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config} = 60,
 		EVM: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 61,
-		Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, ValidateUnsigned} = 62,
+		Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin} = 62,
 
 		// Deposit balance and cid from substrate account to ethereum address
 		Deposit: pallet_deposit::{Pallet, Call} = 66
@@ -505,16 +501,27 @@ impl frame_support::traits::OnRuntimeUpgrade for OnRuntimeUpgrade {
 pub struct TransactionConverter;
 
 impl fp_rpc::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
-	fn convert_transaction(&self, transaction: pallet_ethereum::Transaction) -> UncheckedExtrinsic {
-		UncheckedExtrinsic::new_unsigned(pallet_ethereum::Call::<Runtime>::transact(transaction).into())
+	fn convert_transaction(
+		&self,
+		transaction: pallet_ethereum::Transaction
+	) -> UncheckedExtrinsic {
+		UncheckedExtrinsic::new_unsigned(
+			pallet_ethereum::Call::<Runtime>::transact{transaction}.into()
+		)
 	}
 }
 
 impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConverter {
-	fn convert_transaction(&self, transaction: pallet_ethereum::Transaction) -> opaque::UncheckedExtrinsic {
-		let extrinsic = UncheckedExtrinsic::new_unsigned(pallet_ethereum::Call::<Runtime>::transact(transaction).into());
+	fn convert_transaction(
+		&self,
+		transaction: pallet_ethereum::Transaction
+	) -> opaque::UncheckedExtrinsic {
+		let extrinsic = UncheckedExtrinsic::new_unsigned(
+			pallet_ethereum::Call::<Runtime>::transact{transaction}.into()
+		);
 		let encoded = extrinsic.encode();
-		opaque::UncheckedExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
+		opaque::UncheckedExtrinsic::decode(&mut &encoded[..])
+			.expect("Encoded extrinsic is always valid")
 	}
 }
 
@@ -525,7 +532,7 @@ impl_runtime_apis! {
 		}
 
 		fn authorities() -> Vec<AuraId> {
-			Aura::authorities()
+			Aura::authorities().to_vec()
 		}
 	}
 
@@ -545,7 +552,7 @@ impl_runtime_apis! {
 
 	impl sp_api::Metadata<Block> for Runtime {
 		fn metadata() -> OpaqueMetadata {
-			Runtime::metadata().into()
+			OpaqueMetadata::new(Runtime::metadata().into())
 		}
 	}
 
@@ -763,7 +770,7 @@ impl_runtime_apis! {
 			xts: Vec<<Block as BlockT>::Extrinsic>,
 		) -> Vec<EthereumTransaction> {
 			xts.into_iter().filter_map(|xt| match xt.function {
-				Call::Ethereum(pallet_ethereum::Call::transact(t)) => Some(t),
+				Call::Ethereum(pallet_ethereum::Call::transact{transaction}) => Some(transaction),
 				_ => None
 			}).collect::<Vec<EthereumTransaction>>()
 		}
