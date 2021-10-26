@@ -16,3 +16,6 @@
 
 # db
 db/*
+
+# tests
+test*
