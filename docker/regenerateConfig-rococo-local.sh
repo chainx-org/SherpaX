@@ -80,17 +80,17 @@ mkdir data
 
 echo "build sherpax chainspec"
 
-./sherpax build-spec --disable-default-bootnode --chain sherpax-dev >  ./config/sherpax.json
-./sherpax export-genesis-state --parachain-id 2000 --chain ./config/sherpax.json > ./config/sherpax.genesis
-./sherpax export-genesis-wasm --chain ./config/sherpax.json > ./config/sherpax.wasm
+./sherpax build-spec --disable-default-bootnode --chain dev >  ./config/sherpax-dev.json
+./sherpax export-genesis-state --parachain-id 2013 --chain ./config/sherpax-dev.json > ./config/sherpax-dev.genesis
+./sherpax export-genesis-wasm --chain ./config/sherpax-dev.json > ./config/sherpax-dev.wasm
 
 
 newParas="{\"paras\":[
         [
-            2000,
+            2013,
             {
-                \"genesis_head\": \"`cat ./config/sherpax.genesis`\",
-                \"validation_code\":\"`cat ./config/sherpax.wasm`\",
+                \"genesis_head\": \"`cat ./config/sherpax-dev.genesis`\",
+                \"validation_code\":\"`cat ./config/sherpax-dev.wasm`\",
                 \"parachain\":true
             }
         ]

@@ -16,3 +16,8 @@
 
 # db
 db/*
+
+# test
+test*
+docker/data*
+docker/config

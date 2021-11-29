@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   node_alice:
-    image: "comingweb3/polkadot:v0.9.9"
+    image: "comingweb3/polkadot:v0.9.11"
     ports:
       - "30333:30333"
       - "9944:9944"
@@ -24,7 +24,7 @@ services:
           - alice
 
   node_bob:
-    image: "comingweb3/polkadot:v0.9.9"
+    image: "comingweb3/polkadot:v0.9.11"
     ports:
       - "30334:30333"
       - "9945:9944"
@@ -46,7 +46,7 @@ services:
           - bob
 
   node_sherpax:
-    image: "comingweb3/sherpax:v0.9.9"
+    image: "comingweb3/sherpax-dev:v0.9.11"
     ports:
       - "30345:30333"
       - "30346:30334"
@@ -64,12 +64,12 @@ services:
       --unsafe-ws-external
       --rpc-methods=unsafe
       --ws-max-connections 10000
-      --parachain-id 2000
+      --parachain-id 2013
       --validator
       --discover-local
       -d /data
-      -lruntime=trace,evm=trace
-      --chain /usr/local/config/sherpax.json
+      -lruntime=trace
+      --chain /usr/local/config/sherpax-dev.json
       --alice
       --force-authoring
       --

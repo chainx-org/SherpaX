@@ -1,6 +1,8 @@
 FROM ubuntu:20.04
 LABEL description="This is the build stage for SherpaX Relay Chain"
 
+RUN apt-get update && apt-get install -y ca-certificates
+
 COPY ./polkadot /usr/local/bin
 COPY ./config /usr/local/config
 

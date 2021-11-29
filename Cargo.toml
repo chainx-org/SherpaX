@@ -5,13 +5,5 @@ panic = 'unwind'
 members = [
 	"node",
 	"runtime/common",
-	"runtime/basic",
-]
-
-exclude = [
 	"runtime/sherpax",
-	"pallets/pallet-coming-id",
-	"pallets/pallet-coming-nft",
-	"pallets/ethereum-chain-id",
-	"pallets/deposit",
 ]
