@@ -31,6 +31,6 @@ jobs:
     - name: 1-Format
       run: make format
     - name: 2-Clippy
-      run: make format
+      run: make clippy
     - name: 3-Test
       run: make test  
