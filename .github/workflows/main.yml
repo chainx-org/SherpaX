@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        rust: [nightly-2021-06-29]
+        rust: [nightly-2021-11-07]
         task:
           - name: Rustfmt
             cargo_command: "cargo fmt --all -- --check"
