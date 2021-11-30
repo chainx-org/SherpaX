@@ -13,11 +13,11 @@ jobs:
         rust: [nightly-2021-11-07]
         task:
           - name: Rustfmt
-            cargo_command: "cargo fmt --all -- --check"
-#           - name: Clippy
-#             cargo_command: "cargo clippy --release"
+            run: make format
+#         - name: Clippy
+#           run: make clippy
           - name: Test Suite
-            cargo_command: "cargo test --release --workspace --all"
+            run: make test
         include:
           - os: ubuntu-latest
             sccache-path: /home/runner/.cache/sccache
