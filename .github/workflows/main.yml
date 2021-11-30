@@ -13,10 +13,13 @@ jobs:
         rust: [nightly-2021-11-07]
         task:
           - name: Rustfmt
+            uses: actions/checkout@v2
             run: make format
-#         - name: Clippy
-#           run: make clippy
+          - name: Clippy
+            uses: actions/checkout@v2
+            run: make clippy
           - name: Test Suite
+            uses: actions/checkout@v2
             run: make test
         include:
           - os: ubuntu-latest
