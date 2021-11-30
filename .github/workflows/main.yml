@@ -7,14 +7,14 @@ env:
   CARGO_NET_RETRY: 10
   CI: 1
   RUST_BACKTRACE: short
-  RUSTUP_MAX_RETRIES: 10
+  RUSTUP_MAX_RETRIES: 3
 
 jobs:
-  rustfmt:
-    name: Rustfmt
+  checks:
+    name: fmt-clippy-test
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
 
     steps:
     - name: Checkout repository
@@ -24,63 +24,13 @@ jobs:
       with:
           profile: minimal
           toolchain: nightly-2021-11-07
-          components: rustfmt
+          components: rustfmt, rust-src, clippy
           target: wasm32-unknown-unknown
           override: true
 
-    - name: Format
+    - name: 1-Format
       run: make format
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly-2021-11-07
-        target: wasm32-unknown-unknown
-        profile: minimal
-        override: true
-
-    - name: Change .cargo owner
-      run: sudo chown -R $(whoami):$(id -ng) ~/.cargo/
-
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Test
-      run: make test
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly-2021-11-07
-        target: wasm32-unknown-unknown
-        profile: minimal
-        override: true
-        components: rust-src, clippy
-
-    - name: Clippy
-      run: make clippy
+    - name: 2-Clippy
+      run: make format
+    - name: 3-Test
+      run: make test  
