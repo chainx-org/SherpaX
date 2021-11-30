@@ -11,7 +11,7 @@ pre-clippy: unset-override
 	@rustup component add clippy-preview
 
 clippy: pre-clippy
-	@cargo clippy --all --all-targets -- \
+	@cargo clippy --release --all --all-targets -- \
 		-A clippy::module_inception -A clippy::needless_pass_by_value \
 		-A clippy::cognitive_complexity -A clippy::unreadable_literal \
 		-A clippy::should_implement_trait -A clippy::verbose_bit_mask \
