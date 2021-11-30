@@ -1,27 +1,91 @@
+name: ci
+
 on: [push, pull_request]
 
-name: ci-build
-
 env:
-  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  CI: 1
+  RUST_BACKTRACE: short
+  RUSTUP_MAX_RETRIES: 10
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  rustfmt:
+    name: Rustfmt
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        toolchain: [nightly-2021-11-07]
+
     steps:
-      - name: Check to latest commit
-        uses: actions/checkout@v2
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2021-11-07
-          components: rustfmt
-          target: wasm32-unknown-unknown
-          default: true
-      - name: Rust format
-        run: make format
-      - name: Rust clippy
-        run: make clippy
-      - name: Rust tests
-        run: make test
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - uses: actions-rs/toolchain@v1
+      with:
+        components: rustfmt
+
+    - name: Format
+      run: make format
+
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        toolchain: [nightly-2021-11-07]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.toolchain }}
+        target: wasm32-unknown-unknown
+        profile: minimal
+        override: true
+
+    - if: matrix.os == 'ubuntu-latest'
+      run: sudo chown -R $(whoami):$(id -ng) ~/.cargo/
+
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Test
+      run: make test
+
+  clippy:
+    name: Clippy
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        toolchain: [nightly-2021-11-07]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.toolchain }}
+        target: wasm32-unknown-unknown
+        profile: minimal
+        override: true
+        components: rust-src, clippy
+
+    - name: Clippy
+      run: make clippy
