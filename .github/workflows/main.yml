@@ -11,7 +11,7 @@ env:
 
 jobs:
   checks:
-    name: fmt-clippy-test
+    name: Fmt-Clippy-Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
