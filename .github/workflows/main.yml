@@ -12,12 +12,9 @@ env:
 jobs:
   rustfmt:
     name: Rustfmt
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        toolchain: [nightly-2021-11-07]
 
     steps:
     - name: Checkout repository
@@ -25,20 +22,21 @@ jobs:
 
     - uses: actions-rs/toolchain@v1
       with:
-        components: rustfmt
+          profile: minimal
+          toolchain: nightly-2021-11-07
+          components: rustfmt
+          target: wasm32-unknown-unknown
+          override: true
 
     - name: Format
       run: make format
 
   test:
     name: Test
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        toolchain: [nightly-2021-11-07]
-
+      
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -46,12 +44,12 @@ jobs:
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ matrix.toolchain }}
+        toolchain: nightly-2021-11-07
         target: wasm32-unknown-unknown
         profile: minimal
         override: true
 
-    - if: matrix.os == 'ubuntu-latest'
+    - name: Change .cargo owner
       run: sudo chown -R $(whoami):$(id -ng) ~/.cargo/
 
     - uses: actions/cache@v2
@@ -67,12 +65,9 @@ jobs:
 
   clippy:
     name: Clippy
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        toolchain: [nightly-2021-11-07]
 
     steps:
     - name: Checkout repository
@@ -81,7 +76,7 @@ jobs:
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ matrix.toolchain }}
+        toolchain: nightly-2021-11-07
         target: wasm32-unknown-unknown
         profile: minimal
         override: true
