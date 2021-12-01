@@ -40,6 +40,9 @@ fn load_spec(
     id: &str,
     para_id: ParaId,
 ) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+    use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat};
+    set_default_ss58_version(Ss58AddressFormat::ChainXAccount);
+
     match id {
         "dev" => Ok(Box::new(chain_spec::dev_config(para_id))),
         "sherpax-staging" => {
