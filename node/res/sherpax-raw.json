@@ -6,6 +6,7 @@
   "telemetryEndpoints": null,
   "protocolId": null,
   "properties": {
+    "ss58Format": 44,
     "tokenDecimals": 18,
     "tokenSymbol": "KSX"
   },
