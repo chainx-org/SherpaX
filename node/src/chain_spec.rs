@@ -204,5 +204,6 @@ fn sherpax_genesis(
         aura_ext: Default::default(),
         parachain_system: Default::default(),
         sudo: sherpax_runtime::SudoConfig { key: root_key },
+        vesting: Default::default(),
     }
 }

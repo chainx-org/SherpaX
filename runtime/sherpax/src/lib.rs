@@ -57,7 +57,9 @@ use runtime_common::{
     Signature, AVERAGE_ON_INITIALIZE_RATIO, HOURS, MAXIMUM_BLOCK_WEIGHT, MINUTES,
     NORMAL_DISPATCH_RATIO, SLOT_DURATION,
 };
-use sp_runtime::Perbill;
+use sp_runtime::{
+    Perbill, traits::ConvertInto
+};
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -320,6 +322,17 @@ impl pallet_collator_selection::Config for Runtime {
     type WeightInfo = ();
 }
 
+impl pallet_vesting::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type BlockNumberToBalance = ConvertInto;
+    type MinVestedTransfer = ExistentialDeposit;
+    type WeightInfo = ();
+    // `VestingInfo` encode length is 36bytes. 28 schedules gets encoded as 1009 bytes, which is the
+    // highest number of schedules that encodes less than 2^10.
+    const MAX_VESTING_SCHEDULES: u32 = 28;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -340,6 +353,7 @@ construct_runtime!(
         // Monetary stuff.
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 11,
+        Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 12,
 
         // Collator support. the order of these 4 are important and shall not change.
         Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
