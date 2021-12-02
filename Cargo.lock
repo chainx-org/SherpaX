@@ -2391,6 +2391,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "generator"
+version = "0.1.0"
+dependencies = [
+ "runtime-common",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7262,11 +7269,13 @@ dependencies = [
  "pallet-authorship",
  "pallet-balances",
  "pallet-collator-selection",
+ "pallet-vesting",
  "parity-scale-codec",
  "polkadot-primitives",
  "polkadot-runtime-common",
  "scale-info",
  "serde",
+ "serde_json",
  "sp-consensus-aura",
  "sp-core",
  "sp-io",

@@ -11,8 +11,12 @@ targets = ['x86_64-unknown-linux-gnu']
 # External dependencies
 codec = { package = 'parity-scale-codec', version = '2.0.0', features = ["derive", "max-encoded-len"], default-features = false }
 scale-info = { version = "1.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.119", optional = true, features = ["derive"] }
+serde_json = { version = "1.0.68", optional = true }
 
 # Substrate dependencies
+sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
+sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
 sp-consensus-aura = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
 sp-std = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
 sp-io = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
@@ -20,8 +24,7 @@ frame-executive = { git = 'https://github.com/paritytech/substrate', default-fea
 frame-support = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
 frame-system = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
 pallet-balances = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
-sp-runtime = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
-sp-core = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
+pallet-vesting = { git = 'https://github.com/paritytech/substrate', default-features = false , branch = "polkadot-v0.9.11" }
 
 # Polkadot dependencies
 polkadot-runtime-common = { git = 'https://github.com/paritytech/polkadot', default-features = false , branch = "release-v0.9.11" }
@@ -43,6 +46,11 @@ default = ["std"]
 std = [
 	'codec/std',
 	'scale-info/std',
+	"serde/std",
+	"serde_json/std",
+
+	'sp-runtime/std',
+	'sp-core/std',
 	'sp-consensus-aura/std',
 	'sp-std/std',
 	'sp-io/std',
@@ -50,8 +58,7 @@ std = [
 	'frame-support/std',
 	'frame-system/std',
 	'pallet-balances/std',
-	'sp-runtime/std',
-	'sp-core/std',
+	'pallet-vesting/std',
 	'polkadot-runtime-common/std',
 	'polkadot-primitives/std',
 	'pallet-collator-selection/std',

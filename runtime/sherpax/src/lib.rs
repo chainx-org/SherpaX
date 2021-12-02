@@ -23,6 +23,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod constants;
+mod migration;
 
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
@@ -397,17 +398,8 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPallets,
-    OnRuntimeUpgrade,
+    migration::OnRuntimeUpgrade<Runtime>,
 >;
-
-pub struct OnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for OnRuntimeUpgrade {
-    fn on_runtime_upgrade() -> u64 {
-        frame_support::migrations::migrate_from_pallet_version_to_storage_version::<
-            AllPalletsWithSystem,
-        >(&RocksDbWeight::get())
-    }
-}
 
 impl_runtime_apis! {
     impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
