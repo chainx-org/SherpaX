@@ -3,6 +3,8 @@ panic = 'unwind'
 
 [workspace]
 members = [
+	"migration",
+
 	"node",
 	"runtime/common",
 	"runtime/sherpax",

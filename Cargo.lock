@@ -4003,6 +4003,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "migration-data"
+version = "0.1.0"
+dependencies = [
+ "runtime-common",
+]
+
+[[package]]
 name = "minicbor"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7267,6 +7274,7 @@ dependencies = [
  "polkadot-runtime-common",
  "scale-info",
  "serde",
+ "serde_json",
  "sp-consensus-aura",
  "sp-core",
  "sp-io",

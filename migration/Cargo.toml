@@ -1,0 +1,10 @@
+[package]
+name = "migration-data"
+version = "0.1.0"
+edition = "2018"
+
+[dev-dependencies]
+runtime-common = { path = "../runtime/common" }
+
+[build-dependencies]
+runtime-common = { path = "../runtime/common" }

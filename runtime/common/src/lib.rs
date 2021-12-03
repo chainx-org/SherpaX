@@ -20,6 +20,8 @@ pub use constants::*;
 pub use opaque::*;
 pub use types::*;
 
+pub mod genesis_config;
+
 /// Common types of SherpaX.
 mod types {
     use sp_runtime::traits::{IdentifyAccount, Verify};
