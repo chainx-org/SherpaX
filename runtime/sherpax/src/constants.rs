@@ -16,15 +16,15 @@
 pub mod currency {
     use runtime_common::Balance;
 
-    /// The existential deposit.
-    pub const EXISTENTIAL_DEPOSIT: Balance = CENTS / 100;
+    /// The existential deposit = 10_000_000_000.
+    pub const EXISTENTIAL_DEPOSIT: Balance = MILLICENTS / 100;
 
     pub const UNITS: Balance = 1_000_000_000_000_000_000;
-    pub const CENTS: Balance = UNITS / 1_000_000;
+    pub const CENTS: Balance = UNITS / 1_000;
     pub const MILLICENTS: Balance = CENTS / 1_000;
 
     pub const fn deposit(items: u32, bytes: u32) -> Balance {
-        (items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS) / 10
+        (items as Balance) * 20 * UNITS + (bytes as Balance) * CENTS
     }
 }
 
@@ -55,10 +55,9 @@ pub mod fee {
     impl WeightToFeePolynomial for WeightToFee {
         type Balance = Balance;
         fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-            // in Kusama, extrinsic base weight (smallest non-zero weight) is mapped to 1/10 CENT:
-            // in Statemine, we map to 1/10 of that, or 1/100 CENT
-            let p = super::currency::CENTS;
-            let q = 100 * Balance::from(ExtrinsicBaseWeight::get());
+            // In SherpaX, extrinsic base weight (smallest non-zero weight) is mapped to 1/25 KSX:
+            let p = super::currency::UNITS;
+            let q = 25 * Balance::from(ExtrinsicBaseWeight::get());
             smallvec![WeightToFeeCoefficient {
                 degree: 1,
                 negative: false,
