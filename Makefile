@@ -29,7 +29,7 @@ release:
 test:
 	export LOG_LEVEL=DEBUG && \
 	export RUST_BACKTRACE=1 && \
-	cargo test --release #--features "${ENABLE_FEATURES}" --all -- --nocapture
+	cargo test --release --all -- --nocapture
 
 unset-override:
 	@# unset first in case of any previous overrides

@@ -91,7 +91,10 @@ pub fn dev_config(id: ParaId) -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "KSX".into());
     properties.insert("tokenDecimals".into(), 18.into());
-    properties.insert("ss58Format".into(), sherpax_runtime::SS58Prefix::get().into());
+    properties.insert(
+        "ss58Format".into(),
+        sherpax_runtime::SS58Prefix::get().into(),
+    );
 
     ChainSpec::from_genesis(
         // Name
