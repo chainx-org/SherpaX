@@ -46,6 +46,7 @@ macro_rules! balance_decode {
     }};
 }
 
+#[allow(clippy::type_complexity)]
 pub fn balances_decode_all<T>(
 ) -> Result<Vec<SherpaXBalances<T::AccountId, T::Balance>>, codec::Error>
 where
