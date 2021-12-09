@@ -24,6 +24,11 @@ use serde::{Deserialize, Serialize};
 use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
+use crate::bitcoin::{
+    btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, BtcTxVerifier, Chain,
+    TrusteeInfoConfig,
+};
+
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
     TPublic::Pair::from_string(&format!("//{}", seed), None)
@@ -111,6 +116,8 @@ pub fn dev_config(id: ParaId) -> ChainSpec {
                 )],
                 vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
                 id,
+                btc_genesis_params(include_str!("../res/btc_genesis_params_testnet.json")),
+                crate::bitcoin::local_testnet_trustees(),
             )
         },
         vec![],
@@ -147,6 +154,8 @@ pub fn sherpax_staging_config(id: ParaId) -> ChainSpec {
                     hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").into(),
                 ],
                 id,
+                btc_genesis_params(include_str!("../res/btc_genesis_params_testnet.json")),
+                crate::bitcoin::local_testnet_trustees(),
             )
         },
         vec![],
@@ -169,7 +178,25 @@ fn sherpax_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
+    bitcoin: BtcGenesisParams,
+    trustees: Vec<(Chain, TrusteeInfoConfig, Vec<BtcTrusteeParams>)>,
 ) -> sherpax_runtime::GenesisConfig {
+    let btc_genesis_trustees = trustees
+        .iter()
+        .find_map(|(chain, _, trustee_params)| {
+            if *chain == Chain::Bitcoin {
+                Some(
+                    trustee_params
+                        .iter()
+                        .map(|i| (i.0).clone())
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                None
+            }
+        })
+        .expect("bitcoin trustees generation can not fail; qed");
+
     sherpax_runtime::GenesisConfig {
         system: sherpax_runtime::SystemConfig {
             code: sherpax_runtime::WASM_BINARY
@@ -207,5 +234,25 @@ fn sherpax_genesis(
         aura_ext: Default::default(),
         parachain_system: Default::default(),
         sudo: sherpax_runtime::SudoConfig { key: root_key },
+        council: sherpax_runtime::CouncilConfig::default(),
+        elections: sherpax_runtime::ElectionsConfig::default(),
+        x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
+            genesis_trustees: btc_genesis_trustees,
+            network_id: bitcoin.network,
+            confirmation_number: bitcoin.confirmation_number,
+            genesis_hash: bitcoin.hash(),
+            genesis_info: (bitcoin.header(), bitcoin.height),
+            params_info: BtcParams::new(
+                // for signet and regtest
+                545259519,            // max_bits
+                2 * 60 * 60,          // block_max_future
+                2 * 7 * 24 * 60 * 60, // target_timespan_seconds
+                10 * 60,              // target_spacing_seconds
+                4,                    // retargeting_factor
+            ), // retargeting_factor
+            btc_withdrawal_fee: 500000,
+            max_withdrawal_count: 100,
+            verifier: BtcTxVerifier::Recover,
+        },
     }
 }

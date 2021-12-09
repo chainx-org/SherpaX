@@ -18,6 +18,7 @@ jsonrpc-core = "18.0.0"
 log = "0.4.14"
 parking_lot = "0.9.0"
 serde = { version = "1.0.119", features = ["derive"] }
+serde_json = "1.0"
 structopt = "0.3.3"
 trie-root = "0.15.2"
 async-trait = "0.1.42"
@@ -77,6 +78,8 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "r
 # Parachain dependencies
 runtime-common = { path = "../runtime/common" }
 sherpax-runtime = { path = "../runtime/sherpax" }
+
+chainx-primitives = { path = "../primitives" }
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }

@@ -8924,6 +8924,7 @@ name = "sherpax"
 version = "1.0.0"
 dependencies = [
  "async-trait",
+ "chainx-primitives",
  "cumulus-client-cli",
  "cumulus-client-collator",
  "cumulus-client-consensus-aura",
@@ -8962,6 +8963,7 @@ dependencies = [
  "sc-transaction-pool",
  "sc-transaction-pool-api",
  "serde",
+ "serde_json",
  "sherpax-runtime",
  "sp-api",
  "sp-block-builder",
@@ -8989,6 +8991,7 @@ dependencies = [
 name = "sherpax-runtime"
 version = "1.0.0"
 dependencies = [
+ "chainx-primitives",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
@@ -9000,10 +9003,13 @@ dependencies = [
  "hex",
  "hex-literal",
  "log",
+ "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
  "pallet-collator-selection",
+ "pallet-collective",
+ "pallet-elections-phragmen",
  "pallet-multisig",
  "pallet-randomness-collective-flip",
  "pallet-session",
@@ -9032,7 +9038,16 @@ dependencies = [
  "sp-std",
  "sp-transaction-pool",
  "sp-version",
+ "static_assertions",
  "substrate-wasm-builder",
+ "xp-assets-registrar",
+ "xp-gateway-bitcoin",
+ "xpallet-gateway-bitcoin",
+ "xpallet-gateway-common",
+ "xpallet-gateway-common-rpc-runtime-api",
+ "xpallet-gateway-records",
+ "xpallet-gateway-records-rpc-runtime-api",
+ "xpallet-support",
 ]
 
 [[package]]

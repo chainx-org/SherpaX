@@ -11,6 +11,7 @@ log = { version = "0.4.14", default-features = false }
 smallvec = "1.6.1"
 hex-literal = { version = '0.3.1', optional = true }
 scale-info = { version = "1.0.0", default-features = false, features = ["derive"] }
+static_assertions = "1.1.0"
 
 runtime-common = { path = "../common", default-features = false }
 
@@ -32,9 +33,12 @@ frame-support = { git = "https://github.com/paritytech/substrate", default-featu
 frame-executive = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 frame-system-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
+pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
 pallet-aura = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 pallet-authorship = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 pallet-balances = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
+pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
+pallet-elections-phragmen = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
 pallet-multisig = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 pallet-randomness-collective-flip = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 pallet-session = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
@@ -56,6 +60,17 @@ pallet-collator-selection = { git = "https://github.com/paritytech/cumulus", def
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
 polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
 
+# Cross chain
+chainx-primitives = { path = "../../primitives", default-features = false }
+xp-assets-registrar = { path = "../../primitives/assets-registrar" }
+xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false, features = ["ss58check"] }
+xpallet-gateway-bitcoin = { path = "../../xpallets/gateway/bitcoin", default-features = false }
+xpallet-gateway-common = { path = "../../xpallets/gateway/common", default-features = false }
+xpallet-gateway-common-rpc-runtime-api = { path = "../../xpallets/gateway/common/rpc/runtime-api", default-features = false }
+xpallet-gateway-records = { path = "../../xpallets/gateway/records", default-features = false }
+xpallet-gateway-records-rpc-runtime-api = { path = "../../xpallets/gateway/records/rpc/runtime-api", default-features = false }
+xpallet-support = { path = "../../xpallets/support", default-features = false }
+
 [dev-dependencies]
 hex-literal = "0.3.1"
 hex = "0.4.3"
@@ -64,49 +79,59 @@ hex = "0.4.3"
 substrate-wasm-builder = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
 
 [features]
-default = [ "std" ]
+default = ["std"]
 std = [
-	"serde",
-	"codec/std",
-	"log/std",
-	"scale-info/std",
-
-	"runtime-common/std",
-
-	"sp-std/std",
-	"sp-api/std",
-	"sp-io/std",
-	"sp-version/std",
-	"sp-runtime/std",
-	"sp-core/std",
-	"sp-session/std",
-	"sp-offchain/std",
-	"sp-block-builder/std",
-	"sp-transaction-pool/std",
-	"sp-inherents/std",
-	"sp-consensus-aura/std",
-	"frame-support/std",
-	"frame-executive/std",
-	"frame-system/std",
-	"frame-system-rpc-runtime-api/std",
-	"pallet-aura/std",
-	"pallet-authorship/std",
-	"pallet-balances/std",
-	"pallet-multisig/std",
-	"pallet-randomness-collective-flip/std",
-	"pallet-session/std",
-	"pallet-sudo/std",
-	"pallet-timestamp/std",
-	"pallet-transaction-payment/std",
-	"pallet-transaction-payment-rpc-runtime-api/std",
-	"pallet-utility/std",
-	"parachain-info/std",
-	"cumulus-pallet-aura-ext/std",
-	"cumulus-pallet-parachain-system/std",
-	"cumulus-primitives-core/std",
-	"cumulus-primitives-timestamp/std",
-	"pallet-collator-selection/std",
-	"polkadot-parachain/std",
-	"polkadot-runtime-common/std"
+    "serde",
+    "codec/std",
+    "log/std",
+    "scale-info/std",
+    "runtime-common/std",
+    "sp-std/std",
+    "sp-api/std",
+    "sp-io/std",
+    "sp-version/std",
+    "sp-runtime/std",
+    "sp-core/std",
+    "sp-session/std",
+    "sp-offchain/std",
+    "sp-block-builder/std",
+    "sp-transaction-pool/std",
+    "sp-inherents/std",
+    "sp-consensus-aura/std",
+    "frame-support/std",
+    "frame-executive/std",
+    "frame-system/std",
+    "frame-system-rpc-runtime-api/std",
+    "pallet-assets/std",
+    "pallet-aura/std",
+    "pallet-authorship/std",
+    "pallet-balances/std",
+    "pallet-collective/std",
+    "pallet-elections-phragmen/std",
+    "pallet-multisig/std",
+    "pallet-randomness-collective-flip/std",
+    "pallet-session/std",
+    "pallet-sudo/std",
+    "pallet-timestamp/std",
+    "pallet-transaction-payment/std",
+    "pallet-transaction-payment-rpc-runtime-api/std",
+    "pallet-utility/std",
+    "parachain-info/std",
+    "cumulus-pallet-aura-ext/std",
+    "cumulus-pallet-parachain-system/std",
+    "cumulus-primitives-core/std",
+    "cumulus-primitives-timestamp/std",
+    "pallet-collator-selection/std",
+    "polkadot-parachain/std",
+    "polkadot-runtime-common/std",
+    "chainx-primitives/std",
+    "xp-assets-registrar/std",
+    "xp-gateway-bitcoin/std",
+    "xpallet-gateway-bitcoin/std",
+    "xpallet-gateway-common/std",
+    "xpallet-gateway-common-rpc-runtime-api/std",
+    "xpallet-gateway-records/std",
+    "xpallet-gateway-records-rpc-runtime-api/std",
+    "xpallet-support/std",
 ]
 sherpax-dev = []

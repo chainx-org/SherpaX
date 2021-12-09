@@ -38,11 +38,12 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
+use static_assertions::const_assert;
 
-use constants::{currency::*, fee::WeightToFee};
+use constants::{currency::*, fee::WeightToFee, time::*};
 use frame_support::{
     construct_runtime, parameter_types,
-    traits::Contains,
+    traits::{Contains, LockIdentifier},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight},
         DispatchClass, Weight,
@@ -51,7 +52,7 @@ use frame_support::{
 };
 use frame_system::{
     limits::{BlockLength, BlockWeights},
-    EnsureRoot,
+    EnsureRoot, EnsureSignedBy,
 };
 use runtime_common::{
     impls::DealWithFees, opaque, AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index,
@@ -65,6 +66,17 @@ pub use sp_runtime::BuildStorage;
 
 // Polkadot imports
 use polkadot_runtime_common::{BlockHashCount, RocksDbWeight, SlowAdjustingFeeUpdate};
+
+pub use chainx_primitives::AssetId;
+pub use xp_assets_registrar::Chain;
+#[cfg(feature = "std")]
+pub use xpallet_gateway_bitcoin::h256_rev;
+pub use xpallet_gateway_bitcoin::{
+    hash_rev, BtcHeader, BtcNetwork, BtcParams, BtcTxVerifier, Compact as BtcCompact,
+    H256 as BtcHash,
+};
+pub use xpallet_gateway_common::{trustees, types::TrusteeInfoConfig};
+use xpallet_support::traits::MultisigAddressFor;
 
 impl_opaque_keys! {
     pub struct SessionKeys {
@@ -161,6 +173,30 @@ impl pallet_timestamp::Config for Runtime {
     type OnTimestampSet = ();
     type MinimumPeriod = MinimumPeriod;
     type WeightInfo = ();
+}
+
+parameter_types! {
+    pub const AssetDeposit: Balance = 0;
+    pub const ApprovalDeposit: Balance = 0;
+    pub const StringLimit: u32 = 50;
+    pub const MetadataDepositBase: Balance = 0;
+    pub const MetadataDepositPerByte: Balance = 0;
+}
+
+impl pallet_assets::Config for Runtime {
+    type Event = Event;
+    type Balance = Balance;
+    type AssetId = AssetId;
+    type Currency = Balances;
+    type ForceOrigin = EnsureRoot<AccountId>;
+    type AssetDeposit = AssetDeposit;
+    type MetadataDepositBase = MetadataDepositBase;
+    type MetadataDepositPerByte = MetadataDepositPerByte;
+    type ApprovalDeposit = ApprovalDeposit;
+    type StringLimit = StringLimit;
+    type Freezer = XGatewayRecords;
+    type Extra = ();
+    type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -321,6 +357,103 @@ impl pallet_collator_selection::Config for Runtime {
     type WeightInfo = ();
 }
 
+parameter_types! {
+    pub const CouncilMotionDuration: BlockNumber = 7 * DAYS;
+    pub const CouncilMaxProposals: u32 = 100;
+    pub const CouncilMaxMembers: u32 = 100;
+}
+
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+    type Origin = Origin;
+    type Proposal = Call;
+    type Event = Event;
+    type MotionDuration = CouncilMotionDuration;
+    type MaxProposals = CouncilMaxProposals;
+    type MaxMembers = CouncilMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    // 10 PCX
+    pub const CandidacyBond: Balance = 1000 * EXISTENTIAL_DEPOSIT;
+    // 1 storage item created, key size is 32 bytes, value size is 16+16.
+    pub const VotingBondBase: Balance = deposit(1, 64);
+    // additional data per vote is 32 bytes (account id).
+    pub const VotingBondFactor: Balance = deposit(0, 32);
+    pub const VotingBond: Balance = EXISTENTIAL_DEPOSIT;
+    pub const TermDuration: BlockNumber = DAYS;
+    pub const DesiredMembers: u32 = 11;
+    pub const DesiredRunnersUp: u32 = 7;
+    pub const ElectionsPhragmenPalletId: LockIdentifier = *b"pcx/phre";
+}
+
+// Make sure that there are no more than `MaxMembers` members elected via elections-phragmen.
+const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
+
+impl pallet_elections_phragmen::Config for Runtime {
+    type Event = Event;
+    type PalletId = ElectionsPhragmenPalletId;
+    type Currency = Balances;
+    type ChangeMembers = Council;
+    // NOTE: this implies that council's genesis members cannot be set directly and must come from
+    // this module.
+    type InitializeMembers = Council;
+    type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+    type CandidacyBond = CandidacyBond;
+    type VotingBondBase = VotingBondBase;
+    type VotingBondFactor = VotingBondFactor;
+    type LoserCandidate = ();
+    type KickedMember = ();
+    type DesiredMembers = DesiredMembers;
+    type DesiredRunnersUp = DesiredRunnersUp;
+    type TermDuration = TermDuration;
+    type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    pub const NativeAssetId: AssetId = 0;
+    pub const BtcAssetId: AssetId = 1;
+}
+
+impl xpallet_gateway_records::Config for Runtime {
+    type Event = Event;
+    type NativeAssetId = NativeAssetId;
+    type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
+}
+
+pub struct MultisigProvider;
+impl MultisigAddressFor<AccountId> for MultisigProvider {
+    fn calc_multisig(who: &[AccountId], threshold: u16) -> AccountId {
+        Multisig::multi_account_id(who, threshold)
+    }
+}
+
+impl xpallet_gateway_common::Config for Runtime {
+    type Event = Event;
+    type Validator = ();
+    type DetermineMultisigAddress = MultisigProvider;
+    type Bitcoin = XGatewayBitcoin;
+    type BitcoinTrustee = XGatewayBitcoin;
+    type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
+    type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
+}
+
+impl xpallet_gateway_bitcoin::Config for Runtime {
+    type Event = Event;
+    type BtcAssetId = BtcAssetId;
+    type Currency = Balances;
+    type UnixTime = Timestamp;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
+    type TrusteeOrigin = EnsureSignedBy<trustees::bitcoin::BtcTrusteeMultisig<Runtime>, AccountId>;
+    type TrusteeTransition = XGatewayCommon;
+    type ReferralBinding = XGatewayCommon;
+    type AddressBinding = XGatewayCommon;
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -349,9 +482,19 @@ construct_runtime!(
         Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
         AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
 
+        Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 25,
+        Elections: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 26,
+
+        Assets: pallet_assets::{Pallet, Call, Storage, Event<T>} = 27,
+
         // Handy utilities.
         Utility: pallet_utility::{Pallet, Call, Event} = 40,
         Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 41,
+
+        // Crypto gateway stuff.
+        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 42,
+        XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 43,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 44,
     }
 );
 
