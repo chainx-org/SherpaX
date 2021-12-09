@@ -3,8 +3,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::type_complexity)]
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
+// #[cfg(feature = "runtime-benchmarks")]
+// mod benchmarking;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -545,23 +545,26 @@ impl<T: Config> Pallet<T> {
     }
 
     fn lock(who: &T::AccountId, asset_id: T::AssetId, value: T::Balance) -> DispatchResult {
-        Locks::<T>::try_mutate::<_, _, _, DispatchError, _>(
-            who,
-            asset_id,
-            |amount| match amount {
-                None => Ok(Some(value)),
-                Some(acc) => Ok(acc.checked_add(&value)),
-            },
-        )?;
+        if Locks::<T>::contains_key(who, asset_id) {
+            Locks::<T>::mutate(who, asset_id, |balance| match balance {
+                Some(amount) => *amount += value,
+                None => *balance = Some(value),
+            });
+        } else {
+            Locks::<T>::insert(who, asset_id, value);
+        }
         Ok(())
     }
 
     fn unlock(who: &T::AccountId, asset_id: T::AssetId, value: T::Balance) -> DispatchResult {
-        Locks::<T>::try_mutate(who, asset_id, |amount| match amount {
+        Locks::<T>::try_mutate_exists(who, asset_id, |amount| match amount {
             None => Err(Error::<T>::InsufficientLockedAssets),
             Some(acc) => {
                 if *acc < value {
                     Err(Error::<T>::InsufficientLockedAssets)
+                } else if *acc == value {
+                    *amount = None;
+                    Ok(None)
                 } else {
                     Ok(acc.checked_sub(&value))
                 }
