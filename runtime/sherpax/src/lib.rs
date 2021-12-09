@@ -40,7 +40,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 use static_assertions::const_assert;
 
-use constants::{currency::*, fee::WeightToFee, time::*};
+pub use constants::{currency::*, fee::WeightToFee, time::*};
 use frame_support::{
     construct_runtime, parameter_types,
     traits::{Contains, LockIdentifier},

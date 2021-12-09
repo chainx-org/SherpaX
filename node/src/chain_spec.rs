@@ -28,6 +28,7 @@ use crate::bitcoin::{
     btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, BtcTxVerifier, Chain,
     TrusteeInfoConfig,
 };
+use sherpax_runtime::DAYS;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -236,6 +237,11 @@ fn sherpax_genesis(
         sudo: sherpax_runtime::SudoConfig { key: root_key },
         council: sherpax_runtime::CouncilConfig::default(),
         elections: sherpax_runtime::ElectionsConfig::default(),
+        x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
+            trustees,
+            genesis_trustee_transition_duration: 30 * DAYS,
+            genesis_trustee_transition_status: false,
+        },
         x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
             genesis_trustees: btc_genesis_trustees,
             network_id: bitcoin.network,
