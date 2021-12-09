@@ -69,7 +69,7 @@ pub mod fee {
 }
 
 pub mod time {
-    use chainx_primitives::{BlockNumber, Moment};
+    use sherpax_primitives::{BlockNumber, Moment};
 
     pub const MILLISECS_PER_BLOCK: Moment = 6000;
     pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;

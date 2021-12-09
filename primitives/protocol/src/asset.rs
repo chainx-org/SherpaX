@@ -1,6 +1,6 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
-use chainx_primitives::{AssetId, Decimals};
+use sherpax_primitives::{AssetId, Decimals};
 
 // match to SLIP-0044 Registered coin types for BIP-0044
 // [Registered coin types](https://github.com/satoshilabs/slips/blob/master/slip-0044.md)

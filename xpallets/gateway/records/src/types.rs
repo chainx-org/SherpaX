@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use sp_runtime::RuntimeDebug;
 
-use chainx_primitives::AddrStr;
+use sherpax_primitives::AddrStr;
 use xp_runtime::Memo;
 
 /// The id of withdrawal record (u32 is enough).

@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use sp_runtime::{DispatchResult, RuntimeDebug};
 use sp_std::slice::Iter;
 
-use chainx_primitives::AssetId;
+use sherpax_primitives::AssetId;
 
 const CHAINS: [Chain; 4] = [
     Chain::ChainX,

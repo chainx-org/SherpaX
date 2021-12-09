@@ -5,7 +5,7 @@ use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 use crate::traits::{AddressBinding, ReferralBinding};
 use crate::{AddressBindingOf, BoundAddressOf, Config, Pallet};
-use chainx_primitives::{ChainAddress, ReferralId};
+use sherpax_primitives::{ChainAddress, ReferralId};
 use xp_assets_registrar::Chain;
 use xpallet_support::{traits::Validator, try_addr, try_str};
 

@@ -35,7 +35,7 @@ use light_bitcoin::{
     serialization::{deserialize, Reader},
 };
 
-use chainx_primitives::ReferralId;
+use sherpax_primitives::ReferralId;
 use xp_assets_registrar::Chain;
 use xp_gateway_common::AccountExtractor;
 use xpallet_gateway_common::{

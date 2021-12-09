@@ -33,8 +33,8 @@ pub use self::types::{
     Withdrawal, WithdrawalLimit, WithdrawalRecord, WithdrawalRecordId, WithdrawalState,
 };
 pub use self::weights::WeightInfo;
-use chainx_primitives::AddrStr;
 use pallet_assets::FrozenBalance;
+use sherpax_primitives::AddrStr;
 use xp_assets_registrar::Chain;
 use xp_runtime::Memo;
 use xpallet_support::try_addr;

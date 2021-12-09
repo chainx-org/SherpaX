@@ -7,7 +7,7 @@ use sp_core::crypto::AccountId32;
 use sp_runtime::traits::StaticLookup;
 use sp_std::prelude::*;
 
-use chainx_primitives::AssetId;
+use sherpax_primitives::AssetId;
 use xpallet_gateway_records::{Pallet as XGatewayRecords, WithdrawalRecordId, WithdrawalState};
 
 use crate::{

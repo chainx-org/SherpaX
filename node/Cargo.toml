@@ -80,7 +80,12 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "r
 runtime-common = { path = "../runtime/common" }
 sherpax-runtime = { path = "../runtime/sherpax" }
 
-chainx-primitives = { path = "../primitives" }
+sherpax-primitives = { path = "../primitives" }
+xpallet-gateway-common-rpc = { path = "../xpallets/gateway/common/rpc" }
+xpallet-gateway-common-rpc-runtime-api = { path = "../xpallets/gateway/common/rpc/runtime-api" }
+xpallet-gateway-records-rpc = { path = "../xpallets/gateway/records/rpc" }
+xpallet-gateway-records-rpc-runtime-api = { path = "../xpallets/gateway/records/rpc/runtime-api" }
+
 
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }

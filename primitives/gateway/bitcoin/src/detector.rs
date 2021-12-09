@@ -2,8 +2,8 @@
 
 use sp_std::fmt::Debug;
 
-use chainx_primitives::ReferralId;
 use frame_support::log::{debug, warn};
+use sherpax_primitives::ReferralId;
 
 use light_bitcoin::{
     chain::Transaction,

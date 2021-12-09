@@ -7,7 +7,7 @@ use serde::Deserialize;
 
 use sp_core::sr25519;
 
-use chainx_primitives::AccountId;
+use sherpax_primitives::AccountId;
 pub use sherpax_runtime::{
     h256_rev, trustees, BtcCompact, BtcHash, BtcHeader, BtcNetwork, BtcParams, BtcTxVerifier,
     Chain, TrusteeInfoConfig,

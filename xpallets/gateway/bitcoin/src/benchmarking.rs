@@ -6,7 +6,7 @@ use frame_system::RawOrigin;
 use sp_runtime::{AccountId32, SaturatedConversion};
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
-use chainx_primitives::AssetId;
+use sherpax_primitives::AssetId;
 use xp_gateway_bitcoin::BtcTxType;
 use xpallet_gateway_records::{Pallet as XGatewayRecords, WithdrawalState};
 

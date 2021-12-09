@@ -38,7 +38,7 @@ use sp_runtime::traits::BlakeTwo256;
 use std::sync::Arc;
 use substrate_prometheus_endpoint::Registry;
 
-pub use runtime_common::{AccountId, Balance, Block, Hash, Header, Index as Nonce};
+pub use runtime_common::{AccountId, Balance, Block, BlockNumber, Hash, Header, Index as Nonce};
 
 /// Native executor instance.
 pub struct SherpaXRuntimeExecutor;
@@ -198,7 +198,14 @@ where
         + sp_block_builder::BlockBuilder<Block>
         + cumulus_primitives_core::CollectCollationInfo<Block>
         + pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-        + substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
+        + substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
+        + xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance>
+        + xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<
+            Block,
+            AccountId,
+            Balance,
+            BlockNumber,
+        >,
     sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
     Executor: sc_executor::NativeExecutionDispatch + 'static,
     RB: Fn(

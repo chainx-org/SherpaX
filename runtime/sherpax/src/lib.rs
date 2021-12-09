@@ -31,10 +31,10 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{AccountIdLookup, BlakeTwo256, Block as BlockT},
     transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult,
+    ApplyExtrinsicResult, DispatchError,
 };
 
-use sp_std::prelude::*;
+use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
@@ -67,15 +67,22 @@ pub use sp_runtime::BuildStorage;
 // Polkadot imports
 use polkadot_runtime_common::{BlockHashCount, RocksDbWeight, SlowAdjustingFeeUpdate};
 
-pub use chainx_primitives::AssetId;
+pub use sherpax_primitives::{AddrStr, AssetId, ChainAddress};
 pub use xp_assets_registrar::Chain;
+pub use xp_runtime::Memo;
 #[cfg(feature = "std")]
 pub use xpallet_gateway_bitcoin::h256_rev;
 pub use xpallet_gateway_bitcoin::{
     hash_rev, BtcHeader, BtcNetwork, BtcParams, BtcTxVerifier, Compact as BtcCompact,
     H256 as BtcHash,
 };
-pub use xpallet_gateway_common::{trustees, types::TrusteeInfoConfig};
+pub use xpallet_gateway_common::{
+    trustees,
+    types::{
+        GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo, TrusteeInfoConfig,
+    },
+};
+pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit};
 use xpallet_support::traits::MultisigAddressFor;
 
 impl_opaque_keys! {
@@ -643,6 +650,52 @@ impl_runtime_apis! {
     impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
         fn collect_collation_info() -> cumulus_primitives_core::CollationInfo {
             ParachainSystem::collect_collation_info()
+        }
+    }
+
+    impl xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<Block, AccountId, Balance, BlockNumber> for Runtime {
+        fn withdrawal_list() -> BTreeMap<u32, Withdrawal<AccountId, AssetId, Balance, BlockNumber>> {
+            XGatewayRecords::withdrawal_list()
+        }
+
+        fn withdrawal_list_by_chain(chain: Chain) -> BTreeMap<u32, Withdrawal<AccountId, AssetId, Balance, BlockNumber>> {
+            XGatewayRecords::withdrawals_list_by_chain(chain)
+        }
+    }
+
+    impl xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance> for Runtime {
+        fn bound_addrs(who: AccountId) -> BTreeMap<Chain, Vec<ChainAddress>> {
+            XGatewayCommon::bound_addrs(&who)
+        }
+
+        fn withdrawal_limit(asset_id: AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError> {
+            XGatewayCommon::withdrawal_limit(&asset_id)
+        }
+
+        fn verify_withdrawal(asset_id: AssetId, value: Balance, addr: AddrStr, memo: Memo) -> Result<(), DispatchError> {
+            XGatewayCommon::verify_withdrawal(asset_id, value, &addr, &memo)
+        }
+
+        fn trustee_multisigs() -> BTreeMap<Chain, AccountId> {
+            XGatewayCommon::trustee_multisigs()
+        }
+
+        fn trustee_properties(chain: Chain, who: AccountId) -> Option<GenericTrusteeIntentionProps<AccountId>> {
+            XGatewayCommon::trustee_intention_props_of(who, chain)
+        }
+
+        fn trustee_session_info(chain: Chain) -> Option<GenericTrusteeSessionInfo<AccountId>> {
+            let number = XGatewayCommon::trustee_session_info_len(chain)
+                .checked_sub(1)
+                .unwrap_or_else(u32::max_value);
+            XGatewayCommon::trustee_session_info_of(chain, number)
+        }
+
+        fn generate_trustee_session_info(chain: Chain, candidates: Vec<AccountId>) -> Result<(GenericTrusteeSessionInfo<AccountId>, ScriptInfo<AccountId>), DispatchError> {
+            let info = XGatewayCommon::try_generate_session_info(chain, candidates)?;
+            // check multisig address
+            let _ = XGatewayCommon::generate_multisig_addr(chain, &info.0)?;
+            Ok(info)
         }
     }
 }

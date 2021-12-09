@@ -13,7 +13,7 @@ scale-info = { version = "1.0", default-features = false, features = ["derive"] 
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
 
 # ChainX primitives
-chainx-primitives = { path = "..", default-features = false }
+sherpax-primitives = { path = "..", default-features = false }
 
 [features]
 default = ["std"]
@@ -24,5 +24,5 @@ std = [
     # Substrate primitives
     "sp-runtime/std",
     # ChainX primitives
-    "chainx-primitives/std",
+    "sherpax-primitives/std",
 ]

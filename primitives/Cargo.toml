@@ -1,5 +1,5 @@
 [package]
-name = "chainx-primitives"
+name = "sherpax-primitives"
 version = "3.0.0"
 authors = ["The ChainX Authors"]
 edition = "2018"

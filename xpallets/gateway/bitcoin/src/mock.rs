@@ -21,7 +21,7 @@ use sp_runtime::{
     AccountId32, Perbill,
 };
 
-use chainx_primitives::AssetId;
+use sherpax_primitives::AssetId;
 use xp_assets_registrar::Chain;
 pub use xp_protocol::{X_BTC, X_ETH};
 use xpallet_gateway_common::types::TrusteeInfoConfig;

@@ -892,20 +892,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "chainx-primitives"
-version = "3.0.0"
-dependencies = [
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-application-crypto",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "chrono"
 version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8924,7 +8910,6 @@ name = "sherpax"
 version = "1.0.0"
 dependencies = [
  "async-trait",
- "chainx-primitives",
  "cumulus-client-cli",
  "cumulus-client-collator",
  "cumulus-client-consensus-aura",
@@ -8965,6 +8950,7 @@ dependencies = [
  "sc-transaction-pool-api",
  "serde",
  "serde_json",
+ "sherpax-primitives",
  "sherpax-runtime",
  "sp-api",
  "sp-block-builder",
@@ -8986,13 +8972,30 @@ dependencies = [
  "substrate-frame-rpc-system",
  "substrate-prometheus-endpoint",
  "trie-root 0.15.2",
+ "xpallet-gateway-common-rpc",
+ "xpallet-gateway-common-rpc-runtime-api",
+ "xpallet-gateway-records-rpc",
+ "xpallet-gateway-records-rpc-runtime-api",
+]
+
+[[package]]
+name = "sherpax-primitives"
+version = "3.0.0"
+dependencies = [
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
 name = "sherpax-runtime"
 version = "1.0.0"
 dependencies = [
- "chainx-primitives",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-parachain-system",
  "cumulus-primitives-core",
@@ -9026,6 +9029,7 @@ dependencies = [
  "runtime-common",
  "scale-info",
  "serde",
+ "sherpax-primitives",
  "smallvec 1.7.0",
  "sp-api",
  "sp-block-builder",
@@ -9043,6 +9047,7 @@ dependencies = [
  "substrate-wasm-builder",
  "xp-assets-registrar",
  "xp-gateway-bitcoin",
+ "xp-runtime",
  "xpallet-gateway-bitcoin",
  "xpallet-gateway-common",
  "xpallet-gateway-common-rpc-runtime-api",
@@ -11288,11 +11293,11 @@ dependencies = [
 name = "xp-assets-registrar"
 version = "3.0.0"
 dependencies = [
- "chainx-primitives",
  "impl-trait-for-tuples",
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sherpax-primitives",
  "sp-runtime",
  "sp-std",
 ]
@@ -11301,13 +11306,13 @@ dependencies = [
 name = "xp-gateway-bitcoin"
 version = "3.0.0"
 dependencies = [
- "chainx-primitives",
  "frame-support",
  "hex",
  "light-bitcoin",
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sherpax-primitives",
  "sp-core",
  "sp-runtime",
  "sp-std",
@@ -11340,10 +11345,10 @@ dependencies = [
 name = "xp-protocol"
 version = "3.0.0"
 dependencies = [
- "chainx-primitives",
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sherpax-primitives",
  "sp-runtime",
 ]
 
@@ -11375,7 +11380,6 @@ name = "xpallet-gateway-bitcoin"
 version = "3.0.0"
 dependencies = [
  "bs58 0.3.1",
- "chainx-primitives",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -11393,6 +11397,7 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
+ "sherpax-primitives",
  "sp-core",
  "sp-io",
  "sp-keyring",
@@ -11411,7 +11416,6 @@ dependencies = [
 name = "xpallet-gateway-common"
 version = "3.0.0"
 dependencies = [
- "chainx-primitives",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -11426,6 +11430,7 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
+ "sherpax-primitives",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -11460,8 +11465,8 @@ dependencies = [
 name = "xpallet-gateway-common-rpc-runtime-api"
 version = "3.0.0"
 dependencies = [
- "chainx-primitives",
  "parity-scale-codec",
+ "sherpax-primitives",
  "sp-api",
  "sp-runtime",
  "sp-std",
@@ -11475,7 +11480,6 @@ dependencies = [
 name = "xpallet-gateway-records"
 version = "3.0.0"
 dependencies = [
- "chainx-primitives",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -11485,6 +11489,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sherpax-primitives",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -11515,8 +11520,8 @@ dependencies = [
 name = "xpallet-gateway-records-rpc-runtime-api"
 version = "3.0.0"
 dependencies = [
- "chainx-primitives",
  "parity-scale-codec",
+ "sherpax-primitives",
  "sp-api",
  "sp-std",
  "xp-assets-registrar",

@@ -39,8 +39,8 @@ use self::types::{
 };
 pub use self::weights::WeightInfo;
 use crate::types::ScriptInfo;
-use chainx_primitives::{AddrStr, ChainAddress, Text};
 pub use pallet::*;
+use sherpax_primitives::{AddrStr, ChainAddress, Text};
 use xp_assets_registrar::Chain;
 use xp_runtime::Memo;
 use xpallet_gateway_records::{ChainT, WithdrawalLimit, WithdrawalRecordId, WithdrawalState};

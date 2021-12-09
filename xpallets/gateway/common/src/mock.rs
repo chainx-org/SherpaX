@@ -16,7 +16,7 @@ use sp_runtime::{
     AccountId32, DispatchError, DispatchResult,
 };
 
-use chainx_primitives::AssetId;
+use sherpax_primitives::AssetId;
 pub use xp_protocol::{X_BTC, X_ETH};
 use xpallet_support::traits::{MultisigAddressFor, Validator};
 

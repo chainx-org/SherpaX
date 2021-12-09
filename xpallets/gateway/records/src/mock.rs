@@ -8,7 +8,9 @@ use sp_runtime::{
     traits::{BlakeTwo256, IdentityLookup},
 };
 
-use chainx_primitives::AssetId;
+use sherpax_primitives::AssetId;
+use xpallet_assets::AssetRestrictions;
+use xpallet_assets_registrar::AssetInfo;
 
 pub use xp_protocol::{X_BTC, X_ETH};
 

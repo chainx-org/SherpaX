@@ -61,9 +61,10 @@ polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-f
 polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
 
 # Cross chain
-chainx-primitives = { path = "../../primitives", default-features = false }
+sherpax-primitives = { path = "../../primitives", default-features = false }
 xp-assets-registrar = { path = "../../primitives/assets-registrar", default-features = false }
 xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false }
+xp-runtime = { path = "../../primitives/runtime", default-features = false }
 xpallet-gateway-bitcoin = { path = "../../xpallets/gateway/bitcoin", default-features = false }
 xpallet-gateway-common = { path = "../../xpallets/gateway/common", default-features = false }
 xpallet-gateway-common-rpc-runtime-api = { path = "../../xpallets/gateway/common/rpc/runtime-api", default-features = false }
@@ -124,9 +125,10 @@ std = [
     "pallet-collator-selection/std",
     "polkadot-parachain/std",
     "polkadot-runtime-common/std",
-    "chainx-primitives/std",
+    "sherpax-primitives/std",
     "xp-assets-registrar/std",
     "xp-gateway-bitcoin/std",
+    "xp-runtime/std",
     "xpallet-gateway-bitcoin/std",
     "xpallet-gateway-common/std",
     "xpallet-gateway-common-rpc-runtime-api/std",

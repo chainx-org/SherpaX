@@ -15,7 +15,7 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkad
 sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
 
 # ChainX primitives
-chainx-primitives = { path = "../../primitives", default-features = false }
+sherpax-primitives = { path = "../../primitives", default-features = false }
 
 [features]
 default = ["std"]
@@ -26,5 +26,5 @@ std = [
     # Substrate primitives
     "sp-runtime/std",
     # ChainX primitives
-    "chainx-primitives/std",
+    "sherpax-primitives/std",
 ]

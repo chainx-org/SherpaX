@@ -24,7 +24,7 @@ pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "pol
 pallet-elections-phragmen = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
 
 # ChainX primitives
-chainx-primitives = { path = "../../../primitives", default-features = false }
+sherpax-primitives = { path = "../../../primitives", default-features = false }
 xp-assets-registrar = { path = "../../../primitives/assets-registrar", default-features = false }
 xp-protocol = { path = "../../../primitives/protocol", default-features = false }
 xp-rpc = { path = "../../../primitives/rpc", optional = true }
@@ -62,7 +62,7 @@ std = [
   "frame-support/std",
   "frame-system/std",
   # ChainX primitives
-  "chainx-primitives/std",
+  "sherpax-primitives/std",
   "xp-assets-registrar/std",
   "xp-protocol/std",
   "xp-rpc",

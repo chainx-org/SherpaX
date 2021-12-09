@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use sp_runtime::RuntimeDebug;
 
-use chainx_primitives::ReferralId;
+use sherpax_primitives::ReferralId;
 
 use light_bitcoin::keys::Address;
 

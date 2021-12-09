@@ -28,7 +28,7 @@ use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
-use runtime_common::{AccountId, Balance, Block, Index as Nonce};
+use runtime_common::{AccountId, Balance, Block, BlockNumber, Index as Nonce};
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
@@ -55,11 +55,20 @@ where
         + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
+    C::Api: xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance>,
+    C::Api: xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<
+        Block,
+        AccountId,
+        Balance,
+        BlockNumber,
+    >,
     C::Api: BlockBuilder<Block>,
     P: TransactionPool + Sync + Send + 'static,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
+    use xpallet_gateway_common_rpc::{XGatewayCommon, XGatewayCommonApi};
+    use xpallet_gateway_records_rpc::{XGatewayRecords, XGatewayRecordsApi};
 
     let mut io = jsonrpc_core::IoHandler::default();
     let FullDeps {
@@ -74,8 +83,12 @@ where
         deny_unsafe,
     )));
     io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
-        client,
+        client.clone(),
     )));
+    io.extend_with(XGatewayRecordsApi::to_delegate(XGatewayRecords::new(
+        client.clone(),
+    )));
+    io.extend_with(XGatewayCommonApi::to_delegate(XGatewayCommon::new(client)));
 
     io
 }

@@ -17,7 +17,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v
 frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
 
 # ChainX primitives
-chainx-primitives = { path = "../../../primitives", default-features = false }
+sherpax-primitives = { path = "../../../primitives", default-features = false }
 xp-gateway-common = { path = "../../gateway/common", default-features = false }
 
 # light-bitcoin
@@ -36,7 +36,7 @@ std = [
     "sp-std/std",
     "frame-support/std",
     # ChainX primitives
-    "chainx-primitives/std",
+    "sherpax-primitives/std",
     "xp-gateway-common/std",
     # light-bitcoin
     "light-bitcoin/std",
