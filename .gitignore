@@ -21,3 +21,5 @@ db/*
 test*
 docker/data*
 docker/config
+
+.DS_Store

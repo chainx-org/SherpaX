@@ -59,7 +59,7 @@ dependencies = [
  "cipher",
  "ctr",
  "ghash",
- "subtle",
+ "subtle 2.4.1",
 ]
 
 [[package]]
@@ -442,6 +442,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
+name = "bech32"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
+
+[[package]]
 name = "beef"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -543,6 +549,23 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
+]
+
+[[package]]
+name = "bitcoin-bech32"
+version = "0.12.1"
+source = "git+https://github.com/chainx-org/rust-bech32-bitcoin?branch=master#1de465d410c8f83e16409e71303b3389a82a3e50"
+dependencies = [
+ "bech32",
+]
+
+[[package]]
+name = "bitcoin_hashes"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "006cc91e1a1d99819bc5b8214be3555c1f0611b169f527a1fdc54ed1f2b745b0"
+dependencies = [
+ "core2",
 ]
 
 [[package]]
@@ -692,6 +715,12 @@ checksum = "afdd1dffefe5fc66262a524b91087c43b16e478b2e3dc49eb11b0e2fd6b6ec90"
 dependencies = [
  "thiserror",
 ]
+
+[[package]]
+name = "bs58"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "476e9cd489f9e121e02ffa6014a8ef220ecb15c05ed23fc34cca13925dc283fb"
 
 [[package]]
 name = "bs58"
@@ -863,6 +892,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "chainx-primitives"
+version = "3.0.0"
+dependencies = [
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -975,6 +1018,15 @@ name = "core-foundation-sys"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
+
+[[package]]
+name = "core2"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2cf12d2dad3ed124aa116f59561428478993d69ab81ae4d30e5349c9c5b5a5f6"
+dependencies = [
+ "memchr",
+]
 
 [[package]]
 name = "cpp_demangle"
@@ -1159,12 +1211,22 @@ checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
 
 [[package]]
 name = "crypto-mac"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4434400df11d95d556bac068ddfedd482915eb18fe8bea89bc80b6e4b1c179e5"
+dependencies = [
+ "generic-array 0.12.4",
+ "subtle 1.0.0",
+]
+
+[[package]]
+name = "crypto-mac"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b584a330336237c1eecd3e94266efb216c56ed91225d634cb2991c5f3fd1aeab"
 dependencies = [
  "generic-array 0.14.4",
- "subtle",
+ "subtle 2.4.1",
 ]
 
 [[package]]
@@ -1174,7 +1236,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1d1a86f49236c215f271d40892d5fc950490551400b02ef360692c29815c714"
 dependencies = [
  "generic-array 0.14.4",
- "subtle",
+ "subtle 2.4.1",
 ]
 
 [[package]]
@@ -1528,7 +1590,7 @@ dependencies = [
  "byteorder",
  "digest 0.8.1",
  "rand_core 0.5.1",
- "subtle",
+ "subtle 2.4.1",
  "zeroize",
 ]
 
@@ -1541,7 +1603,7 @@ dependencies = [
  "byteorder",
  "digest 0.9.0",
  "rand_core 0.5.1",
- "subtle",
+ "subtle 2.4.1",
  "zeroize",
 ]
 
@@ -2562,6 +2624,16 @@ checksum = "b07f60793ff0a4d9cef0f18e63b5357e06209987153a64648c972c1e5aff336f"
 
 [[package]]
 name = "hmac"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5dcb5e64cda4c23119ab41ba960d1e170a774c8e4b9d9e6a9bc18aabf5e59695"
+dependencies = [
+ "crypto-mac 0.7.0",
+ "digest 0.8.1",
+]
+
+[[package]]
+name = "hmac"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "126888268dcc288495a26bf004b38c5fdbb31682f992c84ceb046a1f0fe38840"
@@ -2578,6 +2650,17 @@ checksum = "2a2a2320eb7ec0ebe8da8f744d7812d9fc4cb4d09344ac01898dbcb6a20ae69b"
 dependencies = [
  "crypto-mac 0.11.1",
  "digest 0.9.0",
+]
+
+[[package]]
+name = "hmac-drbg"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6e570451493f10f6581b48cdd530413b63ea9e780f544bfd3bdcaa0d89d1a7b"
+dependencies = [
+ "digest 0.8.1",
+ "generic-array 0.12.4",
+ "hmac 0.7.1",
 ]
 
 [[package]]
@@ -3241,7 +3324,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af9b4abdeaa420593a297c8592f63fad4234f4b88dc9343b8fd8e736c35faa59"
 dependencies = [
  "asn1_der",
- "bs58",
+ "bs58 0.4.0",
  "ed25519-dalek",
  "either",
  "fnv",
@@ -3643,6 +3726,22 @@ dependencies = [
 
 [[package]]
 name = "libsecp256k1"
+version = "0.3.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fc1e2c808481a63dc6da2074752fdd4336a3c8fcc68b83db6f1fd5224ae7962"
+dependencies = [
+ "arrayref",
+ "crunchy",
+ "digest 0.8.1",
+ "hmac-drbg 0.2.0",
+ "rand 0.7.3",
+ "sha2 0.8.2",
+ "subtle 2.4.1",
+ "typenum",
+]
+
+[[package]]
+name = "libsecp256k1"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd1137239ab33b41aa9637a88a28249e5e70c40a42ccc92db7f12cc356c1fcd7"
@@ -3650,7 +3749,7 @@ dependencies = [
  "arrayref",
  "base64 0.12.3",
  "digest 0.9.0",
- "hmac-drbg",
+ "hmac-drbg 0.3.0",
  "libsecp256k1-core 0.2.2",
  "libsecp256k1-gen-ecmult 0.2.1",
  "libsecp256k1-gen-genmult 0.2.1",
@@ -3669,7 +3768,7 @@ dependencies = [
  "arrayref",
  "base64 0.12.3",
  "digest 0.9.0",
- "hmac-drbg",
+ "hmac-drbg 0.3.0",
  "libsecp256k1-core 0.2.2",
  "libsecp256k1-gen-ecmult 0.2.1",
  "libsecp256k1-gen-genmult 0.2.1",
@@ -3704,7 +3803,7 @@ checksum = "d0f6ab710cec28cef759c5f18671a27dae2a5f952cdaaee1d8e2908cb2478a80"
 dependencies = [
  "crunchy",
  "digest 0.9.0",
- "subtle",
+ "subtle 2.4.1",
 ]
 
 [[package]]
@@ -3715,7 +3814,7 @@ checksum = "5be9b9bb642d8522a44d533eab56c16c738301965504753b03ad1de3425d5451"
 dependencies = [
  "crunchy",
  "digest 0.9.0",
- "subtle",
+ "subtle 2.4.1",
 ]
 
 [[package]]
@@ -3763,6 +3862,150 @@ dependencies = [
  "cc",
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "light-bitcoin"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "light-bitcoin-chain",
+ "light-bitcoin-crypto",
+ "light-bitcoin-keys",
+ "light-bitcoin-mast",
+ "light-bitcoin-merkle",
+ "light-bitcoin-primitives",
+ "light-bitcoin-script",
+ "light-bitcoin-serialization",
+]
+
+[[package]]
+name = "light-bitcoin-chain"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "hex",
+ "light-bitcoin-crypto",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
+name = "light-bitcoin-crypto"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "digest 0.9.0",
+ "light-bitcoin-primitives",
+ "ripemd160",
+ "sha-1 0.9.8",
+ "sha2 0.9.8",
+ "siphasher",
+]
+
+[[package]]
+name = "light-bitcoin-keys"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "arrayref",
+ "bitcoin-bech32",
+ "bs58 0.4.0",
+ "digest 0.9.0",
+ "hex",
+ "libsecp256k1 0.3.5",
+ "light-bitcoin-crypto",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
+ "musig2",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sha2 0.9.8",
+]
+
+[[package]]
+name = "light-bitcoin-mast"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "arrayref",
+ "bitcoin-bech32",
+ "bitcoin_hashes",
+ "core2",
+ "digest 0.9.0",
+ "hex",
+ "light-bitcoin-keys",
+ "light-bitcoin-script",
+ "light-bitcoin-serialization",
+ "musig2",
+ "rayon",
+ "sha2 0.9.8",
+]
+
+[[package]]
+name = "light-bitcoin-merkle"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "light-bitcoin-chain",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
+name = "light-bitcoin-primitives"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "byteorder",
+ "fixed-hash",
+ "hex",
+ "impl-codec",
+ "impl-serde",
+ "primitive-types",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
+name = "light-bitcoin-script"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "hex",
+ "libsecp256k1 0.3.5",
+ "light-bitcoin-chain",
+ "light-bitcoin-crypto",
+ "light-bitcoin-keys",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
+ "scale-info",
+ "sha2 0.9.8",
+]
+
+[[package]]
+name = "light-bitcoin-serialization"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization-derive",
+]
+
+[[package]]
+name = "light-bitcoin-serialization-derive"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+dependencies = [
+ "proc-macro2 1.0.30",
+ "quote 1.0.10",
+ "syn 1.0.80",
 ]
 
 [[package]]
@@ -4117,7 +4360,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48ee4ea82141951ac6379f964f71b20876d43712bea8faf6dd1a375e08a46499"
 dependencies = [
  "arrayref",
- "bs58",
+ "bs58 0.4.0",
  "byteorder",
  "data-encoding",
  "multihash 0.14.0",
@@ -4201,6 +4444,22 @@ dependencies = [
  "pin-project 1.0.8",
  "smallvec 1.7.0",
  "unsigned-varint 0.7.0",
+]
+
+[[package]]
+name = "musig2"
+version = "0.1.0"
+source = "git+https://github.com/chainx-org/Musig2?branch=lib#c52503eab20d3c6215335659e5f4861efbca56f5"
+dependencies = [
+ "arrayref",
+ "digest 0.9.0",
+ "hex",
+ "libsecp256k1 0.3.5",
+ "log",
+ "rand 0.8.4",
+ "rand_core 0.6.3",
+ "serde",
+ "sha2 0.9.8",
 ]
 
 [[package]]
@@ -4412,12 +4671,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "orml-utilities"
+version = "0.4.1-dev"
+source = "git+https://github.com/chainx-org/ormls?branch=main#1696ab37189b249082d7d84c8c6c59df74d7c053"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "owning_ref"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ff55baddef9e4ad00f88b6c743a2a8062d4c6ade126c2a528644b8e444d52ce"
 dependencies = [
  "stable_deref_trait",
+]
+
+[[package]]
+name = "pallet-assets"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.11#57346f6b24875f8935280dba51fa8ab0a9ba1e39"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -7230,6 +7517,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ripemd160"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2eca4ecc81b7f313189bf73ce724400a07da2a6dac19588b03c8bd76a2dcc251"
+dependencies = [
+ "block-buffer 0.9.0",
+ "digest 0.9.0",
+ "opaque-debug 0.3.0",
+]
+
+[[package]]
 name = "rlp"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8392,7 +8690,7 @@ dependencies = [
  "rand 0.7.3",
  "rand_core 0.5.1",
  "sha2 0.8.2",
- "subtle",
+ "subtle 2.4.1",
  "zeroize",
 ]
 
@@ -8781,6 +9079,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "siphasher"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "533494a8f9b724d33625ab53c6c4800f7cc445895924a8ef649222dcb76e938b"
+
+[[package]]
 name = "slab"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8851,7 +9155,7 @@ dependencies = [
  "ring",
  "rustc_version 0.3.3",
  "sha2 0.9.8",
- "subtle",
+ "subtle 2.4.1",
  "x25519-dalek",
 ]
 
@@ -9776,6 +10080,12 @@ dependencies = [
 
 [[package]]
 name = "subtle"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d67a5a62ba6e01cb2192ff309324cb4875d0c451d55fe2319433abe7a05a8ee"
+
+[[package]]
+name = "subtle"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
@@ -10335,7 +10645,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f214e8f697e925001e66ec2c6e37a4ef93f0f78c2eed7814394e10c62025b05"
 dependencies = [
  "generic-array 0.14.4",
- "subtle",
+ "subtle 2.4.1",
 ]
 
 [[package]]
@@ -10956,6 +11266,253 @@ dependencies = [
  "proc-macro2 1.0.30",
  "quote 1.0.10",
  "syn 1.0.80",
+]
+
+[[package]]
+name = "xp-assets-registrar"
+version = "3.0.0"
+dependencies = [
+ "chainx-primitives",
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "xp-gateway-bitcoin"
+version = "3.0.0"
+dependencies = [
+ "chainx-primitives",
+ "frame-support",
+ "hex",
+ "light-bitcoin",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+ "xp-gateway-common",
+]
+
+[[package]]
+name = "xp-gateway-common"
+version = "3.0.0"
+dependencies = [
+ "bs58 0.3.1",
+ "frame-support",
+ "hex",
+ "sp-core",
+ "xp-io",
+]
+
+[[package]]
+name = "xp-io"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime",
+ "sp-runtime-interface",
+]
+
+[[package]]
+name = "xp-protocol"
+version = "3.0.0"
+dependencies = [
+ "chainx-primitives",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+]
+
+[[package]]
+name = "xp-rpc"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "jsonrpc-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "xp-runtime"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "xpallet-gateway-bitcoin"
+version = "3.0.0"
+dependencies = [
+ "bs58 0.3.1",
+ "chainx-primitives",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "hex-literal",
+ "lazy_static",
+ "light-bitcoin",
+ "orml-utilities",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-elections-phragmen",
+ "pallet-multisig",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "sp-io",
+ "sp-keyring",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-gateway-bitcoin",
+ "xp-gateway-common",
+ "xp-protocol",
+ "xpallet-gateway-common",
+ "xpallet-gateway-records",
+ "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-common"
+version = "3.0.0"
+dependencies = [
+ "chainx-primitives",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "lazy_static",
+ "light-bitcoin",
+ "musig2",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-elections-phragmen",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-gateway-bitcoin",
+ "xp-protocol",
+ "xp-rpc",
+ "xp-runtime",
+ "xpallet-gateway-bitcoin",
+ "xpallet-gateway-records",
+ "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-common-rpc"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+ "xp-rpc",
+ "xpallet-gateway-common-rpc-runtime-api",
+]
+
+[[package]]
+name = "xpallet-gateway-common-rpc-runtime-api"
+version = "3.0.0"
+dependencies = [
+ "chainx-primitives",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-runtime",
+ "xpallet-gateway-common",
+ "xpallet-gateway-records",
+]
+
+[[package]]
+name = "xpallet-gateway-records"
+version = "3.0.0"
+dependencies = [
+ "chainx-primitives",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "orml-utilities",
+ "pallet-assets",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-protocol",
+ "xp-runtime",
+ "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-records-rpc"
+version = "3.0.0"
+dependencies = [
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+ "xp-rpc",
+ "xpallet-gateway-records-rpc-runtime-api",
+]
+
+[[package]]
+name = "xpallet-gateway-records-rpc-runtime-api"
+version = "3.0.0"
+dependencies = [
+ "chainx-primitives",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-std",
+ "xp-assets-registrar",
+ "xpallet-gateway-records",
+]
+
+[[package]]
+name = "xpallet-support"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "sp-std",
 ]
 
 [[package]]

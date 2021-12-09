@@ -3,9 +3,24 @@ panic = 'unwind'
 
 [workspace]
 members = [
-	"migration",
-
-	"node",
-	"runtime/common",
-	"runtime/sherpax",
+    "migration",
+    "node",
+    "primitives",
+    "primitives/assets-registrar",
+    "primitives/gateway/bitcoin",
+    "primitives/gateway/common",
+    "primitives/io",
+    "primitives/protocol",
+    "primitives/rpc",
+    "primitives/runtime",
+    "runtime/common",
+    "runtime/sherpax",
+    "xpallets/gateway/bitcoin",
+    "xpallets/gateway/common",
+    "xpallets/gateway/common/rpc",
+    "xpallets/gateway/common/rpc/runtime-api",
+    "xpallets/gateway/records",
+    "xpallets/gateway/records/rpc",
+    "xpallets/gateway/records/rpc/runtime-api",
+    "xpallets/support",
 ]
