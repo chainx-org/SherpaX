@@ -93,6 +93,43 @@ pub fn sherpax_session_keys(keys: AuraId) -> sherpax_runtime::SessionKeys {
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type ChainSpec = sc_service::GenericChainSpec<sherpax_runtime::GenesisConfig, Extensions>;
 
+#[cfg(feature = "runtime-benchmarks")]
+pub fn benchmarks_config(id: ParaId) -> Result<ChainSpec, String> {
+    let mut properties = sc_chain_spec::Properties::new();
+    properties.insert("tokenSymbol".into(), "KSX".into());
+    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert(
+        "ss58Format".into(),
+        sherpax_runtime::SS58Prefix::get().into(),
+    );
+    Ok(ChainSpec::from_genesis(
+        "Benchmarks",
+        "sherpax",
+        ChainType::Development,
+        move || {
+            sherpax_genesis(
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
+                vec![(
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_collator_keys_from_seed("Alice"),
+                )],
+                vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
+                id,
+                btc_genesis_params(include_str!("../res/btc_genesis_params_testnet.json")),
+                crate::bitcoin::local_testnet_trustees(),
+            )
+        },
+        vec![],
+        None,
+        None,
+        Some(properties),
+        Extensions {
+            relay_chain: "kusama".into(),
+            para_id: id.into(),
+        },
+    ))
+}
+
 pub fn dev_config(id: ParaId) -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "KSX".into());

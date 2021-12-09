@@ -47,6 +47,19 @@ fn load_spec(
         "dev" => Ok(Box::new(chain_spec::dev_config(para_id))),
         "sherpax-staging" => Ok(Box::new(chain_spec::sherpax_staging_config(para_id))),
         "sherpax" => Ok(Box::new(chain_spec::live_mainnet_config()?)),
+        "benchmarks" => {
+            #[cfg(feature = "runtime-benchmarks")]
+            {
+                Box::new(chain_spec::benchmarks_config(para_id)?)
+            }
+            #[cfg(not(feature = "runtime-benchmarks"))]
+            {
+                return Err(
+                    "benchmarks chain-config should compile with feature `runtime-benchmarks`"
+                        .into(),
+                );
+            }
+        }
         path => Ok(Box::new(chain_spec::ChainSpec::from_json_file(
             path.into(),
         )?)),
@@ -255,6 +268,21 @@ pub fn run() -> Result<()> {
             }
 
             Ok(())
+        }
+        Some(Subcommand::Benchmark(cmd)) => {
+            if cfg!(feature = "runtime-benchmarks") {
+                let runner = cli.create_runner(cmd)?;
+
+                runner.sync_run(|config| {
+                    cmd.run::<sherpax_runtime::Block, SherpaXRuntimeExecutor>(config)
+                })
+            } else {
+                println!(
+                    "Benchmarking wasn't enabled when building the node. \
+                    You can enable it with `--features runtime-benchmarks`."
+                );
+                Ok(())
+            }
         }
         None => {
             let runner = cli.create_runner(&cli.run.normalize())?;

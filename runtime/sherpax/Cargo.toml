@@ -48,6 +48,9 @@ pallet-transaction-payment = { git = "https://github.com/paritytech/substrate", 
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 pallet-utility = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false, optional = true }
+frame-system-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false, optional = true }
+
 # Cumulus dependencies
 parachain-info = { git = "https://github.com/paritytech/cumulus", default-features = false, branch = "polkadot-v0.9.11" }
 cumulus-pallet-aura-ext = { git = "https://github.com/paritytech/cumulus", default-features = false, branch = "polkadot-v0.9.11" }
@@ -137,3 +140,17 @@ std = [
     "xpallet-support/std",
 ]
 sherpax-dev = []
+
+runtime-benchmarks = [
+  "hex-literal",
+  "frame-benchmarking",
+  "frame-support/runtime-benchmarks",
+  "frame-system-benchmarking",
+  "frame-system/runtime-benchmarks",
+  "sp-runtime/runtime-benchmarks",
+  "pallet-balances/runtime-benchmarks",
+  "pallet-collective/runtime-benchmarks",
+  "xpallet-gateway-bitcoin/runtime-benchmarks",
+  "xpallet-gateway-common/runtime-benchmarks",
+  "xpallet-gateway-records/runtime-benchmarks",
+]
