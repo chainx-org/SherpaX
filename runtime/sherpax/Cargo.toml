@@ -63,7 +63,7 @@ polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot", defa
 # Cross chain
 chainx-primitives = { path = "../../primitives", default-features = false }
 xp-assets-registrar = { path = "../../primitives/assets-registrar", default-features = false }
-xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false, features = ["ss58check"] }
+xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false }
 xpallet-gateway-bitcoin = { path = "../../xpallets/gateway/bitcoin", default-features = false }
 xpallet-gateway-common = { path = "../../xpallets/gateway/common", default-features = false }
 xpallet-gateway-common-rpc-runtime-api = { path = "../../xpallets/gateway/common/rpc/runtime-api", default-features = false }
