@@ -9,8 +9,6 @@ use sp_runtime::{
 };
 
 use sherpax_primitives::AssetId;
-use xpallet_assets::AssetRestrictions;
-use xpallet_assets_registrar::AssetInfo;
 
 pub use xp_protocol::{X_BTC, X_ETH};
 
@@ -111,7 +109,7 @@ impl pallet_assets::Config for Test {
 
 // assets
 parameter_types! {
-    pub const NativeAssetId: AssetId = 0;
+    pub const NativeAssetId: AssetId = 10;
     pub const BtcAssetId: AssetId = 1;
 }
 
@@ -123,39 +121,7 @@ impl Config for Test {
 
 pub type XRecordsErr = Error<Test>;
 
-// pub(crate) fn btc() -> (AssetId, AssetInfo, AssetRestrictions) {
-//     (
-//         X_BTC,
-//         AssetInfo::new::<Test>(
-//             b"X-BTC".to_vec(),
-//             b"X-BTC".to_vec(),
-//             Chain::Bitcoin,
-//             8,
-//             b"ChainX's cross-chain Bitcoin".to_vec(),
-//         )
-//         .unwrap(),
-//         AssetRestrictions::DESTROY_USABLE,
-//     )
-// }
-// pub(crate) fn eth() -> (AssetId, AssetInfo, AssetRestrictions) {
-//     (
-//         X_ETH,
-//         AssetInfo::new::<Test>(
-//             b"X-ETH".to_vec(),
-//             b"X-ETH".to_vec(),
-//             Chain::Ethereum,
-//             17,
-//             b"ChainX's cross-chain Ethereum".to_vec(),
-//         )
-//         .unwrap(),
-//         AssetRestrictions::DESTROY_USABLE,
-//     )
-// }
-
 pub const ALICE: AccountId = 1;
-pub const BOB: AccountId = 2;
-pub const CHARLIE: AccountId = 3;
-pub const DAVE: AccountId = 4;
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {
@@ -165,44 +131,11 @@ impl Default for ExtBuilder {
 }
 impl ExtBuilder {
     pub fn build(self) -> sp_io::TestExternalities {
-        let mut storage = frame_system::GenesisConfig::default()
+        let storage = frame_system::GenesisConfig::default()
             .build_storage::<Test>()
             .unwrap();
 
         // TODO!: consider add genesis builder
-
-        // let btc_assets = btc();
-        // let eth_assets = eth();
-        // let assets = vec![
-        //     (btc_assets.0, btc_assets.1, btc_assets.2, true, true),
-        //     (eth_assets.0, eth_assets.1, eth_assets.2, true, true),
-        // ];
-        // let mut endowed = BTreeMap::new();
-        // let endowed_info = vec![(ALICE, 100), (BOB, 200), (CHARLIE, 300), (DAVE, 400)];
-        // endowed.insert(btc_assets.0, endowed_info.clone());
-        // endowed.insert(eth_assets.0, endowed_info);
-
-        // let mut init_assets = vec![];
-        // let mut assets_restrictions = vec![];
-        // for (a, b, c, d, e) in assets {
-        //     init_assets.push((a, b, d, e));
-        //     assets_restrictions.push((a, c))
-        // }
-
-        // GenesisBuild::<Test>::assimilate_storage(
-        //     &xpallet_assets_registrar::GenesisConfig {
-        //         assets: init_assets,
-        //     },
-        //     &mut storage,
-        // )
-        // .unwrap();
-
-        // let _ = xpallet_assets::GenesisConfig::<Test> {
-        //     assets_restrictions,
-        //     endowed,
-        // }
-        // .assimilate_storage(&mut storage);
-
         sp_io::TestExternalities::new(storage)
     }
     pub fn build_and_execute(self, test: impl FnOnce()) {
