@@ -3,8 +3,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::type_complexity)]
 
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -24,7 +24,7 @@ use frame_support::{
     log::{error, info},
 };
 use frame_system::ensure_root;
-use sp_runtime::traits::{CheckedAdd, CheckedSub, StaticLookup};
+use sp_runtime::traits::{CheckedSub, StaticLookup};
 
 use orml_utilities::with_transaction_result;
 
