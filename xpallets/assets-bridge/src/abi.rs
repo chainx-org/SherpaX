@@ -1,9 +1,6 @@
 use super::*;
 
-pub fn mint_into_encode(
-    account: H160,
-    amount: u128,
-) -> Vec<u8> {
+pub fn mint_into_encode(account: H160, amount: u128) -> Vec<u8> {
     // signature ++ account ++ amount
     let length = 16 + 20 + 32;
     let mut v = Vec::with_capacity(length);
@@ -26,10 +23,7 @@ pub fn mint_into_encode(
     v
 }
 
-pub fn burn_from_encode(
-    account: H160,
-    amount: u128,
-) -> Vec<u8> {
+pub fn burn_from_encode(account: H160, amount: u128) -> Vec<u8> {
     // signature ++ account ++ amount
     let length = 16 + 20 + 32;
     let mut v = Vec::with_capacity(length);

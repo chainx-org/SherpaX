@@ -211,8 +211,6 @@ fn sherpax_genesis(
         evm: Default::default(),
         ethereum: Default::default(),
         assets: Default::default(),
-        assets_bridge: sherpax_runtime::AssetsBridgeConfig {
-            admin_key: None
-        },
+        assets_bridge: sherpax_runtime::AssetsBridgeConfig { admin_key: None },
     }
 }

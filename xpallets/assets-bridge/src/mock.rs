@@ -1,13 +1,14 @@
 pub use crate as assets_bridge;
 pub use assets_bridge::Config;
 
-use frame_system as system;
-use sp_core::{H256, H160};
-pub use sp_runtime::{
-    testing::Header, AccountId32,
-    traits::{BlakeTwo256, IdentityLookup},
-};
 use frame_support::parameter_types;
+use frame_system as system;
+use sp_core::{H160, H256};
+pub use sp_runtime::{
+    testing::Header,
+    traits::{BlakeTwo256, IdentityLookup},
+    AccountId32,
+};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -119,7 +120,8 @@ impl pallet_evm::Config for Test {
     type Currency = Balances;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type Event = Event;
-    type Precompiles = ();
+    type PrecompilesType = ();
+    type PrecompilesValue = ();
     type ChainId = ();
     type BlockGasLimit = ();
     type OnChargeTransaction = ();

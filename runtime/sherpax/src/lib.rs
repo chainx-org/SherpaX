@@ -55,12 +55,10 @@ use frame_system::{
 };
 use runtime_common::{
     impls::DealWithFees, opaque, AccountId, AuraId, Balance, BlockNumber, Hash, Header, Index,
-    Signature, AVERAGE_ON_INITIALIZE_RATIO, HOURS, WEIGHT_PER_SECOND, MINUTES,
-    NORMAL_DISPATCH_RATIO, SLOT_DURATION,
+    Signature, AVERAGE_ON_INITIALIZE_RATIO, HOURS, MINUTES, NORMAL_DISPATCH_RATIO, SLOT_DURATION,
+    WEIGHT_PER_SECOND,
 };
-use sp_runtime::{
-    Perbill, traits::ConvertInto
-};
+use sp_runtime::{traits::ConvertInto, Perbill};
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -72,21 +70,19 @@ use polkadot_runtime_common::{BlockHashCount, RocksDbWeight, SlowAdjustingFeeUpd
 mod precompiles;
 pub use precompiles::SherpaXPrecompiles;
 
-#[cfg(feature = "std")]
-pub use pallet_evm::GenesisAccount;
 use codec::{Decode, Encode};
 use fp_rpc::TransactionStatus;
+use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
+#[cfg(feature = "std")]
+pub use pallet_evm::GenesisAccount;
 use pallet_evm::{
     Account as EVMAccount, EnsureAddressNever, EnsureAddressRoot, FeeCalculator,
     HashedAddressMapping, Runner,
 };
-use pallet_ethereum::{
-    Call::transact, Transaction as EthereumTransaction
-};
 use sp_core::{H160, H256, U256};
 use sp_runtime::{
     traits::{Dispatchable, PostDispatchInfoOf},
-    transaction_validity::TransactionValidityError
+    transaction_validity::TransactionValidityError,
 };
 
 impl_opaque_keys! {
@@ -532,7 +528,8 @@ pub type SignedExtra = (
     pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = fp_self_contained::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+pub type UncheckedExtrinsic =
+    fp_self_contained::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = fp_self_contained::CheckedExtrinsic<AccountId, Call, SignedExtra, H160>;
 /// Executive: handles dispatch to the various modules.
@@ -725,6 +722,7 @@ impl_runtime_apis! {
             Evm::account_storages(address, H256::from_slice(&tmp[..]))
         }
 
+        #[allow(clippy::redundant_closure)]
         fn call(
             from: H160,
             to: H160,
@@ -758,6 +756,7 @@ impl_runtime_apis! {
             ).map_err(|err| err.into())
         }
 
+        #[allow(clippy::redundant_closure)]
         fn create(
             from: H160,
             data: Vec<u8>,

@@ -41,23 +41,26 @@ use substrate_prometheus_endpoint::Registry;
 pub use runtime_common::{AccountId, Balance, Block, Hash, Header, Index as Nonce};
 
 // EVM
-use std::{sync::Mutex, collections::BTreeMap};
-use sc_cli::SubstrateCli;
-use sc_client_api::BlockchainEvents;
-use sc_service::BasePath;
+use crate::rpc;
 use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy::Parachain};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::FilterPool;
 use futures::StreamExt;
-use crate::rpc;
+use sc_cli::SubstrateCli;
+use sc_client_api::BlockchainEvents;
+use sc_service::BasePath;
+use std::{collections::BTreeMap, sync::Mutex};
 
-type FullClient<RuntimeApi, Executor> = sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>;
+type FullClient<RuntimeApi, Executor> =
+    sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>;
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 
 pub fn frontier_database_dir(config: &Configuration) -> std::path::PathBuf {
-    let config_dir = config.base_path.as_ref()
+    let config_dir = config
+        .base_path
+        .as_ref()
         .map(|base_path| base_path.config_dir(config.chain_spec.id()))
         .unwrap_or_else(|| {
             BasePath::from_project("", "", &crate::cli::Cli::executable_name())
@@ -67,12 +70,14 @@ pub fn frontier_database_dir(config: &Configuration) -> std::path::PathBuf {
 }
 
 pub fn open_frontier_backend(config: &Configuration) -> Result<Arc<fc_db::Backend<Block>>, String> {
-    Ok(Arc::new(fc_db::Backend::<Block>::new(&fc_db::DatabaseSettings {
-        source: fc_db::DatabaseSettingsSrc::RocksDb {
-            path: frontier_database_dir(&config),
-            cache_size: 0,
-        }
-    })?))
+    Ok(Arc::new(fc_db::Backend::<Block>::new(
+        &fc_db::DatabaseSettings {
+            source: fc_db::DatabaseSettingsSrc::RocksDb {
+                path: frontier_database_dir(config),
+                cache_size: 0,
+            },
+        },
+    )?))
 }
 
 /// Native executor instance.
@@ -114,7 +119,7 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
             Option<FilterPool>,
             Option<Telemetry>,
             Option<TelemetryWorkerHandle>,
-            Arc<fc_db::Backend<Block>>
+            Arc<fc_db::Backend<Block>>,
         ),
     >,
     sc_service::Error,
@@ -193,8 +198,7 @@ where
         client.clone(),
     );
 
-    let filter_pool: Option<FilterPool>
-        = Some(Arc::new(Mutex::new(BTreeMap::new())));
+    let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
 
     let frontier_backend = open_frontier_backend(config)?;
     let frontier_block_import =
@@ -215,12 +219,12 @@ where
         keystore_container,
         task_manager,
         transaction_pool,
-        select_chain: sc_consensus::LongestChain::new(backend.clone()),
+        select_chain: sc_consensus::LongestChain::new(backend),
         other: (
             filter_pool,
             telemetry,
             telemetry_worker_handle,
-            frontier_backend
+            frontier_backend,
         ),
     };
 
@@ -267,22 +271,22 @@ where
         + Send
         + 'static,
     BIQ: FnOnce(
-        FrontierBlockImport<
-            Block,
-            Arc<FullClient<RuntimeApi, Executor>>,
-            FullClient<RuntimeApi, Executor>,
-        >,
-        Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
-        &Configuration,
-        Option<TelemetryHandle>,
-        &TaskManager,
-    ) -> Result<
-        sc_consensus::DefaultImportQueue<
-            Block,
-            TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-        >,
-        sc_service::Error,
-    > + 'static,
+            FrontierBlockImport<
+                Block,
+                Arc<FullClient<RuntimeApi, Executor>>,
+                FullClient<RuntimeApi, Executor>,
+            >,
+            Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+            &Configuration,
+            Option<TelemetryHandle>,
+            &TaskManager,
+        ) -> Result<
+            sc_consensus::DefaultImportQueue<
+                Block,
+                TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+            >,
+            sc_service::Error,
+        > + 'static,
     BIC: FnOnce(
         Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
         Option<&Registry>,
@@ -307,12 +311,7 @@ where
     let parachain_config = prepare_node_config(parachain_config);
 
     let params = new_partial::<RuntimeApi, Executor, BIQ>(&parachain_config, build_import_queue)?;
-    let (
-        filter_pool,
-        mut telemetry,
-        telemetry_worker_handle,
-        frontier_backend,
-    ) = params.other;
+    let (filter_pool, mut telemetry, telemetry_worker_handle, frontier_backend) = params.other;
 
     let relay_chain_full_node =
         cumulus_client_service::build_polkadot_full_node(polkadot_config, telemetry_worker_handle)
@@ -373,10 +372,7 @@ where
                 max_past_logs,
             };
 
-            Ok(rpc::create_full(
-                deps,
-                subscription_task_executor.clone()
-            ))
+            Ok(rpc::create_full(deps, subscription_task_executor.clone()))
         })
     };
 
@@ -388,8 +384,9 @@ where
             client.clone(),
             backend.clone(),
             frontier_backend.clone(),
-            Parachain
-        ).for_each(|()| futures::future::ready(()))
+            Parachain,
+        )
+        .for_each(|()| futures::future::ready(())),
     );
 
     sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -413,20 +410,13 @@ where
         const FILTER_RETAIN_THRESHOLD: u64 = 100;
         task_manager.spawn_essential_handle().spawn(
             "frontier-filter-pool",
-            EthTask::filter_pool_task(
-                Arc::clone(&client),
-                filter_pool,
-                FILTER_RETAIN_THRESHOLD,
-            )
+            EthTask::filter_pool_task(Arc::clone(&client), filter_pool, FILTER_RETAIN_THRESHOLD),
         );
     }
 
     task_manager.spawn_essential_handle().spawn(
         "frontier-schema-cache-task",
-        EthTask::ethereum_schema_cache_task(
-            Arc::clone(&client),
-            Arc::clone(&frontier_backend),
-        ),
+        EthTask::ethereum_schema_cache_task(Arc::clone(&client), Arc::clone(&frontier_backend)),
     );
 
     let announce_block = {

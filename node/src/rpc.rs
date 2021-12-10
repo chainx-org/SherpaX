@@ -30,23 +30,23 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use runtime_common::{AccountId, Balance, Block, Index as Nonce};
 
 // EVM
-use std::collections::BTreeMap;
-use runtime_common::Hash;
-use sp_runtime::traits::BlakeTwo256;
-use sc_network::NetworkService;
-use sc_client_api::{
-    backend::{AuxStore, Backend, StateBackend, StorageProvider},
-    client::BlockchainEvents
+use fc_rpc::{
+    EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
+    SchemaV2Override, StorageOverride,
 };
-use sc_transaction_pool::{ChainApi, Pool};
 use fc_rpc_core::types::FilterPool;
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
-use fc_rpc::{
-    StorageOverride, SchemaV1Override, OverrideHandle, RuntimeApiStorageOverride,
-    EthBlockDataCache, SchemaV2Override
+use runtime_common::Hash;
+use sc_client_api::{
+    backend::{AuxStore, Backend, StateBackend, StorageProvider},
+    client::BlockchainEvents,
 };
+use sc_network::NetworkService;
 use sc_rpc::SubscriptionTaskExecutor;
+use sc_transaction_pool::{ChainApi, Pool};
+use sp_runtime::traits::BlakeTwo256;
+use std::collections::BTreeMap;
 
 /// A type representing all RPC extensions.
 pub type RpcExtension = jsonrpc_core::IoHandler<sc_rpc::Metadata>;
@@ -76,30 +76,29 @@ pub struct FullDeps<C, P, A: ChainApi> {
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, BE, A>(
     deps: FullDeps<C, P, A>,
-    subscription_task_executor: SubscriptionTaskExecutor
+    subscription_task_executor: SubscriptionTaskExecutor,
 ) -> RpcExtension
-    where
-        C: ProvideRuntimeApi<Block>
+where
+    C: ProvideRuntimeApi<Block>
         + HeaderBackend<Block>
         + AuxStore
         + HeaderMetadata<Block, Error = BlockChainError>
         + Send
         + Sync
         + 'static,
-        C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-        C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-        C::Api: BlockBuilder<Block>,
-        P: TransactionPool<Block = Block> + Sync + Send + 'static,
-        BE: Backend<Block> + 'static,
-        BE::State: StateBackend<BlakeTwo256>,
-        C: StorageProvider<Block, BE> + BlockchainEvents<Block>,
-        C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
-        A: ChainApi<Block = Block> + 'static,
+    C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
+    C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
+    C::Api: BlockBuilder<Block>,
+    P: TransactionPool<Block = Block> + Sync + Send + 'static,
+    BE: Backend<Block> + 'static,
+    BE::State: StateBackend<BlakeTwo256>,
+    C: StorageProvider<Block, BE> + BlockchainEvents<Block>,
+    C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    A: ChainApi<Block = Block> + 'static,
 {
     use fc_rpc::{
-        EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi,
-        EthPubSubApiServer, HexEncodedIdProvider, NetApi, NetApiServer, Web3Api,
-        Web3ApiServer,
+        EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
+        HexEncodedIdProvider, NetApi, NetApiServer, Web3Api, Web3ApiServer,
     };
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
@@ -117,9 +116,15 @@ pub fn create_full<C, P, BE, A>(
         max_past_logs,
     } = deps;
 
-    io.extend_with(SystemApi::to_delegate(FullSystem::new(client.clone(), pool.clone(), deny_unsafe)));
+    io.extend_with(SystemApi::to_delegate(FullSystem::new(
+        client.clone(),
+        pool.clone(),
+        deny_unsafe,
+    )));
 
-    io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client.clone())));
+    io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
+        client.clone(),
+    )));
 
     {
         let mut overrides_map = BTreeMap::new();
@@ -141,35 +146,31 @@ pub fn create_full<C, P, BE, A>(
 
         let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
 
-        io.extend_with(
-            EthApiServer::to_delegate(EthApi::new(
-                client.clone(),
-                pool.clone(),
-                graph,
-                sherpax_runtime::TransactionConverter,
-                network.clone(),
-                Vec::new(),
-                overrides.clone(),
-                backend.clone(),
-                is_authority,
-                max_past_logs,
-                block_data_cache.clone(),
-                fc_rpc::format::Legacy,
-            ))
-        );
+        io.extend_with(EthApiServer::to_delegate(EthApi::new(
+            client.clone(),
+            pool.clone(),
+            graph,
+            sherpax_runtime::TransactionConverter,
+            network.clone(),
+            Vec::new(),
+            overrides.clone(),
+            backend.clone(),
+            is_authority,
+            max_past_logs,
+            block_data_cache.clone(),
+            fc_rpc::format::Legacy,
+        )));
 
         if let Some(filter_pool) = filter_pool {
-            io.extend_with(
-                EthFilterApiServer::to_delegate(EthFilterApi::new(
-                    client.clone(),
-                    backend,
-                    filter_pool,
-                    500_usize, // max stored filters
-                    overrides.clone(),
-                    max_past_logs,
-                    block_data_cache
-                ))
-            );
+            io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
+                client.clone(),
+                backend,
+                filter_pool,
+                500_usize, // max stored filters
+                overrides.clone(),
+                max_past_logs,
+                block_data_cache,
+            )));
         }
 
         io.extend_with(NetApiServer::to_delegate(NetApi::new(

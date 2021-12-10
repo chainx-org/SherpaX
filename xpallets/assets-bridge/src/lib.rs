@@ -354,7 +354,7 @@ where
             None,
             None,
             Vec::new(),
-            T::config()
+            T::config(),
         )?;
 
         match info.exit_reason {
