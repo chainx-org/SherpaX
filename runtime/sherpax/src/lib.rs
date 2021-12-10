@@ -499,7 +499,7 @@ construct_runtime!(
         Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 41,
 
         // Crypto gateway stuff.
-        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>} = 42,
+        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 42,
         XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 43,
         XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 44,
     }

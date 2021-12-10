@@ -29,7 +29,7 @@ use frame_support::{
     weights::Weight,
 };
 use frame_system::{ensure_root, ensure_signed};
-use sp_runtime::traits::{StaticLookup, Zero};
+use sp_runtime::traits::StaticLookup;
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
 use self::traits::{TrusteeForChain, TrusteeSession};
@@ -84,21 +84,6 @@ pub mod pallet {
     #[pallet::pallet]
     #[pallet::generate_store(pub (super) trait Store)]
     pub struct Pallet<T>(PhantomData<T>);
-
-    #[pallet::hooks]
-    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-        /// What to do at the end of each block.
-        ///
-        /// Checks if an trustee transition needs to happen or not.
-        fn on_initialize(n: T::BlockNumber) -> Weight {
-            let term_duration = Self::trustee_transition_duration();
-            if !term_duration.is_zero() && (n % term_duration).is_zero() {
-                Self::do_trustee_election()
-            } else {
-                0
-            }
-        }
-    }
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {

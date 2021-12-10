@@ -271,7 +271,9 @@ fn sherpax_genesis(
         aura: Default::default(),
         aura_ext: Default::default(),
         parachain_system: Default::default(),
-        sudo: sherpax_runtime::SudoConfig { key: root_key },
+        sudo: sherpax_runtime::SudoConfig {
+            key: root_key.clone(),
+        },
         council: sherpax_runtime::CouncilConfig::default(),
         elections: sherpax_runtime::ElectionsConfig::default(),
         x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
@@ -296,6 +298,9 @@ fn sherpax_genesis(
             btc_withdrawal_fee: 500000,
             max_withdrawal_count: 100,
             verifier: BtcTxVerifier::Recover,
+        },
+        x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
+            initial_asset_chain: vec![(root_key, 1, Chain::Bitcoin)],
         },
     }
 }
