@@ -25,13 +25,9 @@ use orml_utilities::with_transaction_result;
 #[cfg(feature = "std")]
 pub use light_bitcoin::primitives::h256_rev;
 pub use light_bitcoin::{
-    chain::BlockHeader as BtcHeader,
-    keys::Network as BtcNetwork,
+    chain::{BlockHeader as BtcHeader, Transaction, TransactionOutputArray},
+    keys::{Address, DisplayLayout, Network as BtcNetwork},
     primitives::{hash_rev, Compact, H256, H264},
-};
-use light_bitcoin::{
-    chain::{Transaction, TransactionOutputArray},
-    keys::{Address, DisplayLayout},
     serialization::{deserialize, Reader},
 };
 

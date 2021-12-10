@@ -21,11 +21,11 @@ pub mod types;
 pub mod utils;
 pub mod weights;
 
-use frame_support::traits::{ChangeMembers, Get};
 use frame_support::{
     dispatch::{DispatchError, DispatchResult},
     ensure,
     log::{error, info},
+    traits::{ChangeMembers, Get},
     weights::Weight,
 };
 use frame_system::{ensure_root, ensure_signed};

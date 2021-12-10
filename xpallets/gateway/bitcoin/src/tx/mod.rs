@@ -7,11 +7,10 @@ use alloc::string::ToString;
 mod secp256k1_verifier;
 pub mod validator;
 
-use frame_support::traits::tokens::fungibles::Mutate;
-use frame_support::traits::Get;
 use frame_support::{
     dispatch::DispatchResult,
     log::{self, debug, error, info, warn},
+    traits::{tokens::fungibles::Mutate, Get},
 };
 use sp_runtime::{traits::Zero, SaturatedConversion};
 use sp_std::prelude::*;

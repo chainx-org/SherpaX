@@ -13,15 +13,17 @@ pub mod traits;
 pub mod types;
 pub mod weights;
 
-use frame_support::traits::tokens::WithdrawConsequence;
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
-use frame_support::traits::fungibles::{Inspect, Mutate};
-use frame_support::traits::Get;
 use frame_support::{
     dispatch::{DispatchError, DispatchResult},
     ensure,
     log::{error, info},
+    traits::{
+        fungibles::{Inspect, Mutate},
+        tokens::WithdrawConsequence,
+        Get,
+    },
 };
 use frame_system::ensure_root;
 use sp_runtime::traits::{CheckedSub, StaticLookup};
