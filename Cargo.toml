@@ -3,9 +3,12 @@ panic = 'unwind'
 
 [workspace]
 members = [
-	"migration",
+    "migration",
 
-	"node",
-	"runtime/common",
-	"runtime/sherpax",
+    "node",
+    "runtime/common",
+    "runtime/sherpax",
+
+    "xpallets/assets",
+    "xpallets/assets-bridge",
 ]

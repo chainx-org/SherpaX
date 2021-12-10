@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// 	http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -415,6 +415,39 @@ impl pallet_ethereum::Config for Runtime {
     type StateRoot = pallet_ethereum::IntermediateStateRoot;
 }
 
+parameter_types! {
+    pub const AssetDeposit: Balance = 100 * UNITS;
+    pub const ApprovalDeposit: Balance = UNITS;
+    pub const StringLimit: u32 = 50;
+    pub const MetadataDepositBase: Balance = 10 * UNITS;
+    pub const MetadataDepositPerByte: Balance = UNITS;
+}
+
+impl pallet_assets::Config for Runtime {
+    type Event = Event;
+    type Balance = Balance;
+    type AssetId = u32;
+    type Currency = Balances;
+    type ForceOrigin = frame_system::EnsureRoot<AccountId>;
+    type AssetDeposit = AssetDeposit;
+    type MetadataDepositBase = MetadataDepositBase;
+    type MetadataDepositPerByte = MetadataDepositPerByte;
+    type ApprovalDeposit = ApprovalDeposit;
+    type StringLimit = StringLimit;
+    type Freezer = ();
+    type Extra = ();
+    type WeightInfo = ();
+}
+
+parameter_types! {
+    // 0x1111111111111111111111111111111111111111
+    pub EvmCaller: H160 = H160::from_slice(&[17u8;20][..]);
+}
+impl pallet_assets_bridge::Config for Runtime {
+    type Event = Event;
+    type EvmCaller = EvmCaller;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -436,6 +469,7 @@ construct_runtime!(
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage} = 11,
         Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 12,
+        Assets: pallet_assets::{Pallet, Call, Storage, Config<T>, Event<T>} = 13,
 
         // Collator support. the order of these 4 are important and shall not change.
         Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
@@ -451,6 +485,7 @@ construct_runtime!(
         // Ethereum compatibility
         Evm: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 50,
         Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin} = 51,
+        AssetsBridge: pallet_assets_bridge::{Pallet, Call, Storage, Config<T>, Event<T>} = 53,
     }
 );
 

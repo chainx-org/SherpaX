@@ -74,6 +74,10 @@ pallet-evm-precompile-blake2 = { git = "https://github.com/chainx-org/frontier",
 fp-rpc = { git="https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
 fp-self-contained  = { git="https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
 
+# xpallets
+pallet-assets = { default-features = false, path = "../../xpallets/assets" }
+pallet-assets-bridge = { default-features = false, path = "../../xpallets/assets-bridge" }
+
 [dev-dependencies]
 hex-literal = "0.3.1"
 hex = "0.4.3"
@@ -132,6 +136,9 @@ std = [
 	"pallet-ethereum/std",
 	"fp-evm/std",
 	"fp-rpc/std",
-	"fp-self-contained/std"
+	"fp-self-contained/std",
+
+	"pallet-assets/std",
+	"pallet-assets-bridge/std",
 ]
 sherpax-dev = []
