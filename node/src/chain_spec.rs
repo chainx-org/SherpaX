@@ -208,5 +208,7 @@ fn sherpax_genesis(
         parachain_system: Default::default(),
         sudo: sherpax_runtime::SudoConfig { key: root_key },
         vesting: Default::default(),
+        evm: Default::default(),
+        ethereum: Default::default(),
     }
 }

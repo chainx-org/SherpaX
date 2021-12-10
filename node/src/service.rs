@@ -35,10 +35,45 @@ use sp_api::ConstructRuntimeApi;
 use sp_consensus::SlotData;
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 use substrate_prometheus_endpoint::Registry;
 
 pub use runtime_common::{AccountId, Balance, Block, Hash, Header, Index as Nonce};
+
+// EVM
+use std::{sync::Mutex, collections::BTreeMap};
+use sc_cli::SubstrateCli;
+use sc_client_api::BlockchainEvents;
+use sc_service::BasePath;
+use fc_consensus::FrontierBlockImport;
+use fc_mapping_sync::{MappingSyncWorker, SyncStrategy::Parachain};
+use fc_rpc::EthTask;
+use fc_rpc_core::types::FilterPool;
+use futures::StreamExt;
+use crate::rpc;
+
+type FullClient<RuntimeApi, Executor> = sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>;
+type FullBackend = sc_service::TFullBackend<Block>;
+type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
+
+pub fn frontier_database_dir(config: &Configuration) -> std::path::PathBuf {
+    let config_dir = config.base_path.as_ref()
+        .map(|base_path| base_path.config_dir(config.chain_spec.id()))
+        .unwrap_or_else(|| {
+            BasePath::from_project("", "", &crate::cli::Cli::executable_name())
+                .config_dir(config.chain_spec.id())
+        });
+    config_dir.join("frontier").join("db")
+}
+
+pub fn open_frontier_backend(config: &Configuration) -> Result<Arc<fc_db::Backend<Block>>, String> {
+    Ok(Arc::new(fc_db::Backend::<Block>::new(&fc_db::DatabaseSettings {
+        source: fc_db::DatabaseSettingsSrc::RocksDb {
+            path: frontier_database_dir(&config),
+            cache_size: 0,
+        }
+    })?))
+}
 
 /// Native executor instance.
 pub struct SherpaXRuntimeExecutor;
@@ -66,7 +101,7 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
     PartialComponents<
         TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
         TFullBackend<Block>,
-        (),
+        FullSelectChain,
         sc_consensus::DefaultImportQueue<
             Block,
             TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
@@ -75,7 +110,12 @@ pub fn new_partial<RuntimeApi, Executor, BIQ>(
             Block,
             TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
         >,
-        (Option<Telemetry>, Option<TelemetryWorkerHandle>),
+        (
+            Option<FilterPool>,
+            Option<Telemetry>,
+            Option<TelemetryWorkerHandle>,
+            Arc<fc_db::Backend<Block>>
+        ),
     >,
     sc_service::Error,
 >
@@ -91,10 +131,16 @@ where
             Block,
             StateBackend = sc_client_api::StateBackendFor<TFullBackend<Block>, Block>,
         > + sp_offchain::OffchainWorkerApi<Block>
-        + sp_block_builder::BlockBuilder<Block>,
+        + sp_block_builder::BlockBuilder<Block>
+        + fp_rpc::EthereumRuntimeRPCApi<Block>,
     sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
     Executor: sc_executor::NativeExecutionDispatch + 'static,
     BIQ: FnOnce(
+        FrontierBlockImport<
+            Block,
+            Arc<FullClient<RuntimeApi, Executor>>,
+            FullClient<RuntimeApi, Executor>,
+        >,
         Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
         &Configuration,
         Option<TelemetryHandle>,
@@ -147,7 +193,15 @@ where
         client.clone(),
     );
 
+    let filter_pool: Option<FilterPool>
+        = Some(Arc::new(Mutex::new(BTreeMap::new())));
+
+    let frontier_backend = open_frontier_backend(config)?;
+    let frontier_block_import =
+        FrontierBlockImport::new(client.clone(), client.clone(), frontier_backend.clone());
+
     let import_queue = build_import_queue(
+        frontier_block_import,
         client.clone(),
         config,
         telemetry.as_ref().map(|telemetry| telemetry.handle()),
@@ -155,14 +209,19 @@ where
     )?;
 
     let params = PartialComponents {
-        backend,
+        backend: backend.clone(),
         client,
         import_queue,
         keystore_container,
         task_manager,
         transaction_pool,
-        select_chain: (),
-        other: (telemetry, telemetry_worker_handle),
+        select_chain: sc_consensus::LongestChain::new(backend.clone()),
+        other: (
+            filter_pool,
+            telemetry,
+            telemetry_worker_handle,
+            frontier_backend
+        ),
     };
 
     Ok(params)
@@ -196,6 +255,7 @@ where
             StateBackend = sc_client_api::StateBackendFor<TFullBackend<Block>, Block>,
         > + sp_offchain::OffchainWorkerApi<Block>
         + sp_block_builder::BlockBuilder<Block>
+        + fp_rpc::EthereumRuntimeRPCApi<Block>
         + cumulus_primitives_core::CollectCollationInfo<Block>
         + pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
         + substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
@@ -207,17 +267,22 @@ where
         + Send
         + 'static,
     BIQ: FnOnce(
-            Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
-            &Configuration,
-            Option<TelemetryHandle>,
-            &TaskManager,
-        ) -> Result<
-            sc_consensus::DefaultImportQueue<
-                Block,
-                TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
-            >,
-            sc_service::Error,
-        > + 'static,
+        FrontierBlockImport<
+            Block,
+            Arc<FullClient<RuntimeApi, Executor>>,
+            FullClient<RuntimeApi, Executor>,
+        >,
+        Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+        &Configuration,
+        Option<TelemetryHandle>,
+        &TaskManager,
+    ) -> Result<
+        sc_consensus::DefaultImportQueue<
+            Block,
+            TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+        >,
+        sc_service::Error,
+    > + 'static,
     BIC: FnOnce(
         Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
         Option<&Registry>,
@@ -242,7 +307,12 @@ where
     let parachain_config = prepare_node_config(parachain_config);
 
     let params = new_partial::<RuntimeApi, Executor, BIQ>(&parachain_config, build_import_queue)?;
-    let (mut telemetry, telemetry_worker_handle) = params.other;
+    let (
+        filter_pool,
+        mut telemetry,
+        telemetry_worker_handle,
+        frontier_backend,
+    ) = params.other;
 
     let relay_chain_full_node =
         cumulus_client_service::build_polkadot_full_node(polkadot_config, telemetry_worker_handle)
@@ -278,20 +348,49 @@ where
             warp_sync: None,
         })?;
 
+    let subscription_task_executor =
+        sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
+
     let rpc_extensions_builder = {
         let client = client.clone();
-        let transaction_pool = transaction_pool.clone();
+        let pool = transaction_pool.clone();
+        let network = network.clone();
+        let filter_pool = filter_pool.clone();
+        let frontier_backend = frontier_backend.clone();
+        let is_authority = false;
+        let max_past_logs = 10000;
 
         Box::new(move |deny_unsafe, _| {
-            let deps = crate::rpc::FullDeps {
+            let deps = rpc::FullDeps {
                 client: client.clone(),
-                pool: transaction_pool.clone(),
+                pool: pool.clone(),
+                graph: pool.pool().clone(),
                 deny_unsafe,
+                is_authority,
+                network: network.clone(),
+                filter_pool: filter_pool.clone(),
+                backend: frontier_backend.clone(),
+                max_past_logs,
             };
 
-            Ok(crate::rpc::create_full(deps))
+            Ok(rpc::create_full(
+                deps,
+                subscription_task_executor.clone()
+            ))
         })
     };
+
+    task_manager.spawn_essential_handle().spawn(
+        "frontier-mapping-sync-worker",
+        MappingSyncWorker::new(
+            client.import_notification_stream(),
+            Duration::new(6, 0),
+            client.clone(),
+            backend.clone(),
+            frontier_backend.clone(),
+            Parachain
+        ).for_each(|()| futures::future::ready(()))
+    );
 
     sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         on_demand: None,
@@ -307,6 +406,28 @@ where
         system_rpc_tx,
         telemetry: telemetry.as_mut(),
     })?;
+
+    // Spawn Frontier EthFilterApi maintenance task.
+    if let Some(filter_pool) = filter_pool {
+        // Each filter is allowed to stay in the pool for 100 blocks.
+        const FILTER_RETAIN_THRESHOLD: u64 = 100;
+        task_manager.spawn_essential_handle().spawn(
+            "frontier-filter-pool",
+            EthTask::filter_pool_task(
+                Arc::clone(&client),
+                filter_pool,
+                FILTER_RETAIN_THRESHOLD,
+            )
+        );
+    }
+
+    task_manager.spawn_essential_handle().spawn(
+        "frontier-schema-cache-task",
+        EthTask::ethereum_schema_cache_task(
+            Arc::clone(&client),
+            Arc::clone(&frontier_backend),
+        ),
+    );
 
     let announce_block = {
         let network = network.clone();
@@ -360,6 +481,11 @@ where
 
 /// Build the import queue for the sherpax runtime.
 pub fn build_import_queue(
+    block_import: FrontierBlockImport<
+        Block,
+        Arc<FullClient<sherpax_runtime::RuntimeApi, SherpaXRuntimeExecutor>>,
+        FullClient<sherpax_runtime::RuntimeApi, SherpaXRuntimeExecutor>,
+    >,
     client: Arc<
         TFullClient<
             Block,
@@ -392,7 +518,7 @@ pub fn build_import_queue(
         _,
         _,
     >(cumulus_client_consensus_aura::ImportQueueParams {
-        block_import: client.clone(),
+        block_import,
         client: client.clone(),
         create_inherent_data_providers: move |_, _| async move {
             let time = sp_timestamp::InherentDataProvider::from_system_time();

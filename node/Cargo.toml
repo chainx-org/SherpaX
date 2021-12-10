@@ -78,5 +78,16 @@ polkadot-service = { git = "https://github.com/paritytech/polkadot", branch = "r
 runtime-common = { path = "../runtime/common" }
 sherpax-runtime = { path = "../runtime/sherpax" }
 
+# EVM
+jsonrpc-pubsub = "18.0.0"
+fp-consensus = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+fp-rpc = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+fc-consensus  = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+fc-rpc-core = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+fc-rpc = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+fc-mapping-sync = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+fc-db = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+pallet-ethereum = { git="https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }

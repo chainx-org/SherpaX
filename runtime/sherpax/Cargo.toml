@@ -57,6 +57,23 @@ pallet-collator-selection = { git = "https://github.com/paritytech/cumulus", def
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
 polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.11" }
 
+# Evm
+pallet-evm = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11", default-features = false }
+pallet-ethereum = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11", default-features = false }
+
+# EVM precompile
+fp-evm = { git="https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+pallet-evm-precompile-bn128 = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+pallet-evm-precompile-dispatch = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+pallet-evm-precompile-modexp = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+pallet-evm-precompile-simple = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+pallet-evm-precompile-sha3fips = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+pallet-evm-precompile-blake2 = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+
+# ETH API
+fp-rpc = { git="https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+fp-self-contained  = { git="https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+
 [dev-dependencies]
 hex-literal = "0.3.1"
 hex = "0.4.3"
@@ -109,6 +126,12 @@ std = [
 	"cumulus-primitives-timestamp/std",
 	"pallet-collator-selection/std",
 	"polkadot-parachain/std",
-	"polkadot-runtime-common/std"
+	"polkadot-runtime-common/std",
+
+	"pallet-evm/std",
+	"pallet-ethereum/std",
+	"fp-evm/std",
+	"fp-rpc/std",
+	"fp-self-contained/std"
 ]
 sherpax-dev = []
