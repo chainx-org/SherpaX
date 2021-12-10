@@ -54,10 +54,10 @@ fn load_spec(
             }
             #[cfg(not(feature = "runtime-benchmarks"))]
             {
-                return Err(
+                Err(
                     "benchmarks chain-config should compile with feature `runtime-benchmarks`"
                         .into(),
-                );
+                )
             }
         }
         path => Ok(Box::new(chain_spec::ChainSpec::from_json_file(
