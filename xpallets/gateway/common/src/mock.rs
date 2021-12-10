@@ -7,7 +7,7 @@ use frame_support::{
     parameter_types, sp_io,
     traits::{ChangeMembers, GenesisBuild, LockIdentifier, UnixTime},
 };
-use frame_system::EnsureSignedBy;
+use frame_system::{EnsureRoot, EnsureSignedBy};
 use sp_core::{crypto::UncheckedInto, H256};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
@@ -17,7 +17,9 @@ use sp_runtime::{
 };
 
 use sherpax_primitives::AssetId;
+use xp_assets_registrar::Chain;
 pub use xp_protocol::{X_BTC, X_ETH};
+use xpallet_gateway_records::{ChainT, WithdrawalLimit};
 use xpallet_support::traits::{MultisigAddressFor, Validator};
 
 use crate::{
@@ -30,7 +32,6 @@ use crate::{
 pub(crate) type AccountId = AccountId32;
 pub(crate) type BlockNumber = u64;
 pub(crate) type Balance = u128;
-pub(crate) type Amount = i128;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -44,8 +45,7 @@ frame_support::construct_runtime!(
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         Elections: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>},
-        XAssetsRegistrar: xpallet_assets_registrar::{Pallet, Call, Storage, Event<T>, Config},
-        XAssets: xpallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>},
+        Assets: pallet_assets::{Pallet, Call, Storage, Event<T>},
         XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>},
         XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>},
         XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>},
@@ -179,25 +179,37 @@ impl pallet_elections_phragmen::Config for Test {
 }
 
 parameter_types! {
-    pub const ChainXAssetId: AssetId = 0;
+    pub const AssetDeposit: Balance = 1;
+    pub const ApprovalDeposit: Balance = 1;
+    pub const StringLimit: u32 = 50;
+    pub const MetadataDepositBase: Balance = 1;
+    pub const MetadataDepositPerByte: Balance = 1;
 }
-impl xpallet_assets_registrar::Config for Test {
+
+impl pallet_assets::Config for Test {
     type Event = ();
-    type NativeAssetId = ChainXAssetId;
-    type RegistrarHandler = ();
-    type WeightInfo = ();
-}
-impl xpallet_assets::Config for Test {
-    type Event = ();
+    type Balance = Balance;
+    type AssetId = AssetId;
     type Currency = Balances;
-    type Amount = Amount;
-    type TreasuryAccount = ();
-    type OnCreatedAccount = frame_system::Provider<Test>;
-    type OnAssetChanged = ();
-    type WeightInfo = ();
+    type ForceOrigin = EnsureRoot<AccountId>;
+    type AssetDeposit = AssetDeposit;
+    type MetadataDepositBase = MetadataDepositBase;
+    type MetadataDepositPerByte = MetadataDepositPerByte;
+    type ApprovalDeposit = ApprovalDeposit;
+    type StringLimit = StringLimit;
+    type Freezer = XGatewayRecords;
+    type Extra = ();
+    type WeightInfo = pallet_assets::weights::SubstrateWeight<Test>;
+}
+
+// assets
+parameter_types! {
+    pub const NativeAssetId: AssetId = 10;
+    pub const BtcAssetId: AssetId = 1;
 }
 
 impl xpallet_gateway_records::Config for Test {
+    type NativeAssetId = NativeAssetId;
     type Event = ();
     type WeightInfo = ();
 }
@@ -222,6 +234,8 @@ impl UnixTime for Timestamp {
 
 impl xpallet_gateway_bitcoin::Config for Test {
     type Event = ();
+    type BtcAssetId = BtcAssetId;
+    type Currency = Balances;
     type UnixTime = Timestamp;
     type AccountExtractor = ();
     type TrusteeSessionProvider = ();
@@ -250,9 +264,7 @@ impl Validator<AccountId> for AlwaysValidator {
     }
 }
 pub struct MockBitcoin<T: xpallet_gateway_bitcoin::Config>(sp_std::marker::PhantomData<T>);
-impl<T: xpallet_gateway_bitcoin::Config> ChainT<BalanceOf<T>> for MockBitcoin<T> {
-    const ASSET_ID: u32 = X_BTC;
-
+impl<T: xpallet_gateway_bitcoin::Config> ChainT<T::AssetId, T::Balance> for MockBitcoin<T> {
     fn chain() -> Chain {
         Chain::Bitcoin
     }
@@ -261,7 +273,9 @@ impl<T: xpallet_gateway_bitcoin::Config> ChainT<BalanceOf<T>> for MockBitcoin<T>
         Ok(())
     }
 
-    fn withdrawal_limit(asset_id: &u32) -> Result<WithdrawalLimit<BalanceOf<T>>, DispatchError> {
+    fn withdrawal_limit(
+        asset_id: &T::AssetId,
+    ) -> Result<WithdrawalLimit<T::Balance>, DispatchError> {
         xpallet_gateway_bitcoin::Pallet::<T>::withdrawal_limit(asset_id)
     }
 }
@@ -331,30 +345,6 @@ impl ExtBuilder {
             .build_storage::<Test>()
             .unwrap();
 
-        let btc_assets = btc();
-        let assets = vec![(btc_assets.0, btc_assets.1, btc_assets.2, true, true)];
-
-        let mut init_assets = vec![];
-        let mut assets_restrictions = vec![];
-        for (a, b, c, d, e) in assets {
-            init_assets.push((a, b, d, e));
-            assets_restrictions.push((a, c))
-        }
-
-        GenesisBuild::<Test>::assimilate_storage(
-            &xpallet_assets_registrar::GenesisConfig {
-                assets: init_assets,
-            },
-            &mut storage,
-        )
-        .unwrap();
-
-        let _ = xpallet_assets::GenesisConfig::<Test> {
-            assets_restrictions,
-            endowed: Default::default(),
-        }
-        .assimilate_storage(&mut storage);
-
         let _ = crate::GenesisConfig::<Test> {
             trustees: trustees(),
             ..Default::default()
@@ -363,21 +353,6 @@ impl ExtBuilder {
 
         sp_io::TestExternalities::new(storage)
     }
-}
-
-fn btc() -> (AssetId, AssetInfo, AssetRestrictions) {
-    (
-        X_BTC,
-        AssetInfo::new::<Test>(
-            b"X-BTC".to_vec(),
-            b"X-BTC".to_vec(),
-            Chain::Bitcoin,
-            8,
-            b"ChainX's cross-chain Bitcoin".to_vec(),
-        )
-        .unwrap(),
-        AssetRestrictions::DESTROY_USABLE,
-    )
 }
 
 fn trustees() -> Vec<(

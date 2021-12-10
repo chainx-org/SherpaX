@@ -7,7 +7,7 @@ use sp_core::crypto::AccountId32;
 use sp_runtime::traits::StaticLookup;
 use sp_std::prelude::*;
 
-use sherpax_primitives::AssetId;
+use xp_assets_registrar::Chain;
 use xpallet_gateway_records::{Pallet as XGatewayRecords, WithdrawalRecordId, WithdrawalState};
 
 use crate::{
@@ -15,7 +15,17 @@ use crate::{
     TrusteeMultiSigAddr, TrusteeSessionInfoLen, TrusteeSessionInfoOf,
 };
 
-const ASSET_ID: AssetId = xp_protocol::X_BTC;
+fn create_default_asset<T: Config>(who: T::AccountId) {
+    let miner = T::Lookup::unlookup(who);
+    let _ = pallet_assets::Pallet::<T>::force_create(
+        RawOrigin::Root.into(),
+        T::AssetId::default(),
+        miner,
+        true,
+        1u32.into(),
+    );
+    xpallet_gateway_records::AssetChainOf::<T>::insert(T::AssetId::default(), Chain::Bitcoin);
+}
 
 fn account<T: Config>(pubkey: &str) -> T::AccountId {
     let pubkey = hex::decode(pubkey).unwrap();
@@ -75,12 +85,13 @@ fn clean<T: Config>() {
 benchmarks! {
     withdraw {
         let caller: T::AccountId = alice::<T>();
-        let amount: BalanceOf<T> = 1_000_000_000u32.into();
-        XGatewayRecords::<T>::deposit(&caller, ASSET_ID, amount).unwrap();
+        create_default_asset::<T>(caller.clone());
+        let amount: T::Balance = 1_000_000_000u32.into();
+        XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
 
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
-    }: _(RawOrigin::Signed(caller.clone()), ASSET_ID, amount, addr, memo)
+    }: _(RawOrigin::Signed(caller.clone()), T::AssetId::default(), amount, addr, memo)
     verify {
         assert!(XGatewayRecords::<T>::pending_withdrawals(0).is_some());
         assert_eq!(
@@ -91,15 +102,16 @@ benchmarks! {
 
     cancel_withdrawal {
         let caller: T::AccountId = alice::<T>();
-        let amount: BalanceOf<T> = 1_000_000_000_u32.into();
-        XGatewayRecords::<T>::deposit(&caller, ASSET_ID, amount).unwrap();
+        create_default_asset::<T>(caller.clone());
+        let amount: T::Balance = 1_000_000_000_u32.into();
+        XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
 
         let withdrawal = amount - 500u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
         Pallet::<T>::withdraw(
             RawOrigin::Signed(caller.clone()).into(),
-            ASSET_ID, withdrawal, addr, memo,
+            T::AssetId::default(), withdrawal, addr, memo,
         )
         .unwrap();
 
@@ -154,16 +166,17 @@ benchmarks! {
 
     set_withdrawal_state {
         let caller: T::AccountId = alice::<T>();
+        create_default_asset::<T>(caller.clone());
         TrusteeMultiSigAddr::<T>::insert(Chain::Bitcoin, caller.clone());
 
-        let amount: BalanceOf<T> = 1_000_000_000u32.into();
-        XGatewayRecords::<T>::deposit(&caller, ASSET_ID, amount).unwrap();
+        let amount: T::Balance = 1_000_000_000u32.into();
+        XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
         let withdrawal = amount - 500u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
         Pallet::<T>::withdraw(
             RawOrigin::Signed(caller.clone()).into(),
-            ASSET_ID, withdrawal, addr, memo,
+            T::AssetId::default(), withdrawal, addr, memo,
         )
         .unwrap();
         let withdrawal_id: WithdrawalRecordId = 0;

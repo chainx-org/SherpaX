@@ -3,10 +3,10 @@
 use codec::{Decode, Encode};
 use frame_benchmarking::{benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
-use sp_runtime::{AccountId32, SaturatedConversion};
+use sp_runtime::{traits::StaticLookup, AccountId32, SaturatedConversion};
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
-use sherpax_primitives::AssetId;
+use xp_assets_registrar::Chain;
 use xp_gateway_bitcoin::BtcTxType;
 use xpallet_gateway_records::{Pallet as XGatewayRecords, WithdrawalState};
 
@@ -18,11 +18,21 @@ use light_bitcoin::{
 };
 
 use crate::{
-    types::*, BalanceOf, Call, Config, Pallet, PendingDeposits, TransactionOutputArray, TxState,
+    types::*, Call, Config, Pallet, PendingDeposits, TransactionOutputArray, TxState,
     WithdrawalProposal,
 };
 
-const ASSET_ID: AssetId = xp_protocol::X_BTC;
+fn create_default_asset<T: Config>(who: T::AccountId) {
+    let miner = T::Lookup::unlookup(who);
+    let _ = pallet_assets::Pallet::<T>::force_create(
+        RawOrigin::Root.into(),
+        T::AssetId::default(),
+        miner,
+        true,
+        1u32.into(),
+    );
+    xpallet_gateway_records::AssetChainOf::<T>::insert(T::AssetId::default(), Chain::Bitcoin);
+}
 
 fn generate_blocks_63290_63310() -> BTreeMap<u32, BlockHeader> {
     let bytes = include_bytes!("./res/headers-63290-63310.raw");
@@ -90,7 +100,7 @@ benchmarks! {
         let header = generate_blocks_63290_63310()[&insert_height];
         let hash = header.hash();
         let header_raw = serialization::serialize(&header).into();
-        let amount: BalanceOf<T> = 1000u32.into();
+        let amount: T::Balance = 1000u32.into();
     }: _(RawOrigin::Signed(receiver), header_raw)
     verify {
         assert!(Pallet::<T>::headers(&hash).is_some());
@@ -101,15 +111,15 @@ benchmarks! {
         let l = 1024 * 1024 * 500; // 500KB length
 
         let caller: T::AccountId = alice::<T>();
-
+        create_default_asset::<T>(caller.clone());
         prepare_headers::<T>(&caller);
         let (tx, info, prev_tx) = withdraw_tx();
         let tx_hash = tx.hash();
         let tx_raw = serialization::serialize_with_flags(&tx, SERIALIZE_TRANSACTION_WITNESS).into();
         let prev_tx_raw = serialization::serialize_with_flags(&prev_tx, SERIALIZE_TRANSACTION_WITNESS).into();
 
-        XGatewayRecords::<T>::deposit(&caller, ASSET_ID, 100_000u32.into()).unwrap();
-        XGatewayRecords::<T>::withdraw(&caller, ASSET_ID, 50_000u32.into(), b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
+        XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), 100_000u32.into()).unwrap();
+        XGatewayRecords::<T>::withdraw(&caller, T::AssetId::default(), 50_000u32.into(), b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
 
         XGatewayRecords::<T>::withdrawal_state_insert(0, WithdrawalState::Processing);
 
@@ -138,6 +148,7 @@ benchmarks! {
         let l = 1024 * 1024 * 500;  // 500KB length
 
         let caller = alice::<T>();
+        create_default_asset::<T>(caller.clone());
 
         let (tx, info, prev_tx) = withdraw_tx();
         let tx_hash = tx.hash();
@@ -148,8 +159,8 @@ benchmarks! {
         };
         let spent_outputs_raw = serialization::serialize(&transaction_output).into();
 
-        XGatewayRecords::<T>::deposit(&caller, ASSET_ID, 100_000u32.saturated_into()).unwrap();
-        XGatewayRecords::<T>::withdraw(&caller, ASSET_ID, 50_000u32.saturated_into(), b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
+        XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), 100_000u32.saturated_into()).unwrap();
+        XGatewayRecords::<T>::withdraw(&caller, T::AssetId::default(), 50_000u32.saturated_into(), b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
 
         XGatewayRecords::<T>::withdrawal_state_insert(0, WithdrawalState::Applying);
 
@@ -199,7 +210,7 @@ benchmarks! {
     }: _(RawOrigin::Root, addr.clone(), Some(receiver.clone()))
     verify {
         assert!(Pallet::<T>::pending_deposits(&addr).is_empty());
-        // assert_eq!(XAssets::<T>::usable_balance(&receiver, &ASSET_ID), (100000000u32 + 200000000u32 + 300000000u32).into());
+        // assert_eq!(XAssets::<T>::usable_balance(&receiver, &T::AssetId::default()), (100000000u32 + 200000000u32 + 300000000u32).into());
     }
 
     remove_proposal {

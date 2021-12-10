@@ -12,7 +12,7 @@ use frame_support::{
     traits::{LockIdentifier, UnixTime},
     weights::Weight,
 };
-use frame_system::EnsureSignedBy;
+use frame_system::{EnsureSignedBy, EnsureRoot};
 use sp_core::H256;
 use sp_keyring::sr25519;
 use sp_runtime::{
@@ -43,7 +43,6 @@ use crate::{
 pub(crate) type AccountId = AccountId32;
 pub(crate) type BlockNumber = u64;
 pub(crate) type Balance = u128;
-pub(crate) type Amount = i128;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -57,6 +56,7 @@ frame_support::construct_runtime!(
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         Elections: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>},
+        Assets: pallet_assets::{Pallet, Call, Storage, Event<T>},
         XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>},
         XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>},
         XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>},
@@ -145,13 +145,38 @@ impl pallet_elections_phragmen::Config for Test {
     type KickedMember = ();
     type WeightInfo = ();
 }
+parameter_types! {
+    pub const AssetDeposit: Balance = 1;
+    pub const ApprovalDeposit: Balance = 1;
+    pub const StringLimit: u32 = 50;
+    pub const MetadataDepositBase: Balance = 1;
+    pub const MetadataDepositPerByte: Balance = 1;
+}
+
+impl pallet_assets::Config for Test {
+    type Event = ();
+    type Balance = Balance;
+    type AssetId = AssetId;
+    type Currency = Balances;
+    type ForceOrigin = EnsureRoot<AccountId>;
+    type AssetDeposit = AssetDeposit;
+    type MetadataDepositBase = MetadataDepositBase;
+    type MetadataDepositPerByte = MetadataDepositPerByte;
+    type ApprovalDeposit = ApprovalDeposit;
+    type StringLimit = StringLimit;
+    type Freezer = XGatewayRecords;
+    type Extra = ();
+    type WeightInfo = pallet_assets::weights::SubstrateWeight<Test>;
+}
 
 // assets
 parameter_types! {
-    pub const ChainXAssetId: AssetId = 0;
+    pub const NativeAssetId: AssetId = 10;
+    pub const BtcAssetId: AssetId = 1;
 }
 
 impl xpallet_gateway_records::Config for Test {
+    type NativeAssetId = NativeAssetId;
     type Event = ();
     type WeightInfo = ();
 }
@@ -187,6 +212,8 @@ impl UnixTime for Timestamp {
 
 impl Config for Test {
     type Event = ();
+    type BtcAssetId = BtcAssetId;
+    type Currency = Balances;
     type UnixTime = Timestamp;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeSessionProvider =
