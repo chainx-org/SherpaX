@@ -53,7 +53,6 @@ fn deposit_and_withdraw<T: Config>(who: T::AccountId, amount: T::Balance) {
 benchmarks! {
     root_deposit {
         let receiver: T::AccountId = whitelisted_caller();
-        create_default_asset::<T>(receiver.clone());
         let receiver_lookup: <T::Lookup as StaticLookup>::Source = T::Lookup::unlookup(receiver.clone());
         let amount: T::Balance = 1000u32.into();
     }: _(RawOrigin::Root, receiver_lookup, T::AssetId::default(), amount)

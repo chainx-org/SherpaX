@@ -52,7 +52,7 @@ pub use pallet::*;
 pub mod pallet {
     use super::*;
     use frame_support::pallet_prelude::*;
-    use frame_system::pallet_prelude::*;
+    use frame_system::{pallet_prelude::*, RawOrigin};
 
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_assets::Config {
@@ -204,6 +204,41 @@ pub mod pallet {
     #[pallet::getter(fn locks)]
     pub type Locks<T: Config> =
         StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Twox64Concat, T::AssetId, T::Balance>;
+
+    #[pallet::genesis_config]
+    pub struct GenesisConfig<T: Config> {
+        /// The initial asset chain.
+        pub initial_asset_chain: Vec<(T::AccountId, T::AssetId, Chain)>,
+    }
+
+    #[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+        fn default() -> Self {
+            Self {
+                initial_asset_chain: Default::default(),
+            }
+        }
+    }
+
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+        fn build(&self) {
+            let extra_genesis_builder: fn(&Self) = |config| {
+                for (miner, asset_id, chain) in config.initial_asset_chain.iter() {
+                    let miner = T::Lookup::unlookup(miner.clone());
+                    let _ = pallet_assets::Pallet::<T>::force_create(
+                        RawOrigin::Root.into(),
+                        asset_id.clone(),
+                        miner,
+                        true,
+                        1u32.into(),
+                    );
+                    AssetChainOf::<T>::insert(*asset_id, chain);
+                }
+            };
+            extra_genesis_builder(self);
+        }
+    }
 }
 
 impl<T: Config> Pallet<T> {

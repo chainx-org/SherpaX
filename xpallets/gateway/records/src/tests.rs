@@ -10,8 +10,6 @@ use frame_system::RawOrigin;
 fn test_normal() {
     ExtBuilder::default().build_and_execute(|| {
         // deposit
-        assert_ok!(Assets::force_create(Origin::root(), X_BTC, ALICE, true, 1));
-        AssetChainOf::<Test>::insert(X_BTC, Chain::Bitcoin);
         assert_ok!(XGatewayRecords::deposit(&ALICE, X_BTC, 500));
         assert_eq!(Assets::balance(X_BTC, ALICE), 500);
 
@@ -47,10 +45,6 @@ fn test_normal() {
 #[test]
 fn test_normal2() {
     ExtBuilder::default().build_and_execute(|| {
-        assert_ok!(Assets::force_create(Origin::root(), X_BTC, ALICE, true, 1));
-        AssetChainOf::<Test>::insert(X_BTC, Chain::Bitcoin);
-        assert_ok!(Assets::force_create(Origin::root(), X_ETH, ALICE, true, 1));
-        AssetChainOf::<Test>::insert(X_ETH, Chain::Ethereum);
         // deposit
         assert_ok!(XGatewayRecords::deposit(&ALICE, X_BTC, 500));
         assert_eq!(Assets::balance(X_BTC, ALICE), 500);
@@ -126,8 +120,6 @@ fn test_normal2() {
 #[test]
 fn test_withdrawal_more_than_usable() {
     ExtBuilder::default().build_and_execute(|| {
-        assert_ok!(Assets::force_create(Origin::root(), X_BTC, ALICE, true, 1));
-        AssetChainOf::<Test>::insert(X_BTC, Chain::Bitcoin);
         assert_noop!(
             XGatewayRecords::withdraw(
                 &ALICE,
@@ -144,8 +136,6 @@ fn test_withdrawal_more_than_usable() {
 #[test]
 fn test_withdrawal_force_set_state() {
     ExtBuilder::default().build_and_execute(|| {
-        assert_ok!(Assets::force_create(Origin::root(), X_BTC, ALICE, true, 1));
-        AssetChainOf::<Test>::insert(X_BTC, Chain::Bitcoin);
         assert_ok!(XGatewayRecords::deposit(&ALICE, X_BTC, 100));
         // applying
         assert_ok!(XGatewayRecords::withdraw(

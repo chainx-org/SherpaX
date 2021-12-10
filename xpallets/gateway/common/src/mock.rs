@@ -205,7 +205,7 @@ impl pallet_assets::Config for Test {
 // assets
 parameter_types! {
     pub const NativeAssetId: AssetId = 10;
-    pub const BtcAssetId: AssetId = 1;
+    pub const BtcAssetId: AssetId = 0;
 }
 
 impl xpallet_gateway_records::Config for Test {
@@ -348,6 +348,14 @@ impl ExtBuilder {
         let _ = crate::GenesisConfig::<Test> {
             trustees: trustees(),
             ..Default::default()
+        }
+        .assimilate_storage(&mut storage);
+
+        let _ = xpallet_gateway_records::GenesisConfig::<Test> {
+            initial_asset_chain: vec![
+                (Default::default(), X_BTC, Chain::Bitcoin),
+                (Default::default(), X_ETH, Chain::Ethereum),
+            ],
         }
         .assimilate_storage(&mut storage);
 

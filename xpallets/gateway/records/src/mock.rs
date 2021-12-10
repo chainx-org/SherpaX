@@ -1,6 +1,6 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
-use frame_support::{parameter_types, sp_io};
+use frame_support::{parameter_types, sp_io, traits::GenesisBuild};
 use frame_system::EnsureRoot;
 use sp_core::H256;
 use sp_runtime::{
@@ -130,11 +130,18 @@ impl Default for ExtBuilder {
 }
 impl ExtBuilder {
     pub fn build(self) -> sp_io::TestExternalities {
-        let storage = frame_system::GenesisConfig::default()
+        let mut storage = frame_system::GenesisConfig::default()
             .build_storage::<Test>()
             .unwrap();
 
-        // TODO!: consider add genesis builder
+        let _ = crate::GenesisConfig::<Test> {
+            initial_asset_chain: vec![
+                (ALICE, X_BTC, Chain::Bitcoin),
+                (ALICE, X_ETH, Chain::Ethereum),
+            ],
+        }
+        .assimilate_storage(&mut storage);
+
         sp_io::TestExternalities::new(storage)
     }
     pub fn build_and_execute(self, test: impl FnOnce()) {

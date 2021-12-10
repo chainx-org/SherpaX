@@ -88,10 +88,10 @@ benchmarks! {
         create_default_asset::<T>(caller.clone());
         let amount: T::Balance = 1_000_000_000u32.into();
         XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
-
+        let withdrawal = 500u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
-    }: _(RawOrigin::Signed(caller.clone()), T::AssetId::default(), amount, addr, memo)
+    }: _(RawOrigin::Signed(caller.clone()), T::AssetId::default(), withdrawal, addr, memo)
     verify {
         assert!(XGatewayRecords::<T>::pending_withdrawals(0).is_some());
         assert_eq!(
@@ -106,7 +106,7 @@ benchmarks! {
         let amount: T::Balance = 1_000_000_000_u32.into();
         XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
 
-        let withdrawal = amount - 500u32.into();
+        let withdrawal = 500u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
         Pallet::<T>::withdraw(
@@ -171,7 +171,7 @@ benchmarks! {
 
         let amount: T::Balance = 1_000_000_000u32.into();
         XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
-        let withdrawal = amount - 500u32.into();
+        let withdrawal = 500u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
         Pallet::<T>::withdraw(

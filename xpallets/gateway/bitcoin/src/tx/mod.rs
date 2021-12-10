@@ -138,10 +138,9 @@ fn deposit<T: Config>(txid: H256, deposit_info: BtcDepositInfo<T::AccountId>) ->
 }
 
 fn deposit_token<T: Config>(txid: H256, who: &T::AccountId, balance: T::Balance) -> DispatchResult {
-    // TODO!： specify correct AssetId
-    let id = T::NativeAssetId::get();
+    let asset_id = T::BtcAssetId::get();
 
-    match pallet_assets::Pallet::<T>::mint_into(id, who, balance) {
+    match pallet_assets::Pallet::<T>::mint_into(asset_id, who, balance) {
         Ok(()) => {
             Pallet::<T>::deposit_event(Event::<T>::Deposited(txid, who.clone(), balance));
             Ok(())

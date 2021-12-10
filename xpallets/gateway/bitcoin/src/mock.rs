@@ -12,7 +12,7 @@ use frame_support::{
     traits::{LockIdentifier, UnixTime},
     weights::Weight,
 };
-use frame_system::{EnsureSignedBy, EnsureRoot};
+use frame_system::{EnsureRoot, EnsureSignedBy};
 use sp_core::H256;
 use sp_keyring::sr25519;
 use sp_runtime::{
@@ -318,6 +318,14 @@ impl ExtBuilder {
             confirmation_number: 4,
             btc_withdrawal_fee: 0,
             max_withdrawal_count: 100,
+        }
+        .assimilate_storage(&mut storage);
+
+        let _ = xpallet_gateway_records::GenesisConfig::<Test> {
+            initial_asset_chain: vec![
+                (alice(), X_BTC, Chain::Bitcoin),
+                (alice(), X_ETH, Chain::Ethereum),
+            ],
         }
         .assimilate_storage(&mut storage);
 
