@@ -1,8 +1,9 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
 use frame_support::dispatch::DispatchError;
-use sp_std::{convert::TryFrom, prelude::Vec};
+use sp_std::{convert::TryFrom, prelude::Vec, vec};
 
+use crate::trustees::bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeType};
 use crate::types::{ScriptInfo, TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo};
 use sherpax_primitives::ReferralId;
 use xp_assets_registrar::Chain;
@@ -27,6 +28,45 @@ pub trait TrusteeForChain<AccountId, TrusteeEntity: BytesLike, TrusteeAddress: B
         ),
         DispatchError,
     >;
+}
+
+impl<AccountId> TrusteeForChain<AccountId, BtcTrusteeType, BtcTrusteeAddrInfo> for () {
+    fn check_trustee_entity(raw_addr: &[u8]) -> Result<BtcTrusteeType, DispatchError> {
+        let trustee_type =
+            BtcTrusteeType::try_from(raw_addr.to_vec()).map_err(|_| "InvalidPublicKey")?;
+        Ok(trustee_type)
+    }
+
+    fn generate_trustee_session_info(
+        props: Vec<(AccountId, TrusteeIntentionProps<AccountId, BtcTrusteeType>)>,
+        _: TrusteeInfoConfig,
+    ) -> Result<
+        (
+            TrusteeSessionInfo<AccountId, BtcTrusteeAddrInfo>,
+            ScriptInfo<AccountId>,
+        ),
+        DispatchError,
+    > {
+        let len = props.len();
+        Ok((
+            TrusteeSessionInfo {
+                trustee_list: props.into_iter().map(|(a, _)| a).collect::<_>(),
+                threshold: len as u16,
+                hot_address: BtcTrusteeAddrInfo {
+                    addr: vec![],
+                    redeem_script: vec![],
+                },
+                cold_address: BtcTrusteeAddrInfo {
+                    addr: vec![],
+                    redeem_script: vec![],
+                },
+            },
+            ScriptInfo {
+                agg_pubkeys: vec![],
+                personal_accounts: vec![],
+            },
+        ))
+    }
 }
 
 pub trait TrusteeSession<AccountId, TrusteeAddress: BytesLike> {

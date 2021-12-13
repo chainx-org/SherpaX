@@ -3868,7 +3868,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "light-bitcoin-chain",
  "light-bitcoin-crypto",
@@ -3883,7 +3883,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-chain"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "hex",
  "light-bitcoin-crypto",
@@ -3897,7 +3897,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-crypto"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "digest 0.9.0",
  "light-bitcoin-primitives",
@@ -3910,7 +3910,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-keys"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "arrayref",
  "bitcoin-bech32",
@@ -3931,7 +3931,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-mast"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "arrayref",
  "bitcoin-bech32",
@@ -3950,7 +3950,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-merkle"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "light-bitcoin-chain",
  "light-bitcoin-primitives",
@@ -3962,13 +3962,14 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-primitives"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "byteorder",
  "fixed-hash",
  "hex",
  "impl-codec",
  "impl-serde",
+ "parity-scale-codec",
  "primitive-types",
  "scale-info",
  "serde",
@@ -3977,7 +3978,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-script"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "hex",
  "libsecp256k1 0.3.5",
@@ -3986,6 +3987,7 @@ dependencies = [
  "light-bitcoin-keys",
  "light-bitcoin-primitives",
  "light-bitcoin-serialization",
+ "parity-scale-codec",
  "scale-info",
  "sha2 0.9.8",
 ]
@@ -3993,16 +3995,18 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-serialization"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "light-bitcoin-primitives",
  "light-bitcoin-serialization-derive",
+ "parity-scale-codec",
+ "scale-info",
 ]
 
 [[package]]
 name = "light-bitcoin-serialization-derive"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#8298a6c3cc6371279a8dfca49d541df19e4dcef9"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#27dc50b1cb2e5b42025d7c2795cd87ce9c8e50e7"
 dependencies = [
  "proc-macro2 1.0.30",
  "quote 1.0.10",
@@ -10602,7 +10606,7 @@ version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f559b464de2e2bdabcac6a210d12e9b5a5973c251e102c44c585c71d51bd78e"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "rand 0.6.5",
  "static_assertions",
 ]

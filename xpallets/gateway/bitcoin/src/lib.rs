@@ -102,9 +102,6 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
     }
 
-    #[pallet::hooks]
-    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
-
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// if use `BtcHeader` struct would export in metadata, cause complex in front-end
@@ -177,7 +174,7 @@ pub mod pallet {
         }
 
         /// Trustee create a proposal for a withdrawal list. `tx` is the proposal withdrawal transaction.
-        #[pallet::weight(<T as Config>::WeightInfo::create_withdraw_tx())]
+        #[pallet::weight(<T as Config>::WeightInfo::create_taproot_withdraw_tx())]
         pub fn create_taproot_withdraw_tx(
             origin: OriginFor<T>,
             withdrawal_id_list: Vec<u32>,
@@ -189,8 +186,8 @@ pub mod pallet {
             Self::ensure_trustee(&from)?;
 
             let tx = Self::deserialize_tx(tx.as_slice())?;
-            let spent_outputs = Self::deserialize_spent_outputs(spent_outputs.as_slice())?.outputs;
-            log!(debug, "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}, spent_outputs: {:?}", from, withdrawal_id_list, tx, spent_outputs);
+            let spent_outputs = Self::deserialize_spent_outputs(spent_outputs.as_slice())?;
+            // log!(debug, "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}, spent_outputs: {:?}", from, withdrawal_id_list, tx, spent_outputs);
 
             Self::apply_create_taproot_withdraw(from, tx, withdrawal_id_list, spent_outputs)?;
             Ok(())

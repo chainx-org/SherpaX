@@ -441,8 +441,8 @@ impl xpallet_gateway_common::Config for Runtime {
     type Event = Event;
     type Validator = ();
     type DetermineMultisigAddress = MultisigProvider;
-    type Bitcoin = XGatewayBitcoin;
-    type BitcoinTrustee = XGatewayBitcoin;
+    type Bitcoin = ();
+    type BitcoinTrustee = ();
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
     type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
 }

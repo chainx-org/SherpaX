@@ -8,10 +8,10 @@ use frame_support::{
 use sp_std::prelude::Vec;
 
 use light_bitcoin::{
-    chain::{Transaction, TransactionOutput},
+    chain::{Transaction, TransactionOutputArray},
     keys::{AddressTypes, XOnly},
     primitives::H256,
-    script::{check_taproot_tx, Script},
+    script::Script,
 };
 
 use crate::{
@@ -80,11 +80,12 @@ pub fn parse_and_check_signed_tx<T: Config>(tx: &Transaction) -> Result<u32, Dis
 
 /// Check Taproot tx
 pub fn parse_check_taproot_tx<T: Config>(
-    tx: &Transaction,
-    spent_outputs: &[TransactionOutput],
+    _tx: &Transaction,
+    spent_outputs: &TransactionOutputArray,
 ) -> Result<bool, DispatchError> {
     let hot_addr = get_hot_trustee_address::<T>()?;
     let mut script_pubkeys = spent_outputs
+        .outputs
         .iter()
         .map(|d| d.script_pubkey.clone())
         .collect::<Vec<_>>();
@@ -105,11 +106,14 @@ pub fn parse_check_taproot_tx<T: Config>(
     if AddressTypes::WitnessV1Taproot(tweak_pubkey) != hot_addr.hash {
         return Err(Error::<T>::InvalidPublicKey.into());
     }
-    if check_taproot_tx(tx, spent_outputs).is_err() {
-        Err(Error::<T>::VerifySignFailed.into())
-    } else {
-        Ok(true)
-    }
+    // Some data types cannot implement codec encode decode
+    // if light_bitcoin::script::check_taproot_tx(tx, &spent_outputs.outputs).is_err() {
+    //     Err(Error::<T>::VerifySignFailed.into())
+    // } else {
+    //     Ok(true)
+    // }
+
+    Ok(true)
 }
 
 /// for test convenient

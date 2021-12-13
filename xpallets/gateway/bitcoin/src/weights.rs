@@ -33,6 +33,7 @@ pub trait WeightInfo {
     fn push_header() -> Weight;
     fn push_transaction() -> Weight;
     fn create_withdraw_tx() -> Weight;
+    fn create_taproot_withdraw_tx() -> Weight;
     fn sign_withdraw_tx() -> Weight;
     fn set_best_index() -> Weight;
     fn set_confirmed_index() -> Weight;
@@ -57,6 +58,11 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
             .saturating_add(T::DbWeight::get().writes(10_u64))
     }
     fn create_withdraw_tx() -> Weight {
+        (1_022_797_000_u64)
+            .saturating_add(T::DbWeight::get().reads(12_u64))
+            .saturating_add(T::DbWeight::get().writes(3_u64))
+    }
+    fn create_taproot_withdraw_tx() -> Weight {
         (1_022_797_000_u64)
             .saturating_add(T::DbWeight::get().reads(12_u64))
             .saturating_add(T::DbWeight::get().writes(3_u64))
@@ -106,6 +112,11 @@ impl WeightInfo for () {
             .saturating_add(RocksDbWeight::get().writes(10_u64))
     }
     fn create_withdraw_tx() -> Weight {
+        (1_022_797_000_u64)
+            .saturating_add(RocksDbWeight::get().reads(12_u64))
+            .saturating_add(RocksDbWeight::get().writes(3_u64))
+    }
+    fn create_taproot_withdraw_tx() -> Weight {
         (1_022_797_000_u64)
             .saturating_add(RocksDbWeight::get().reads(12_u64))
             .saturating_add(RocksDbWeight::get().writes(3_u64))

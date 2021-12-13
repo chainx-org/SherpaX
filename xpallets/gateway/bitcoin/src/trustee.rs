@@ -15,7 +15,7 @@ use sp_std::{
 };
 
 use light_bitcoin::{
-    chain::{Transaction, TransactionOutput},
+    chain::{Transaction, TransactionOutputArray},
     crypto::dhash160,
     keys::{Address, AddressTypes, Public, Type},
     mast::{compute_min_threshold, Mast},
@@ -378,7 +378,7 @@ impl<T: Config> Pallet<T> {
         who: T::AccountId,
         tx: Transaction,
         withdrawal_id_list: Vec<u32>,
-        spent_outputs: Vec<TransactionOutput>,
+        spent_outputs: TransactionOutputArray,
     ) -> DispatchResult {
         let withdraw_amount = Self::max_withdrawal_count();
         if withdrawal_id_list.len() > withdraw_amount as usize {
