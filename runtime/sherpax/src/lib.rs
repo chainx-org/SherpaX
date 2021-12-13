@@ -371,8 +371,8 @@ parameter_types! {
     pub const ChainId: u64 = 1510;
 }
 
-pub struct MinixGasWeightMapping;
-impl pallet_evm::GasWeightMapping for MinixGasWeightMapping {
+pub struct SherpaXGasWeightMapping;
+impl pallet_evm::GasWeightMapping for SherpaXGasWeightMapping {
     fn gas_to_weight(gas: u64) -> Weight {
         gas.saturating_mul(WEIGHT_PER_GAS)
     }
@@ -384,13 +384,13 @@ impl pallet_evm::GasWeightMapping for MinixGasWeightMapping {
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
     fn min_gas_price() -> U256 {
-        45_000_000_000_000u128.into()
+        4_500_000_000_000u128.into()
     }
 }
 
 impl pallet_evm::Config for Runtime {
     type FeeCalculator = FixedGasPrice;
-    type GasWeightMapping = MinixGasWeightMapping;
+    type GasWeightMapping = SherpaXGasWeightMapping;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
     type CallOrigin = EnsureAddressRoot<AccountId>;
     type WithdrawOrigin = EnsureAddressNever<AccountId>;
