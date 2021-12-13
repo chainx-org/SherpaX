@@ -58,6 +58,12 @@ where
             <ToStakingPot<R> as OnUnbalanced<_>>::on_unbalanced(fees);
         }
     }
+
+    // this is called from pallet_evm for Ethereum-based transactions
+    // (technically, it calls on_unbalanced, which calls this when non-zero)
+    fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
+        <ToStakingPot<R> as OnUnbalanced<_>>::on_unbalanced(amount);
+    }
 }
 
 #[cfg(test)]

@@ -401,7 +401,7 @@ impl pallet_evm::Config for Runtime {
     type PrecompilesType = SherpaXPrecompiles<Runtime>;
     type PrecompilesValue = PrecompilesValue;
     type ChainId = ChainId;
-    type OnChargeTransaction = ();
+    type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, DealWithFees<Runtime>>;
     type BlockGasLimit = BlockGasLimit;
     type FindAuthor = ();
 }
