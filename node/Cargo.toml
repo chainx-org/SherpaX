@@ -21,6 +21,7 @@ serde = { version = "1.0.119", features = ["derive"] }
 structopt = "0.3.3"
 trie-root = "0.15.2"
 async-trait = "0.1.42"
+serde_json = "1.0.68"
 
 # Substrate dependencies
 sc-basic-authorship = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }

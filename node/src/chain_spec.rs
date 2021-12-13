@@ -17,12 +17,14 @@
 
 use cumulus_primitives_core::ParaId;
 use hex_literal::hex;
-use runtime_common::{AccountId, AuraId, Signature};
+use runtime_common::{AccountId, AuraId, Balance, BlockNumber, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
 use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
+use std::collections::BTreeMap;
 
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -111,6 +113,7 @@ pub fn dev_config(id: ParaId) -> ChainSpec {
                 )],
                 vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
                 id,
+                true,
             )
         },
         vec![],
@@ -147,6 +150,7 @@ pub fn sherpax_staging_config(id: ParaId) -> ChainSpec {
                     hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").into(),
                 ],
                 id,
+                false
             )
         },
         vec![],
@@ -169,7 +173,27 @@ fn sherpax_genesis(
     invulnerables: Vec<(AccountId, AuraId)>,
     endowed_accounts: Vec<AccountId>,
     id: ParaId,
+    load_genesis: bool,
 ) -> sherpax_runtime::GenesisConfig {
+    let (balances, vesting) = if load_genesis {
+        let (balances, vesting) = load_genesis_config();
+        let other_balances = endowed_accounts
+            .iter()
+            .cloned()
+            .map(|k| (k, SHERPAX_UNITS * 4096))
+            .collect();
+
+        (vec![balances, other_balances].concat(), vesting)
+    } else {
+        let balances = endowed_accounts
+            .iter()
+            .cloned()
+            .map(|k| (k, SHERPAX_UNITS * 4096))
+            .collect();
+
+        (balances, Default::default())
+    };
+
     sherpax_runtime::GenesisConfig {
         system: sherpax_runtime::SystemConfig {
             code: sherpax_runtime::WASM_BINARY
@@ -177,13 +201,7 @@ fn sherpax_genesis(
                 .to_vec(),
             changes_trie_config: Default::default(),
         },
-        balances: sherpax_runtime::BalancesConfig {
-            balances: endowed_accounts
-                .iter()
-                .cloned()
-                .map(|k| (k, SHERPAX_UNITS * 4096))
-                .collect(),
-        },
+        balances: sherpax_runtime::BalancesConfig { balances },
         parachain_info: sherpax_runtime::ParachainInfoConfig { parachain_id: id },
         collator_selection: sherpax_runtime::CollatorSelectionConfig {
             invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
@@ -207,10 +225,79 @@ fn sherpax_genesis(
         aura_ext: Default::default(),
         parachain_system: Default::default(),
         sudo: sherpax_runtime::SudoConfig { key: root_key },
-        vesting: Default::default(),
+        vesting: sherpax_runtime::VestingConfig { vesting },
         evm: Default::default(),
         ethereum: Default::default(),
         assets: Default::default(),
         assets_bridge: sherpax_runtime::AssetsBridgeConfig { admin_key: None },
     }
+}
+
+fn load_genesis_config() -> (Vec<(AccountId, Balance)>, Vec<(AccountId, BlockNumber, BlockNumber, Balance)>) {
+    let non_zero_balances = include_bytes!(
+        concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/res/genesis_config/balances/non_zero_airdrop_18016_10500000000000000000000000.json"
+        )
+    ).to_vec();
+
+    let vestings = include_bytes!(
+        concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/res/genesis_config/vesting/vesting_airdrop_18015_943318423258727000000000.json"
+        )
+    ).to_vec();
+
+    let balances_configs: Vec<sherpax_runtime::BalancesConfig> =
+        config_from_json_bytes(vec![non_zero_balances]).unwrap();
+
+    let vesting_configs: Vec<sherpax_runtime::VestingConfig> =
+        config_from_json_bytes(vec![vestings]).unwrap();
+
+    let mut total_issuance: Balance = 0u128;
+    let balances = balances_configs
+        .into_iter()
+        .flat_map(|bc| bc.balances)
+        .fold(BTreeMap::<AccountId, Balance>::new(), |mut acc, (account_id, amount)| {
+            if let Some(balance) = acc.get_mut(&account_id) {
+                *balance = balance
+                    .checked_add(amount)
+                    .expect("balance cannot overflow when building genesis");
+            } else {
+                acc.insert(account_id.clone(), amount);
+            }
+
+            total_issuance = total_issuance
+                .checked_add(amount)
+                .expect("total insurance cannot overflow when building genesis");
+            acc
+        })
+        .into_iter()
+        .collect();
+
+    assert_eq!(total_issuance, 10_500_000* SHERPAX_UNITS, "total issuance must be equal to 10_500_000 KSX");
+
+    let vestings: Vec<(AccountId, BlockNumber, BlockNumber, Balance)> = vesting_configs.into_iter().flat_map(|vc| vc.vesting).collect();
+    let vesting_liquid = vestings
+        .iter()
+        .map(|(_,_,_,free)|free)
+        .sum::<u128>();
+
+    assert_eq!(vestings.len(), 18015, "total vesting accounts must be equal 18_015.");
+    assert_eq!(vesting_liquid, 943318423258727000000000, "total vesting liquid must be equal 943_318.423258727 KSX");
+
+    (balances, vestings)
+}
+
+fn config_from_json_bytes<T: DeserializeOwned>(bytes: Vec<Vec<u8>>) -> Result<Vec<T>, String> {
+    let mut configs = vec![];
+
+    for raw in bytes {
+        let config = serde_json::from_slice(&raw)
+            .map_err(|e| format!("Error parsing config file: {}", e))?;
+
+        configs.push(config)
+    }
+
+    Ok(configs)
 }
