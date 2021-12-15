@@ -22,7 +22,6 @@ use frame_support::{
     traits::{
         fungibles::{Inspect, Mutate},
         tokens::WithdrawConsequence,
-        Get,
     },
 };
 use frame_system::ensure_root;
@@ -60,9 +59,6 @@ pub mod pallet {
     pub trait Config: frame_system::Config + pallet_assets::Config {
         /// The overarching event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
-        /// Native asset Id.
-        type NativeAssetId: Get<Self::AssetId>;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
@@ -282,8 +278,6 @@ impl<T: Config> Pallet<T> {
         asset_id: T::AssetId,
         balance: T::Balance,
     ) -> DispatchResult {
-        Self::ensure_not_native_asset(&asset_id)?;
-
         info!(
             target: "runtime::gateway::records",
             "[deposit] who:{:?}, id:{:?}, balance:{:?}",
@@ -306,7 +300,6 @@ impl<T: Config> Pallet<T> {
         addr: AddrStr,
         ext: Memo,
     ) -> DispatchResult {
-        Self::ensure_not_native_asset(&asset_id)?;
         Self::ensure_withdrawal_available_balance(who, asset_id, balance)?;
 
         let id = Self::id();
@@ -648,14 +641,6 @@ impl<T: Config> Pallet<T> {
 
     pub fn withdrawal_state_insert(id: WithdrawalRecordId, state: WithdrawalState) {
         WithdrawalStateOf::<T>::insert(id, state)
-    }
-
-    pub fn ensure_not_native_asset(asset_id: &T::AssetId) -> DispatchResult {
-        ensure!(
-            *asset_id != T::NativeAssetId::get(),
-            Error::<T>::InvalidAssetId
-        );
-        Ok(())
     }
 
     /// Returns the chain of given asset `asset_id`.

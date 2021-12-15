@@ -50,7 +50,7 @@ fn load_spec(
         "benchmarks" => {
             #[cfg(feature = "runtime-benchmarks")]
             {
-                Box::new(chain_spec::benchmarks_config(para_id)?)
+                Ok(Box::new(chain_spec::benchmarks_config(para_id)?))
             }
             #[cfg(not(feature = "runtime-benchmarks"))]
             {

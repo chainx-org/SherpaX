@@ -438,5 +438,5 @@ benchmarks_instance_pallet! {
         assert_last_event::<T, I>(Event::ApprovalCancelled(id, caller, delegate).into());
     }
 
-    impl_benchmark_test_suite!(Assets, crate::mock::new_test_ext(), crate::mock::Test)
+    // impl_benchmark_test_suite!(Assets, crate::mock::new_test_ext(), crate::mock::Test)
 }

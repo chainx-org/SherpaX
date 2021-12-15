@@ -116,7 +116,7 @@ pub fn benchmarks_config(id: ParaId) -> Result<ChainSpec, String> {
                 vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
                 id,
                 btc_genesis_params(include_str!("../res/btc_genesis_params_testnet.json")),
-                crate::bitcoin::local_testnet_trustees(),
+                crate::bitcoin::benchmarks_trustees(),
             )
         },
         vec![],

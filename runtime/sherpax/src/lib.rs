@@ -31,7 +31,7 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{AccountIdLookup, BlakeTwo256, Block as BlockT},
     transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, DispatchError,
+    ApplyExtrinsicResult, DispatchError, RuntimeString,
 };
 
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
@@ -420,13 +420,11 @@ impl pallet_elections_phragmen::Config for Runtime {
 }
 
 parameter_types! {
-    pub const NativeAssetId: AssetId = 0;
     pub const BtcAssetId: AssetId = 1;
 }
 
 impl xpallet_gateway_records::Config for Runtime {
     type Event = Event;
-    type NativeAssetId = NativeAssetId;
     type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
 }
 
