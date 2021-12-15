@@ -114,7 +114,6 @@ parameter_types! {
 
 impl Config for Test {
     type Event = ();
-    type NativeAssetId = NativeAssetId;
     type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Test>;
 }
 

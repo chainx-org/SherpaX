@@ -209,7 +209,6 @@ parameter_types! {
 }
 
 impl xpallet_gateway_records::Config for Test {
-    type NativeAssetId = NativeAssetId;
     type Event = ();
     type WeightInfo = ();
 }

@@ -213,6 +213,31 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Automatic trust transfer from relayer.
+        ///
+        /// Since the time of the function exectution only have 0.5 s during
+        /// the initialization of parachain, the action of the trust election
+        /// is not supported, so the automatic trust election is triggered by
+        /// the Relayer.
+        ///
+        /// This is called by the relayer and root.
+        #[pallet::weight(T::BlockWeights::get().max_block)]
+        pub fn auto_trustee_election(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+            match ensure_signed(origin.clone()) {
+                Ok(who) => {
+                    if who != Self::relayer() {
+                        return Err(Error::<T>::InvalidRelayer.into());
+                    }
+                }
+                Err(_) => {
+                    ensure_root(origin)?;
+                }
+            };
+
+            Self::do_trustee_election();
+            Ok(Pays::No.into())
+        }
+
         /// Set the state of withdraw record by the trustees.
         #[pallet::weight(< T as Config >::WeightInfo::set_withdrawal_state())]
         pub fn set_withdrawal_state(
@@ -270,6 +295,16 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_root(origin)?;
             TrusteeTransitionDuration::<T>::put(duration);
+            Ok(())
+        }
+
+        /// Set relayer.
+        ///
+        /// This is a root-only operation.
+        #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin())]
+        pub fn set_relayer(origin: OriginFor<T>, relayer: T::AccountId) -> DispatchResult {
+            ensure_root(origin)?;
+            Relayer::<T>::put(relayer);
             Ok(())
         }
 
@@ -351,6 +386,8 @@ pub mod pallet {
         NotTrusteePreselectedMember,
         /// invalid public key
         InvalidPublicKey,
+        /// invalid relayer
+        InvalidRelayer,
     }
 
     #[pallet::storage]
@@ -361,6 +398,10 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin)]
     pub type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn relayer)]
+    pub type Relayer<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn agg_pubkey_info)]
