@@ -204,7 +204,7 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
 
         let sig_num = max(
             two_thirds_unsafe(trustees.len() as u32),
-            compute_min_threshold(trustees.len(), MAX_TAPROOT_NODES) as u32,
+            compute_min_threshold(trustees.len() as u32, MAX_TAPROOT_NODES) as u32,
         );
 
         // Set hot address for taproot threshold address
@@ -213,7 +213,7 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
             .map(|k| k.try_into().map_err(|_| Error::<T>::InvalidPublicKey))
             .collect::<Result<Vec<_>, Error<T>>>()?;
 
-        let mast = Mast::new(pks, sig_num as usize).map_err(|_| Error::<T>::InvalidAddress)?;
+        let mast = Mast::new(pks, sig_num).map_err(|_| Error::<T>::InvalidAddress)?;
 
         let threshold_addr: Address = mast
             .generate_address(&Pallet::<T>::network_id().to_string())
@@ -232,7 +232,7 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
                 .into();
             let mut accounts = vec![];
             for index in mast.indexs[i].iter() {
-                accounts.push(trustees[index - 1].clone())
+                accounts.push(trustees[(index - 1) as usize].clone())
             }
             agg_pubkeys.push(script.into());
             personal_accounts.push(accounts);
