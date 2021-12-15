@@ -20,12 +20,6 @@ pub trait ChainT<AssetId, Balance: Default> {
     }
 }
 
-impl<AssetId, Balance: Default> ChainT<AssetId, Balance> for () {
-    fn chain() -> Chain {
-        Chain::Bitcoin
-    }
-}
-
 /// Hooks for doing stuff when the assets are minted/moved/destroyed.
 pub trait OnAssetChanged<AssetId, AccountId, Balance> {
     /// Triggered before issuing the fresh assets.

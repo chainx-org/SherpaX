@@ -3209,6 +3209,9 @@ name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+dependencies = [
+ "spin",
+]
 
 [[package]]
 name = "lazycell"
@@ -3752,7 +3755,7 @@ dependencies = [
 [[package]]
 name = "libsecp256k1"
 version = "0.7.0"
-source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#19a505f6d9a757322c9fea3f0aab4b5a927840d3"
+source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
 dependencies = [
  "arrayref",
  "base64 0.13.0",
@@ -3770,7 +3773,7 @@ dependencies = [
 [[package]]
 name = "libsecp256k1"
 version = "0.7.0"
-source = "git+https://github.com/chainx-org/libsecp256k1.git#7b798cd94b5e797881e353477a35f06e95efe91e"
+source = "git+https://github.com/chainx-org/libsecp256k1.git#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
 dependencies = [
  "arrayref",
  "base64 0.13.0",
@@ -3810,7 +3813,7 @@ dependencies = [
 [[package]]
 name = "libsecp256k1-core"
 version = "0.3.0"
-source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#19a505f6d9a757322c9fea3f0aab4b5a927840d3"
+source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
 dependencies = [
  "crunchy",
  "digest 0.9.0",
@@ -3822,7 +3825,7 @@ dependencies = [
 [[package]]
 name = "libsecp256k1-core"
 version = "0.3.0"
-source = "git+https://github.com/chainx-org/libsecp256k1.git#7b798cd94b5e797881e353477a35f06e95efe91e"
+source = "git+https://github.com/chainx-org/libsecp256k1.git#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
 dependencies = [
  "crunchy",
  "digest 0.9.0",
@@ -3852,7 +3855,7 @@ dependencies = [
 [[package]]
 name = "libsecp256k1-gen-ecmult"
 version = "0.3.0"
-source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#19a505f6d9a757322c9fea3f0aab4b5a927840d3"
+source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
 dependencies = [
  "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
 ]
@@ -3860,7 +3863,7 @@ dependencies = [
 [[package]]
 name = "libsecp256k1-gen-ecmult"
 version = "0.3.0"
-source = "git+https://github.com/chainx-org/libsecp256k1.git#7b798cd94b5e797881e353477a35f06e95efe91e"
+source = "git+https://github.com/chainx-org/libsecp256k1.git#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
 dependencies = [
  "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
 ]
@@ -3886,7 +3889,7 @@ dependencies = [
 [[package]]
 name = "libsecp256k1-gen-genmult"
 version = "0.3.0"
-source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#19a505f6d9a757322c9fea3f0aab4b5a927840d3"
+source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
 dependencies = [
  "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
 ]
@@ -3894,7 +3897,7 @@ dependencies = [
 [[package]]
 name = "libsecp256k1-gen-genmult"
 version = "0.3.0"
-source = "git+https://github.com/chainx-org/libsecp256k1.git#7b798cd94b5e797881e353477a35f06e95efe91e"
+source = "git+https://github.com/chainx-org/libsecp256k1.git#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
 dependencies = [
  "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
 ]
@@ -4501,11 +4504,12 @@ dependencies = [
 [[package]]
 name = "musig2"
 version = "0.1.0"
-source = "git+https://github.com/chainx-org/Musig2?branch=lib#8a61ecb468823e5b492d12efc83efc7561453053"
+source = "git+https://github.com/chainx-org/Musig2?branch=lib#1b665dfb33e3fe28fc9dd4b9f3a9969825992300"
 dependencies = [
  "arrayref",
  "digest 0.9.0",
  "hex",
+ "lazy_static",
  "libsecp256k1 0.7.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
  "log",
  "parity-scale-codec",
