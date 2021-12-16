@@ -181,7 +181,7 @@ pub mod pallet {
         /// # <weight>
         /// Since this is a root call and will go into trustee election, we assume full block for now.
         /// # </weight>
-        #[pallet::weight(T::BlockWeights::get().max_block)]
+        #[pallet::weight(10000)]
         pub fn move_trust_to_black_room(
             origin: OriginFor<T>,
             trustees: Option<Vec<T::AccountId>>,
@@ -221,7 +221,7 @@ pub mod pallet {
         /// the Relayer.
         ///
         /// This is called by the relayer and root.
-        #[pallet::weight(T::BlockWeights::get().max_block)]
+        #[pallet::weight(10000)]
         pub fn auto_trustee_election(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
             match ensure_signed(origin.clone()) {
                 Ok(who) => {
