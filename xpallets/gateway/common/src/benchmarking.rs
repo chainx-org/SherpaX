@@ -89,7 +89,7 @@ benchmarks! {
         create_default_asset::<T>(caller.clone());
         let amount: T::Balance = 1_000_000_000u32.into();
         XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
-        let withdrawal = 500u32.into();
+        let withdrawal = 100_000_000u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
     }: _(RawOrigin::Signed(caller.clone()), T::BtcAssetId::get(), withdrawal, addr, memo)
@@ -107,7 +107,7 @@ benchmarks! {
         let amount: T::Balance = 1_000_000_000_u32.into();
         XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
 
-        let withdrawal = 500u32.into();
+        let withdrawal = 100_000_000u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
         Pallet::<T>::withdraw(
@@ -172,7 +172,7 @@ benchmarks! {
 
         let amount: T::Balance = 1_000_000_000u32.into();
         XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
-        let withdrawal = 500u32.into();
+        let withdrawal = 100_000_000u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
         Pallet::<T>::withdraw(

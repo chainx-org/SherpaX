@@ -4,7 +4,7 @@ use codec::{Decode, Encode};
 use frame_benchmarking::{benchmarks, whitelisted_caller};
 use frame_support::traits::Get;
 use frame_system::RawOrigin;
-use sp_runtime::{traits::StaticLookup, AccountId32, SaturatedConversion};
+use sp_runtime::{traits::StaticLookup, AccountId32};
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 use xp_assets_registrar::Chain;
@@ -101,7 +101,6 @@ benchmarks! {
         let header = generate_blocks_63290_63310()[&insert_height];
         let hash = header.hash();
         let header_raw = serialization::serialize(&header).into();
-        let amount: T::Balance = 1000u32.into();
     }: _(RawOrigin::Signed(receiver), header_raw)
     verify {
         assert!(Pallet::<T>::headers(&hash).is_some());
@@ -119,8 +118,11 @@ benchmarks! {
         let tx_raw = serialization::serialize_with_flags(&tx, SERIALIZE_TRANSACTION_WITNESS).into();
         let prev_tx_raw = serialization::serialize_with_flags(&prev_tx, SERIALIZE_TRANSACTION_WITNESS).into();
 
-        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), 100_000u32.into()).unwrap();
-        XGatewayRecords::<T>::withdraw(&caller, T::BtcAssetId::get(), 50_000u32.into(), b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
+        let amount: T::Balance = 1_000_000_000u32.into();
+        let withdrawal = 550000u32.into();
+
+        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
+        XGatewayRecords::<T>::withdraw(&caller, T::BtcAssetId::get(), withdrawal, b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
 
         XGatewayRecords::<T>::withdrawal_state_insert(0, WithdrawalState::Processing);
 
@@ -160,8 +162,11 @@ benchmarks! {
         };
         let spent_outputs_raw = serialization::serialize(&transaction_output).into();
 
-        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), 100_000u32.saturated_into()).unwrap();
-        XGatewayRecords::<T>::withdraw(&caller, T::BtcAssetId::get(), 50_000u32.saturated_into(), b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
+        let amount: T::Balance = 1_000_000_000u32.into();
+        let withdrawal = 550000u32.into();
+
+        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
+        XGatewayRecords::<T>::withdraw(&caller, T::BtcAssetId::get(), withdrawal, b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
 
         XGatewayRecords::<T>::withdrawal_state_insert(0, WithdrawalState::Applying);
 
