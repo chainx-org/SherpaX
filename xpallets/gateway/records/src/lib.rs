@@ -13,7 +13,7 @@ pub mod traits;
 pub mod types;
 pub mod weights;
 
-use sp_std::{collections::btree_map::BTreeMap, prelude::*};
+use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 
 use frame_support::{
     dispatch::{DispatchError, DispatchResult},
@@ -230,7 +230,7 @@ pub mod pallet {
                     let miner = T::Lookup::unlookup(miner.clone());
                     let _ = pallet_assets::Pallet::<T>::force_create(
                         RawOrigin::Root.into(),
-                        asset_id.clone(),
+                        *asset_id,
                         miner,
                         true,
                         1u32.into(),
@@ -287,7 +287,7 @@ impl<T: Config> Pallet<T> {
             "[deposit] who:{:?}, id:{:?}, balance:{:?}",
             who, asset_id, balance
         );
-        pallet_assets::Pallet::<T>::mint_into(asset_id, &who, balance)?;
+        pallet_assets::Pallet::<T>::mint_into(asset_id, who, balance)?;
         Self::deposit_event(Event::<T>::Deposited(who.clone(), asset_id, balance));
         Ok(())
     }
@@ -593,16 +593,14 @@ impl<T: Config> Pallet<T> {
     fn unlock(who: &T::AccountId, asset_id: T::AssetId, value: T::Balance) -> DispatchResult {
         Locks::<T>::try_mutate_exists(who, asset_id, |amount| match amount {
             None => Err(Error::<T>::InsufficientLockedAssets),
-            Some(acc) => {
-                if *acc < value {
-                    Err(Error::<T>::InsufficientLockedAssets)
-                } else if *acc == value {
+            Some(acc) => match (*acc).cmp(&value) {
+                Ordering::Less => Err(Error::<T>::InsufficientLockedAssets),
+                Ordering::Equal => {
                     *amount = None;
                     Ok(None)
-                } else {
-                    Ok(acc.checked_sub(&value))
                 }
-            }
+                Ordering::Greater => Ok(acc.checked_sub(&value)),
+            },
         })?;
         Ok(())
     }

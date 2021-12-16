@@ -173,7 +173,7 @@ fn test_create_taproot_address() {
             .into_iter()
             .map(|k| k.try_into().unwrap())
             .collect::<Vec<_>>();
-        let threshold_addr: Address = Mast::new(pks, 2_usize)
+        let threshold_addr: Address = Mast::new(pks, 2_u32)
             .unwrap()
             .generate_address(&crate::Pallet::<Test>::network_id().to_string())
             .unwrap()
