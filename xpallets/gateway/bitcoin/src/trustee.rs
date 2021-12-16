@@ -35,7 +35,6 @@ use xpallet_gateway_common::{
 use crate::tx::validator::parse_check_taproot_tx;
 use crate::{
     log,
-    tx::{ensure_identical, validator::parse_and_check_signed_tx},
     types::{BtcWithdrawalProposal, VoteResult},
     Config, Error, Event, Pallet, WithdrawalProposal,
 };
@@ -292,88 +291,6 @@ impl<T: Config> Pallet<T> {
         }
     }
 
-    pub fn apply_create_withdraw(
-        who: T::AccountId,
-        tx: Transaction,
-        withdrawal_id_list: Vec<u32>,
-    ) -> DispatchResult {
-        let withdraw_amount = Self::max_withdrawal_count();
-        if withdrawal_id_list.len() > withdraw_amount as usize {
-            log!(
-                error,
-                "[apply_create_withdraw] Current list (len:{}) exceeding the max withdrawal amount {}",
-                withdrawal_id_list.len(), withdraw_amount
-            );
-            return Err(Error::<T>::WroungWithdrawalCount.into());
-        }
-        // remove duplicate
-        let mut withdrawal_id_list = withdrawal_id_list;
-        withdrawal_id_list.sort_unstable();
-        withdrawal_id_list.dedup();
-
-        check_withdraw_tx::<T>(&tx, &withdrawal_id_list)?;
-        log!(
-            info,
-            "[apply_create_withdraw] Create new withdraw, id_list:{:?}",
-            withdrawal_id_list
-        );
-
-        // check sig
-        let sigs_count = parse_and_check_signed_tx::<T>(&tx)?;
-        let apply_sig = if sigs_count == 0 {
-            false
-        } else if sigs_count == 1 {
-            true
-        } else {
-            log!(
-                error,
-                "[apply_create_withdraw] The sigs for tx could not more than 1, current sigs:{}",
-                sigs_count
-            );
-            return Err(Error::<T>::InvalidSignCount.into());
-        };
-
-        xpallet_gateway_records::Pallet::<T>::process_withdrawals(
-            &withdrawal_id_list,
-            Chain::Bitcoin,
-        )?;
-
-        let mut proposal = BtcWithdrawalProposal::new(
-            VoteResult::Unfinish,
-            withdrawal_id_list.clone(),
-            tx,
-            Vec::new(),
-        );
-
-        log!(
-            info,
-            "[apply_create_withdraw] Pass the legality check of withdrawal"
-        );
-
-        Self::deposit_event(Event::<T>::WithdrawalProposalCreated(
-            who.clone(),
-            withdrawal_id_list,
-        ));
-
-        if apply_sig {
-            log!(
-                info,
-                "[apply_create_withdraw] Apply sign after creating proposal"
-            );
-            // due to `SignWithdrawalProposal` event should after `WithdrawalProposalCreated`, thus this function should after proposal
-            // but this function would have an error return, this error return should not meet.
-            if insert_trustee_vote_state::<T>(true, &who, &mut proposal.trustee_list).is_err() {
-                // should not be error in this function, if hit this branch, panic to clear all modification
-                // TODO change to revoke in future
-                panic!("insert_trustee_vote_state should not be error")
-            }
-        }
-
-        WithdrawalProposal::<T>::put(proposal);
-
-        Ok(())
-    }
-
     pub fn apply_create_taproot_withdraw(
         who: T::AccountId,
         tx: Transaction,
@@ -433,117 +350,6 @@ impl<T: Config> Pallet<T> {
         Ok(())
     }
 
-    pub fn apply_sig_withdraw(who: T::AccountId, tx: Option<Transaction>) -> DispatchResult {
-        let mut proposal: BtcWithdrawalProposal<T::AccountId> =
-            Self::withdrawal_proposal().ok_or(Error::<T>::NoProposal)?;
-
-        if proposal.sig_state == VoteResult::Finish {
-            log!(error, "[apply_sig_withdraw] Proposal is on FINISH state, can't sign for this proposal:{:?}", proposal);
-            return Err(Error::<T>::RejectSig.into());
-        }
-
-        let (sig_num, total) = get_sig_num::<T>();
-        match tx {
-            Some(tx) => {
-                // check this tx is same to proposal, just check input and output, not include sigs
-                ensure_identical::<T>(&tx, &proposal.tx)?;
-
-                // sign
-                // check first and get signatures from commit transaction
-                let sigs_count = parse_and_check_signed_tx::<T>(&tx)?;
-                if sigs_count == 0 {
-                    log!(error, "[apply_sig_withdraw] Tx sig should not be zero, zero is the source tx without any sig, tx{:?}", tx);
-                    return Err(Error::<T>::InvalidSignCount.into());
-                }
-
-                let confirmed_count = proposal
-                    .trustee_list
-                    .iter()
-                    .filter(|(_, vote)| *vote)
-                    .count() as u32;
-
-                if sigs_count != confirmed_count + 1 {
-                    log!(
-                        error,
-                        "[apply_sig_withdraw] Need to sign on the latest signature results, sigs count:{}, confirmed count:{}",
-                        sigs_count, confirmed_count
-                    );
-                    return Err(Error::<T>::InvalidSignCount.into());
-                }
-
-                insert_trustee_vote_state::<T>(true, &who, &mut proposal.trustee_list)?;
-                // check required count
-                // required count should be equal or more than (2/3)*total
-                // e.g. total=6 => required=2*6/3=4, thus equal to 4 should mark as finish
-                if sigs_count == sig_num {
-                    // mark as finish, can't do anything for this proposal
-                    log!(
-                        info,
-                        "[apply_sig_withdraw] Signature completed:{}",
-                        sigs_count
-                    );
-                    proposal.sig_state = VoteResult::Finish;
-
-                    Self::deposit_event(Event::<T>::WithdrawalProposalCompleted(tx.hash()))
-                } else {
-                    proposal.sig_state = VoteResult::Unfinish;
-                }
-                // update tx
-                proposal.tx = tx;
-            }
-            None => {
-                // reject
-                insert_trustee_vote_state::<T>(false, &who, &mut proposal.trustee_list)?;
-
-                let reject_count = proposal
-                    .trustee_list
-                    .iter()
-                    .filter(|(_, vote)| !(*vote))
-                    .count() as u32;
-
-                // reject count just need  < (total-required) / total
-                // e.g. total=6 => required=2*6/3=4, thus, reject should more than (6-4) = 2
-                // > 2 equal to total - required + 1 = 6-4+1 = 3
-                let need_reject = total - sig_num + 1;
-                if reject_count == need_reject {
-                    log!(
-                        info,
-                        "[apply_sig_withdraw] {}/{} opposition, clear withdrawal proposal",
-                        reject_count,
-                        total
-                    );
-
-                    // release withdrawal for applications
-                    for id in proposal.withdrawal_id_list.iter() {
-                        let _ = xpallet_gateway_records::Pallet::<T>::recover_withdrawal(
-                            *id,
-                            Chain::Bitcoin,
-                        );
-                    }
-
-                    WithdrawalProposal::<T>::kill();
-
-                    Self::deposit_event(Event::<T>::WithdrawalProposalDropped(
-                        reject_count as u32,
-                        sig_num as u32,
-                        proposal.withdrawal_id_list,
-                    ));
-                    return Ok(());
-                }
-            }
-        }
-
-        log!(
-            info,
-            "[apply_sig_withdraw] Current sig state:{:?}, trustee vote:{:?}",
-            proposal.sig_state,
-            proposal.trustee_list
-        );
-
-        WithdrawalProposal::<T>::put(proposal);
-        Ok(())
-    }
-
     pub fn force_replace_withdraw_tx(tx: Transaction) -> DispatchResult {
         let mut proposal: BtcWithdrawalProposal<T::AccountId> =
             Self::withdrawal_proposal().ok_or(Error::<T>::NoProposal)?;
@@ -557,13 +363,10 @@ impl<T: Config> Pallet<T> {
         let current_withdrawal_list = &proposal.withdrawal_id_list;
         check_withdraw_tx_impl::<T>(&tx, current_withdrawal_list)?;
 
-        // sign
-        // check first and get signatures from commit transaction
-        let sigs_count = parse_and_check_signed_tx::<T>(&tx)?;
-        ensure!(
-            proposal.trustee_list.len() as u32 == sigs_count,
-            Error::<T>::InvalidSignCount
-        );
+        // check sig
+        // if parse_check_taproot_tx::<T>(&tx, &spent_outputs).is_err() {
+        //     return Err(Error::<T>::VerifySignFailed.into());
+        // };
 
         // replace old transaction
         proposal.tx = tx;

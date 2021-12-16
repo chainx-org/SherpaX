@@ -39,6 +39,7 @@ pub trait WeightInfo {
     fn remove_proposal() -> Weight;
     fn set_btc_withdrawal_fee() -> Weight;
     fn set_btc_deposit_limit() -> Weight;
+    fn force_replace_proposal_tx() -> Weight;
 }
 
 /// Weights for xpallet_gateway_bitcoin using the Substrate node and recommended hardware.
@@ -79,6 +80,11 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
     fn set_btc_deposit_limit() -> Weight {
         (2_769_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
+    fn force_replace_proposal_tx() -> Weight {
+        (143_979_000 as Weight)
+            .saturating_add(T::DbWeight::get().reads(8 as Weight))
+            .saturating_add(T::DbWeight::get().writes(1 as Weight))
+    }
 }
 
 // For backwards compatibility and tests
@@ -117,5 +123,10 @@ impl WeightInfo for () {
     }
     fn set_btc_deposit_limit() -> Weight {
         (2_769_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
+    }
+    fn force_replace_proposal_tx() -> Weight {
+        (143_979_000 as Weight)
+            .saturating_add(RocksDbWeight::get().reads(8 as Weight))
+            .saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
 }

@@ -146,32 +146,6 @@ pub mod pallet {
         }
 
         /// Trustee create a proposal for a withdrawal list. `tx` is the proposal withdrawal transaction.
-        /// The `tx` would have a sign for current creator or do not have sign. if creator do not sign
-        /// for this transaction, he could do `sign_withdraw_tx` later.
-        #[pallet::weight(<T as Config>::WeightInfo::create_withdraw_tx())]
-        pub fn create_withdraw_tx(
-            origin: OriginFor<T>,
-            withdrawal_id_list: Vec<u32>,
-            tx: Vec<u8>,
-        ) -> DispatchResult {
-            let from = ensure_signed(origin)?;
-            // committer must be in the trustee list
-            Self::ensure_trustee(&from)?;
-
-            let tx = Self::deserialize_tx(tx.as_slice())?;
-            log!(
-                debug,
-                "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}",
-                from,
-                withdrawal_id_list,
-                tx
-            );
-
-            Self::apply_create_withdraw(from, tx, withdrawal_id_list)?;
-            Ok(())
-        }
-
-        /// Trustee create a proposal for a withdrawal list. `tx` is the proposal withdrawal transaction.
         #[pallet::weight(<T as Config>::WeightInfo::create_taproot_withdraw_tx())]
         pub fn create_taproot_withdraw_tx(
             origin: OriginFor<T>,
@@ -188,30 +162,6 @@ pub mod pallet {
             // log!(debug, "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}, spent_outputs: {:?}", from, withdrawal_id_list, tx, spent_outputs);
 
             Self::apply_create_taproot_withdraw(from, tx, withdrawal_id_list, spent_outputs)?;
-            Ok(())
-        }
-
-        /// Trustees sign a withdrawal proposal. If `tx` is None, means this trustee vote to reject
-        /// this proposal. If `tx` is Some(), the inner part must be a valid transaction with this
-        /// trustee signature.
-        #[pallet::weight(<T as Config>::WeightInfo::sign_withdraw_tx())]
-        pub fn sign_withdraw_tx(origin: OriginFor<T>, tx: Option<Vec<u8>>) -> DispatchResult {
-            let from = ensure_signed(origin)?;
-            Self::ensure_trustee(&from)?;
-
-            let tx = if let Some(raw_tx) = tx {
-                Some(Self::deserialize_tx(raw_tx.as_slice())?)
-            } else {
-                None
-            };
-            log!(
-                debug,
-                "[sign_withdraw_tx] from:{:?}, vote_tx:{:?}",
-                from,
-                tx
-            );
-
-            Self::apply_sig_withdraw(from, tx)?;
             Ok(())
         }
 
@@ -260,22 +210,6 @@ pub mod pallet {
             ensure_root(origin)?;
             WithdrawalProposal::<T>::kill();
             Ok(())
-        }
-
-        /// Dangerous! force replace current withdrawal proposal transaction. Please check business
-        /// logic before do this operation. Must make sure current proposal transaction is invalid
-        /// (e.g. when created a proposal, the inputs are not in double spend state, but after other
-        /// trustees finish signing, the inputs are in double spend due other case. Thus could create
-        /// a new valid transaction which outputs same to current proposal to replace current proposal
-        /// transaction.)
-        #[pallet::weight(<T as Config>::WeightInfo::force_replace_proposal_tx())]
-        pub fn force_replace_proposal_tx(origin: OriginFor<T>, tx: Vec<u8>) -> DispatchResult {
-            T::TrusteeOrigin::try_origin(origin)
-                .map(|_| ())
-                .or_else(ensure_root)?;
-            let tx = Self::deserialize_tx(tx.as_slice())?;
-            log!(debug, "[force_replace_proposal_tx] new_tx:{:?}", tx);
-            Self::force_replace_withdraw_tx(tx)
         }
 
         /// Set bitcoin withdrawal fee
