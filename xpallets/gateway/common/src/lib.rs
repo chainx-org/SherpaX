@@ -181,7 +181,7 @@ pub mod pallet {
         /// # <weight>
         /// Since this is a root call and will go into trustee election, we assume full block for now.
         /// # </weight>
-        #[pallet::weight(10000)]
+        #[pallet::weight(100_000_000u64)]
         pub fn move_trust_to_black_room(
             origin: OriginFor<T>,
             trustees: Option<Vec<T::AccountId>>,

@@ -435,34 +435,6 @@ pub(crate) fn create_multi_address<T: Config>(
     })
 }
 
-/// Update the signature status of trustee
-/// state: false -> Veto signature, true -> Consent signature
-/// only allow inseRelayedTx once
-fn insert_trustee_vote_state<T: Config>(
-    state: bool,
-    who: &T::AccountId,
-    trustee_list: &mut Vec<(T::AccountId, bool)>,
-) -> DispatchResult {
-    match trustee_list.iter_mut().find(|info| info.0 == *who) {
-        Some(_) => {
-            // if account is exist, override state
-            log!(error, "[insert_trustee_vote_state] {:?} has already vote for this withdrawal proposal, old vote:{}", who, state);
-            return Err(Error::<T>::DuplicateVote.into());
-        }
-        None => {
-            trustee_list.push((who.clone(), state));
-            log!(
-                debug,
-                "[insert_trustee_vote_state] Insert new vote, who:{:?}, state:{}",
-                who,
-                state
-            );
-        }
-    }
-    Pallet::<T>::deposit_event(Event::<T>::WithdrawalProposalVoted(who.clone(), state));
-    Ok(())
-}
-
 /// Check that the cash withdrawal transaction is correct
 fn check_withdraw_tx<T: Config>(tx: &Transaction, withdrawal_id_list: &[u32]) -> DispatchResult {
     match Pallet::<T>::withdrawal_proposal() {
