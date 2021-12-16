@@ -204,12 +204,12 @@ impl pallet_assets::Config for Test {
 
 // assets
 parameter_types! {
-    pub const NativeAssetId: AssetId = 10;
     pub const BtcAssetId: AssetId = 0;
 }
 
 impl xpallet_gateway_records::Config for Test {
     type Event = ();
+    type BtcAssetId = BtcAssetId;
     type WeightInfo = ();
 }
 
@@ -233,7 +233,6 @@ impl UnixTime for Timestamp {
 
 impl xpallet_gateway_bitcoin::Config for Test {
     type Event = ();
-    type BtcAssetId = BtcAssetId;
     type Currency = Balances;
     type UnixTime = Timestamp;
     type AccountExtractor = ();

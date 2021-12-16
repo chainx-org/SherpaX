@@ -44,7 +44,7 @@ pub use runtime_common::{AccountId, Balance, Block, BlockNumber, Hash, Header, I
 pub struct SherpaXRuntimeExecutor;
 
 impl sc_executor::NativeExecutionDispatch for SherpaXRuntimeExecutor {
-    type ExtendHostFunctions = ();
+    type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 
     fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
         sherpax_runtime::api::dispatch(method, data)

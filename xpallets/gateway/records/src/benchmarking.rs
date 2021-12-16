@@ -1,6 +1,7 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
 use frame_benchmarking::{benchmarks, whitelisted_caller};
+use frame_support::traits::Get;
 use frame_system::RawOrigin;
 
 use super::*;
@@ -10,12 +11,12 @@ fn create_default_asset<T: Config>(who: T::AccountId) {
     let miner = T::Lookup::unlookup(who);
     let _ = pallet_assets::Pallet::<T>::force_create(
         RawOrigin::Root.into(),
-        T::AssetId::default(),
+        T::BtcAssetId::get(),
         miner,
         true,
         1u32.into(),
     );
-    AssetChainOf::<T>::insert(T::AssetId::default(), Chain::Bitcoin);
+    AssetChainOf::<T>::insert(T::BtcAssetId::get(), Chain::Bitcoin);
 }
 
 fn deposit<T: Config>(who: T::AccountId, amount: T::Balance) {
@@ -24,7 +25,7 @@ fn deposit<T: Config>(who: T::AccountId, amount: T::Balance) {
     let _ = XGatewayRecords::<T>::root_deposit(
         RawOrigin::Root.into(),
         receiver_lookup,
-        T::AssetId::default(),
+        T::BtcAssetId::get(),
         amount,
     );
 }
@@ -38,7 +39,7 @@ fn deposit_and_withdraw<T: Config>(who: T::AccountId, amount: T::Balance) {
     XGatewayRecords::<T>::root_withdraw(
         RawOrigin::Root.into(),
         receiver_lookup,
-        T::AssetId::default(),
+        T::BtcAssetId::get(),
         withdrawal,
         addr,
         memo,
@@ -55,9 +56,9 @@ benchmarks! {
         let receiver: T::AccountId = whitelisted_caller();
         let receiver_lookup: <T::Lookup as StaticLookup>::Source = T::Lookup::unlookup(receiver.clone());
         let amount: T::Balance = 1000u32.into();
-    }: _(RawOrigin::Root, receiver_lookup, T::AssetId::default(), amount)
+    }: _(RawOrigin::Root, receiver_lookup, T::BtcAssetId::get(), amount)
     verify {
-        assert_eq!(pallet_assets::Pallet::<T>::balance(T::AssetId::default(), receiver), amount);
+        assert_eq!(pallet_assets::Pallet::<T>::balance(T::BtcAssetId::get(), receiver), amount);
     }
 
     root_withdraw {
@@ -69,7 +70,7 @@ benchmarks! {
         let withdrawal = amount - 500u32.into();
         let addr = b"3LFSUKkP26hun42J1Dy6RATsbgmBJb27NF".to_vec();
         let memo = b"memo".to_vec().into();
-    }: _(RawOrigin::Root, receiver_lookup, T::AssetId::default(), withdrawal, addr, memo)
+    }: _(RawOrigin::Root, receiver_lookup, T::BtcAssetId::get(), withdrawal, addr, memo)
     verify {
         assert!(XGatewayRecords::<T>::pending_withdrawals(0).is_some());
         assert_eq!(XGatewayRecords::<T>::state_of(0), Some(WithdrawalState::Applying));

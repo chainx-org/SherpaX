@@ -88,8 +88,6 @@ pub mod pallet {
         frame_system::Config + pallet_assets::Config + xpallet_gateway_records::Config
     {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-        #[pallet::constant]
-        type BtcAssetId: Get<Self::AssetId>;
         type Currency: ReservableCurrency<Self::AccountId>
             + LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
         type UnixTime: UnixTime;

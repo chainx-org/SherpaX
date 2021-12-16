@@ -2,6 +2,7 @@
 
 use codec::{Decode, Encode};
 use frame_benchmarking::benchmarks;
+use frame_support::traits::Get;
 use frame_system::RawOrigin;
 use sp_core::crypto::AccountId32;
 use sp_runtime::traits::StaticLookup;
@@ -19,12 +20,12 @@ fn create_default_asset<T: Config>(who: T::AccountId) {
     let miner = T::Lookup::unlookup(who);
     let _ = pallet_assets::Pallet::<T>::force_create(
         RawOrigin::Root.into(),
-        T::AssetId::default(),
+        T::BtcAssetId::get(),
         miner,
         true,
         1u32.into(),
     );
-    xpallet_gateway_records::AssetChainOf::<T>::insert(T::AssetId::default(), Chain::Bitcoin);
+    xpallet_gateway_records::AssetChainOf::<T>::insert(T::BtcAssetId::get(), Chain::Bitcoin);
 }
 
 fn account<T: Config>(pubkey: &str) -> T::AccountId {
@@ -87,11 +88,11 @@ benchmarks! {
         let caller: T::AccountId = alice::<T>();
         create_default_asset::<T>(caller.clone());
         let amount: T::Balance = 1_000_000_000u32.into();
-        XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
+        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
         let withdrawal = 500u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
-    }: _(RawOrigin::Signed(caller.clone()), T::AssetId::default(), withdrawal, addr, memo)
+    }: _(RawOrigin::Signed(caller.clone()), T::BtcAssetId::get(), withdrawal, addr, memo)
     verify {
         assert!(XGatewayRecords::<T>::pending_withdrawals(0).is_some());
         assert_eq!(
@@ -104,14 +105,14 @@ benchmarks! {
         let caller: T::AccountId = alice::<T>();
         create_default_asset::<T>(caller.clone());
         let amount: T::Balance = 1_000_000_000_u32.into();
-        XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
+        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
 
         let withdrawal = 500u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
         Pallet::<T>::withdraw(
             RawOrigin::Signed(caller.clone()).into(),
-            T::AssetId::default(), withdrawal, addr, memo,
+            T::BtcAssetId::get(), withdrawal, addr, memo,
         )
         .unwrap();
 
@@ -170,13 +171,13 @@ benchmarks! {
         TrusteeMultiSigAddr::<T>::insert(Chain::Bitcoin, caller.clone());
 
         let amount: T::Balance = 1_000_000_000u32.into();
-        XGatewayRecords::<T>::deposit(&caller, T::AssetId::default(), amount).unwrap();
+        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
         let withdrawal = 500u32.into();
         let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
         let memo = b"".to_vec().into();
         Pallet::<T>::withdraw(
             RawOrigin::Signed(caller.clone()).into(),
-            T::AssetId::default(), withdrawal, addr, memo,
+            T::BtcAssetId::get(), withdrawal, addr, memo,
         )
         .unwrap();
         let withdrawal_id: WithdrawalRecordId = 0;

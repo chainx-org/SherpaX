@@ -60,6 +60,10 @@ pub mod pallet {
         /// The overarching event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
+        #[pallet::constant]
+        /// The btc asset id.
+        type BtcAssetId: Get<Self::AssetId>;
+
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
     }

@@ -8995,6 +8995,7 @@ dependencies = [
  "cumulus-primitives-parachain-inherent",
  "derive_more 0.15.0",
  "exit-future 0.1.4",
+ "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures 0.3.17",
  "hex",
