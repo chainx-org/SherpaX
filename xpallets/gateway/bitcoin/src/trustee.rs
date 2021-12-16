@@ -207,14 +207,28 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
         );
 
         // Set hot address for taproot threshold address
-        let pks = hot_keys
+        let hot_pks = hot_keys
             .into_iter()
             .map(|k| k.try_into().map_err(|_| Error::<T>::InvalidPublicKey))
             .collect::<Result<Vec<_>, Error<T>>>()?;
 
-        let mast = Mast::new(pks, sig_num).map_err(|_| Error::<T>::InvalidAddress)?;
+        let hot_mast = Mast::new(hot_pks, sig_num).map_err(|_| Error::<T>::InvalidAddress)?;
 
-        let threshold_addr: Address = mast
+        let hot_threshold_addr: Address = hot_mast
+            .generate_address(&Pallet::<T>::network_id().to_string())
+            .map_err(|_| Error::<T>::InvalidAddress)?
+            .parse()
+            .map_err(|_| Error::<T>::InvalidAddress)?;
+
+        // Set cold address for taproot threshold address
+        let cold_pks = cold_keys
+            .into_iter()
+            .map(|k| k.try_into().map_err(|_| Error::<T>::InvalidPublicKey))
+            .collect::<Result<Vec<_>, Error<T>>>()?;
+
+        let cold_mast = Mast::new(cold_pks, sig_num).map_err(|_| Error::<T>::InvalidAddress)?;
+
+        let cold_threshold_addr: Address = cold_mast
             .generate_address(&Pallet::<T>::network_id().to_string())
             .map_err(|_| Error::<T>::InvalidAddress)?
             .parse()
@@ -223,14 +237,14 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
         // Aggregate public key script and corresponding personal public key index
         let mut agg_pubkeys: Vec<Vec<u8>> = vec![];
         let mut personal_accounts: Vec<Vec<T::AccountId>> = vec![];
-        for (i, p) in mast.person_pubkeys.iter().enumerate() {
+        for (i, p) in hot_mast.person_pubkeys.iter().enumerate() {
             let script: Bytes = Builder::default()
                 .push_bytes(&p.x_coor().to_vec())
                 .push_opcode(Opcode::OP_CHECKSIG)
                 .into_script()
                 .into();
             let mut accounts = vec![];
-            for index in mast.indexs[i].iter() {
+            for index in hot_mast.indexs[i].iter() {
                 accounts.push(trustees[(index - 1) as usize].clone())
             }
             agg_pubkeys.push(script.into());
@@ -238,19 +252,14 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
         }
 
         let hot_trustee_addr_info: BtcTrusteeAddrInfo = BtcTrusteeAddrInfo {
-            addr: threshold_addr.to_string().into_bytes(),
+            addr: hot_threshold_addr.to_string().into_bytes(),
             redeem_script: vec![],
         };
 
-        let cold_trustee_addr_info: BtcTrusteeAddrInfo =
-            create_multi_address::<T>(&cold_keys, sig_num).ok_or_else(|| {
-                log!(
-                    error,
-                    "[generate_trustee_session_info] Create cold_addr error, cold_keys:{:?}",
-                    cold_keys
-                );
-                Error::<T>::GenerateMultisigFailed
-            })?;
+        let cold_trustee_addr_info: BtcTrusteeAddrInfo = BtcTrusteeAddrInfo {
+            addr: cold_threshold_addr.to_string().into_bytes(),
+            redeem_script: vec![],
+        };
 
         log!(
             info,
@@ -388,6 +397,7 @@ pub fn get_sig_num<T: Config>() -> (u32, u32) {
     (two_thirds_unsafe(trustee_num), trustee_num)
 }
 
+#[allow(dead_code)]
 pub(crate) fn create_multi_address<T: Config>(
     pubkeys: &[Public],
     sig_num: u32,
