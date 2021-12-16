@@ -25,7 +25,10 @@ use xpallet_support::traits::{MultisigAddressFor, Validator};
 use crate::{
     self as xpallet_gateway_common,
     traits::TrusteeForChain,
-    trustees::bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeMultisig, BtcTrusteeType},
+    trustees::{
+        self,
+        bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeMultisig, BtcTrusteeType},
+    },
     types::*,
 };
 
@@ -204,13 +207,13 @@ impl pallet_assets::Config for Test {
 
 // assets
 parameter_types! {
-    pub const BtcAssetId: AssetId = 0;
+    pub const BtcAssetId: AssetId = 1;
 }
 
 impl xpallet_gateway_records::Config for Test {
     type Event = ();
-    type BtcAssetId = BtcAssetId;
     type WeightInfo = ();
+    type BtcAssetId = BtcAssetId;
 }
 
 thread_local! {
@@ -235,9 +238,9 @@ impl xpallet_gateway_bitcoin::Config for Test {
     type Event = ();
     type Currency = Balances;
     type UnixTime = Timestamp;
-    type AccountExtractor = ();
-    type TrusteeSessionProvider = ();
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeOrigin = EnsureSignedBy<BtcTrusteeMultisig<Test>, AccountId>;
+    type TrusteeSessionProvider = ();
     type TrusteeTransition = ();
     type ReferralBinding = ();
     type AddressBinding = ();
@@ -327,8 +330,8 @@ impl crate::Config for Test {
     type DetermineMultisigAddress = MultisigAddr;
     type Bitcoin = MockBitcoin<Test>;
     type BitcoinTrustee = MockBitcoin<Test>;
+    type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type WeightInfo = ();
-    type BitcoinTrusteeSessionProvider = ();
 }
 
 pub struct ExtBuilder;
@@ -350,10 +353,7 @@ impl ExtBuilder {
         .assimilate_storage(&mut storage);
 
         let _ = xpallet_gateway_records::GenesisConfig::<Test> {
-            initial_asset_chain: vec![
-                (Default::default(), X_BTC, Chain::Bitcoin),
-                (Default::default(), X_ETH, Chain::Ethereum),
-            ],
+            initial_asset_chain: vec![(Default::default(), X_BTC, Chain::Bitcoin)],
         }
         .assimilate_storage(&mut storage);
 

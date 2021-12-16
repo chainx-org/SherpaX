@@ -24,7 +24,7 @@ use sp_runtime::{
 use sherpax_primitives::AssetId;
 use xp_assets_registrar::Chain;
 pub use xp_protocol::{X_BTC, X_ETH};
-use xpallet_gateway_common::types::TrusteeInfoConfig;
+use xpallet_gateway_common::{types::TrusteeInfoConfig, trustees};
 
 use light_bitcoin::{
     chain::BlockHeader as BtcHeader,
@@ -186,8 +186,8 @@ impl xpallet_gateway_common::Config for Test {
     type DetermineMultisigAddress = ();
     type Bitcoin = XGatewayBitcoin;
     type BitcoinTrustee = XGatewayBitcoin;
+    type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type WeightInfo = ();
-    type BitcoinTrusteeSessionProvider = ();
 }
 
 thread_local! {
