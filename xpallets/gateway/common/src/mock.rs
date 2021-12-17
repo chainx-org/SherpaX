@@ -281,7 +281,8 @@ impl<T: xpallet_gateway_bitcoin::Config> ChainT<T::AssetId, T::Balance> for Mock
     }
 }
 impl<T: xpallet_gateway_bitcoin::Config>
-    TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo> for MockBitcoin<T>
+    TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, BtcTrusteeAddrInfo>
+    for MockBitcoin<T>
 {
     fn check_trustee_entity(raw_addr: &[u8]) -> Result<BtcTrusteeType, DispatchError> {
         let trustee_type =
@@ -297,7 +298,7 @@ impl<T: xpallet_gateway_bitcoin::Config>
         _: TrusteeInfoConfig,
     ) -> Result<
         (
-            TrusteeSessionInfo<T::AccountId, BtcTrusteeAddrInfo>,
+            TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
             ScriptInfo<T::AccountId>,
         ),
         DispatchError,
@@ -305,7 +306,7 @@ impl<T: xpallet_gateway_bitcoin::Config>
         let len = props.len();
         Ok((
             TrusteeSessionInfo {
-                trustee_list: props.into_iter().map(|(a, _)| a).collect::<_>(),
+                trustee_list: props.into_iter().map(|(a, _)| (a, 0)).collect::<_>(),
                 threshold: len as u16,
                 hot_address: BtcTrusteeAddrInfo {
                     addr: vec![],
@@ -315,6 +316,9 @@ impl<T: xpallet_gateway_bitcoin::Config>
                     addr: vec![],
                     redeem_script: vec![],
                 },
+                multi_account: None,
+                start_height: None,
+                end_height: None,
             },
             ScriptInfo {
                 agg_pubkeys: vec![],

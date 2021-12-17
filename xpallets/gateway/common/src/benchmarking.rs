@@ -156,13 +156,13 @@ benchmarks! {
             candidators.push(account);
         }
 
-        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 1);
+        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 0);
         assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 0).is_none());
 
     }: _(RawOrigin::Signed(caller.clone()), Chain::Bitcoin, candidators)
     verify {
-        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 2);
-        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 0).is_some());
+        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 1);
+        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 1).is_some());
     }
 
     set_withdrawal_state {
@@ -199,14 +199,6 @@ benchmarks! {
     }: _(RawOrigin::Root, Chain::Bitcoin, config.clone())
     verify {
         assert_eq!(Pallet::<T>::trustee_info_config_of(Chain::Bitcoin), config);
-    }
-
-    force_set_referral_binding {
-        let who: T::AccountId = alice::<T>();
-        let who_lookup: <T::Lookup as StaticLookup>::Source = T::Lookup::unlookup(who.clone());
-    }: _(RawOrigin::Root, Chain::Bitcoin, who_lookup.clone(), who_lookup)
-    verify {
-        assert_eq!(Pallet::<T>::referral_binding_of(&who, Chain::Bitcoin), Some(who));
     }
 
     change_trustee_transition_duration {
@@ -250,7 +242,6 @@ mod tests {
             assert_ok!(Pallet::<Test>::test_benchmark_transition_trustee_session());
             assert_ok!(Pallet::<Test>::test_benchmark_set_withdrawal_state());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_info_config());
-            assert_ok!(Pallet::<Test>::test_benchmark_force_set_referral_binding());
             assert_ok!(Pallet::<Test>::test_benchmark_change_trustee_transition_duration());
             assert_ok!(Pallet::<Test>::test_benchmark_set_relayer());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_admin());

@@ -163,7 +163,11 @@ benchmarks! {
         let spent_outputs_raw = serialization::serialize(&transaction_output).into();
 
         let amount: T::Balance = 1_000_000_000u32.into();
-        let withdrawal = 550000u32.into();
+
+        let withdrawal: T::Balance = 50000u32.into();
+
+        #[cfg(feature = "runtime-benchmarks")]
+        let withdrawal: T::Balance = 550000u32.into();
 
         XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
         XGatewayRecords::<T>::withdraw(&caller, T::BtcAssetId::get(), withdrawal, b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();

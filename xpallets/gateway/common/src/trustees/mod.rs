@@ -121,7 +121,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                     None => {
                         warn!(
                             target: "runtime::gateway::common",
-                            "[last_trustee_session] Last trustee session not exist yet for chain:{:?}, session_num:{}",
+                            "[last_trustee_session] Last trustee session not exist for chain:{:?}, session_num:{}",
                             Chain::Bitcoin, last_session_num
                         );
                     }
