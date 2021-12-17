@@ -40,7 +40,7 @@ use crate::{
 };
 
 pub fn current_trustee_session<T: Config>(
-) -> Result<TrusteeSessionInfo<T::AccountId, BtcTrusteeAddrInfo>, DispatchError> {
+) -> Result<TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>, DispatchError> {
     T::TrusteeSessionProvider::current_trustee_session()
 }
 
@@ -110,7 +110,9 @@ const EC_P: [u8; 32] = [
 
 const ZERO_P: [u8; 32] = [0; 32];
 
-impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo> for Pallet<T> {
+impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, BtcTrusteeAddrInfo>
+    for Pallet<T>
+{
     fn check_trustee_entity(raw_addr: &[u8]) -> Result<BtcTrusteeType, DispatchError> {
         let trustee_type = BtcTrusteeType::try_from(raw_addr.to_vec())
             .map_err(|_| Error::<T>::InvalidPublicKey)?;
@@ -146,7 +148,7 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
         config: TrusteeInfoConfig,
     ) -> Result<
         (
-            TrusteeSessionInfo<T::AccountId, BtcTrusteeAddrInfo>,
+            TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
             ScriptInfo<T::AccountId>,
         ),
         DispatchError,
@@ -268,13 +270,20 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
             cold_trustee_addr_info,
             trustees
         );
-
+        let start_height = frame_system::Pallet::<T>::block_number();
+        let trustee_num = trustees.len();
         Ok((
             TrusteeSessionInfo {
-                trustee_list: trustees,
+                trustee_list: trustees
+                    .into_iter()
+                    .zip(vec![0u64; trustee_num])
+                    .collect::<Vec<_>>(),
+                multi_account: None,
+                start_height: Some(start_height),
                 threshold: sig_num as u16,
                 hot_address: hot_trustee_addr_info,
                 cold_address: cold_trustee_addr_info,
+                end_height: None,
             },
             ScriptInfo {
                 agg_pubkeys,
@@ -287,7 +296,11 @@ impl<T: Config> TrusteeForChain<T::AccountId, BtcTrusteeType, BtcTrusteeAddrInfo
 impl<T: Config> Pallet<T> {
     pub fn ensure_trustee(who: &T::AccountId) -> DispatchResult {
         let trustee_session_info = current_trustee_session::<T>()?;
-        if trustee_session_info.trustee_list.iter().any(|n| n == who) {
+        if trustee_session_info
+            .trustee_list
+            .iter()
+            .any(|n| &n.0 == who)
+        {
             Ok(())
         } else {
             log!(

@@ -55,7 +55,12 @@ where
         + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-    C::Api: xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance>,
+    C::Api: xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<
+        Block,
+        AccountId,
+        Balance,
+        BlockNumber,
+    >,
     C::Api: xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<
         Block,
         AccountId,

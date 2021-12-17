@@ -212,6 +212,7 @@ parameter_types! {
 
 impl xpallet_gateway_records::Config for Test {
     type Event = ();
+    type Currency = Balances;
     type WeightInfo = ();
     type BtcAssetId = BtcAssetId;
 }
@@ -236,12 +237,11 @@ impl UnixTime for Timestamp {
 
 impl xpallet_gateway_bitcoin::Config for Test {
     type Event = ();
-    type Currency = Balances;
     type UnixTime = Timestamp;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeOrigin = EnsureSignedBy<BtcTrusteeMultisig<Test>, AccountId>;
     type TrusteeSessionProvider = ();
-    type TrusteeTransition = ();
+    type TrusteeInfoUpdate = ();
     type ReferralBinding = ();
     type AddressBinding = ();
     type WeightInfo = ();

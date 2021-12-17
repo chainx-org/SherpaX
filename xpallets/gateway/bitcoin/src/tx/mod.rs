@@ -28,7 +28,7 @@ use crate::{
 };
 use xp_gateway_bitcoin::{BtcDepositInfo, BtcTxMetaType, BtcTxTypeDetector};
 use xp_gateway_common::AccountExtractor;
-use xpallet_gateway_common::traits::{AddressBinding, ReferralBinding, TrusteeTransition};
+use xpallet_gateway_common::traits::{AddressBinding, ReferralBinding, TrusteeInfoUpdate};
 use xpallet_gateway_records::ChainT;
 use xpallet_support::try_str;
 
@@ -63,7 +63,7 @@ pub fn process_tx<T: Config>(
 }
 
 fn trustee_transition<T: Config>() -> BtcTxResult {
-    T::TrusteeTransition::update_transition_status(false);
+    T::TrusteeInfoUpdate::update_transition_status(false);
     BtcTxResult::Success
 }
 
@@ -232,16 +232,20 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
                 }
             }
 
-            let btc_withdrawal_fee = Pallet::<T>::btc_withdrawal_fee();
-            // real withdraw value would reduce withdraw_fee
-            total -=
-                (proposal.withdrawal_id_list.len() as u64 * btc_withdrawal_fee).saturated_into();
+            // Record trustee signature
             let input = &tx.inputs()[0];
             if input.script_witness.len() != 3 {
                 return BtcTxResult::Failure;
             }
-            let script = &input.script_witness[1];
-            T::TrusteeTransition::update_trustee_sig_record(script.as_slice());
+            T::TrusteeInfoUpdate::update_trustee_sig_record(
+                input.script_witness[1].as_slice(),
+                tx.outputs.iter().map(|info| info.value).sum(),
+            );
+
+            let btc_withdrawal_fee = Pallet::<T>::btc_withdrawal_fee();
+            // real withdraw value would reduce withdraw_fee
+            total -=
+                (proposal.withdrawal_id_list.len() as u64 * btc_withdrawal_fee).saturated_into();
 
             Pallet::<T>::deposit_event(Event::<T>::Withdrawn(
                 tx_hash,

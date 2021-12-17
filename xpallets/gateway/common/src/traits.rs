@@ -14,7 +14,13 @@ pub trait ChainProvider {
     fn chain() -> Chain;
 }
 
-pub trait TrusteeForChain<AccountId, TrusteeEntity: BytesLike, TrusteeAddress: BytesLike> {
+pub trait TrusteeForChain<
+    AccountId,
+    BlockNumber,
+    TrusteeEntity: BytesLike,
+    TrusteeAddress: BytesLike,
+>
+{
     fn check_trustee_entity(raw_addr: &[u8]) -> Result<TrusteeEntity, DispatchError>;
 
     fn generate_trustee_session_info(
@@ -22,57 +28,68 @@ pub trait TrusteeForChain<AccountId, TrusteeEntity: BytesLike, TrusteeAddress: B
         config: TrusteeInfoConfig,
     ) -> Result<
         (
-            TrusteeSessionInfo<AccountId, TrusteeAddress>,
+            TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>,
             ScriptInfo<AccountId>,
         ),
         DispatchError,
     >;
 }
 
-pub trait TrusteeSession<AccountId, TrusteeAddress: BytesLike> {
+pub trait TrusteeSession<AccountId, BlockNumber, TrusteeAddress: BytesLike> {
     fn trustee_session(
         number: u32,
-    ) -> Result<TrusteeSessionInfo<AccountId, TrusteeAddress>, DispatchError>;
+    ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError>;
 
     fn current_trustee_session(
-    ) -> Result<TrusteeSessionInfo<AccountId, TrusteeAddress>, DispatchError>;
+    ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError>;
 
-    fn last_trustee_session() -> Result<TrusteeSessionInfo<AccountId, TrusteeAddress>, DispatchError>;
+    fn last_trustee_session(
+    ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError>;
+
+    fn trustee_transition_state() -> bool;
 
     #[cfg(feature = "std")]
     fn genesis_trustee(chain: Chain, init: &[AccountId]);
 }
 
-impl<AccountId, TrusteeAddress: BytesLike> TrusteeSession<AccountId, TrusteeAddress> for () {
+impl<AccountId, BlockNumber, TrusteeAddress: BytesLike>
+    TrusteeSession<AccountId, BlockNumber, TrusteeAddress> for ()
+{
     fn trustee_session(
         _: u32,
-    ) -> Result<TrusteeSessionInfo<AccountId, TrusteeAddress>, DispatchError> {
+    ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError> {
         Err("NoTrustee".into())
     }
 
     fn current_trustee_session(
-    ) -> Result<TrusteeSessionInfo<AccountId, TrusteeAddress>, DispatchError> {
+    ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError> {
         Err("NoTrustee".into())
     }
 
-    fn last_trustee_session() -> Result<TrusteeSessionInfo<AccountId, TrusteeAddress>, DispatchError>
-    {
+    fn last_trustee_session(
+    ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError> {
         Err("NoTrustee".into())
+    }
+
+    fn trustee_transition_state() -> bool {
+        false
     }
 
     #[cfg(feature = "std")]
     fn genesis_trustee(_: Chain, _: &[AccountId]) {}
 }
 
-pub trait TrusteeTransition {
+pub trait TrusteeInfoUpdate {
+    /// Update the trustee trasition status when the renewal of the trustee is completed
     fn update_transition_status(status: bool);
-    fn update_trustee_sig_record(script: &[u8]);
+    /// Each withdrawal is completed to record the weight of the signer
+    fn update_trustee_sig_record(script: &[u8], withdraw_amout: u64);
 }
 
-impl TrusteeTransition for () {
+impl TrusteeInfoUpdate for () {
     fn update_transition_status(_: bool) {}
 
-    fn update_trustee_sig_record(_: &[u8]) {}
+    fn update_trustee_sig_record(_: &[u8], _: u64) {}
 }
 
 pub trait ReferralBinding<AccountId, AssetId> {

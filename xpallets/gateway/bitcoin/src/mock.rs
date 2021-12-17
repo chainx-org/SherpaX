@@ -24,7 +24,7 @@ use sp_runtime::{
 use sherpax_primitives::AssetId;
 use xp_assets_registrar::Chain;
 pub use xp_protocol::{X_BTC, X_ETH};
-use xpallet_gateway_common::{types::TrusteeInfoConfig, trustees};
+use xpallet_gateway_common::{trustees, types::TrusteeInfoConfig};
 
 use light_bitcoin::{
     chain::BlockHeader as BtcHeader,
@@ -177,6 +177,7 @@ parameter_types! {
 impl xpallet_gateway_records::Config for Test {
     type Event = ();
     type BtcAssetId = BtcAssetId;
+    type Currency = Balances;
     type WeightInfo = ();
 }
 
@@ -211,7 +212,6 @@ impl UnixTime for Timestamp {
 
 impl Config for Test {
     type Event = ();
-    type Currency = Balances;
     type UnixTime = Timestamp;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeSessionProvider =
@@ -220,7 +220,7 @@ impl Config for Test {
         xpallet_gateway_common::trustees::bitcoin::BtcTrusteeMultisig<Test>,
         AccountId,
     >;
-    type TrusteeTransition = XGatewayCommon;
+    type TrusteeInfoUpdate = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
     type WeightInfo = ();

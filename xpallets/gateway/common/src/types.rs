@@ -25,11 +25,21 @@ pub struct TrusteeInfoConfig {
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
-pub struct TrusteeSessionInfo<AccountId, TrusteeAddress: BytesLike> {
-    pub trustee_list: Vec<AccountId>,
+pub struct TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress: BytesLike> {
+    /// Trustee account
+    pub trustee_list: Vec<(AccountId, u64)>,
+    /// Threshold value
     pub threshold: u16,
+    /// Hot address
     pub hot_address: TrusteeAddress,
+    /// Cold address
     pub cold_address: TrusteeAddress,
+    /// Trustee multi account to receive congressional multi-signature rewards
+    pub multi_account: Option<AccountId>,
+    /// The height of trustee start
+    pub start_height: Option<BlockNumber>,
+    /// The height of trustee end
+    pub end_height: Option<BlockNumber>,
 }
 
 /// Aggregate public key script and corresponding personal public key index.
@@ -43,38 +53,60 @@ pub struct ScriptInfo<AccountId> {
     pub personal_accounts: Vec<Vec<AccountId>>,
 }
 
+/// Used to record the rewards distributed by the trustee.
+#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
+pub struct RewardInfo<AccountId, Balance> {
+    pub rewards: Vec<(AccountId, Balance)>,
+}
+
 /// The generic trustee session info.
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
-pub struct GenericTrusteeSessionInfo<AccountId>(pub TrusteeSessionInfo<AccountId, Vec<u8>>);
+pub struct GenericTrusteeSessionInfo<AccountId, BlockNumber>(
+    pub TrusteeSessionInfo<AccountId, BlockNumber, Vec<u8>>,
+);
 
-impl<AccountId, TrusteeAddress: BytesLike> From<TrusteeSessionInfo<AccountId, TrusteeAddress>>
-    for GenericTrusteeSessionInfo<AccountId>
+impl<AccountId, BlockNumber, TrusteeAddress: BytesLike>
+    From<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>>
+    for GenericTrusteeSessionInfo<AccountId, BlockNumber>
 {
-    fn from(info: TrusteeSessionInfo<AccountId, TrusteeAddress>) -> Self {
+    fn from(info: TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>) -> Self {
         GenericTrusteeSessionInfo(TrusteeSessionInfo {
             trustee_list: info.trustee_list,
+            multi_account: info.multi_account,
+            start_height: info.start_height,
             threshold: info.threshold,
             hot_address: info.hot_address.into(),
             cold_address: info.cold_address.into(),
+            end_height: info.end_height,
         })
     }
 }
 
-impl<AccountId, TrusteeAddress: BytesLike> TryFrom<GenericTrusteeSessionInfo<AccountId>>
-    for TrusteeSessionInfo<AccountId, TrusteeAddress>
+impl<AccountId, BlockNumber, TrusteeAddress: BytesLike>
+    TryFrom<GenericTrusteeSessionInfo<AccountId, BlockNumber>>
+    for TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>
 {
     // TODO, may use a better error
     type Error = ();
 
-    fn try_from(info: GenericTrusteeSessionInfo<AccountId>) -> Result<Self, Self::Error> {
-        Ok(TrusteeSessionInfo::<AccountId, TrusteeAddress> {
-            trustee_list: info.0.trustee_list,
-            threshold: info.0.threshold,
-            hot_address: TrusteeAddress::try_from(info.0.hot_address).map_err(|_| ())?,
-            cold_address: TrusteeAddress::try_from(info.0.cold_address).map_err(|_| ())?,
-        })
+    fn try_from(
+        info: GenericTrusteeSessionInfo<AccountId, BlockNumber>,
+    ) -> Result<Self, Self::Error> {
+        Ok(
+            TrusteeSessionInfo::<AccountId, BlockNumber, TrusteeAddress> {
+                trustee_list: info.0.trustee_list,
+                multi_account: info.0.multi_account,
+                start_height: info.0.start_height,
+                threshold: info.0.threshold,
+                hot_address: TrusteeAddress::try_from(info.0.hot_address).map_err(|_| ())?,
+                cold_address: TrusteeAddress::try_from(info.0.cold_address).map_err(|_| ())?,
+                end_height: info.0.end_height,
+            },
+        )
     }
 }
 

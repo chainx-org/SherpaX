@@ -52,13 +52,20 @@ pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    use frame_support::pallet_prelude::*;
+    use frame_support::{
+        pallet_prelude::*,
+        traits::{LockableCurrency, ReservableCurrency},
+    };
     use frame_system::{pallet_prelude::*, RawOrigin};
 
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_assets::Config {
         /// The overarching event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+        /// Operate currency
+        type Currency: ReservableCurrency<Self::AccountId>
+            + LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 
         #[pallet::constant]
         /// The btc asset id.

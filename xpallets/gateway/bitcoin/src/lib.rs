@@ -35,7 +35,7 @@ use sherpax_primitives::ReferralId;
 use xp_assets_registrar::Chain;
 use xp_gateway_common::AccountExtractor;
 use xpallet_gateway_common::{
-    traits::{AddressBinding, ReferralBinding, TrusteeSession, TrusteeTransition},
+    traits::{AddressBinding, ReferralBinding, TrusteeInfoUpdate, TrusteeSession},
     trustees::bitcoin::BtcTrusteeAddrInfo,
 };
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
@@ -70,11 +70,7 @@ macro_rules! log {
 pub mod pallet {
     use sp_std::marker::PhantomData;
 
-    use frame_support::{
-        dispatch::DispatchResult,
-        pallet_prelude::*,
-        traits::{LockableCurrency, ReservableCurrency, UnixTime},
-    };
+    use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::UnixTime};
     use frame_system::pallet_prelude::*;
 
     use super::*;
@@ -88,12 +84,14 @@ pub mod pallet {
         frame_system::Config + pallet_assets::Config + xpallet_gateway_records::Config
     {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-        type Currency: ReservableCurrency<Self::AccountId>
-            + LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
         type UnixTime: UnixTime;
         type AccountExtractor: AccountExtractor<Self::AccountId, ReferralId>;
-        type TrusteeSessionProvider: TrusteeSession<Self::AccountId, BtcTrusteeAddrInfo>;
-        type TrusteeTransition: TrusteeTransition;
+        type TrusteeSessionProvider: TrusteeSession<
+            Self::AccountId,
+            Self::BlockNumber,
+            BtcTrusteeAddrInfo,
+        >;
+        type TrusteeInfoUpdate: TrusteeInfoUpdate;
         type TrusteeOrigin: EnsureOrigin<Self::Origin, Success = Self::AccountId>;
         type ReferralBinding: ReferralBinding<Self::AccountId, Self::AssetId>;
         type AddressBinding: AddressBinding<Self::AccountId, BtcAddress>;
@@ -154,6 +152,12 @@ pub mod pallet {
             spent_outputs: Vec<u8>,
         ) -> DispatchResult {
             let from = ensure_signed(origin)?;
+
+            ensure!(
+                !T::TrusteeSessionProvider::trustee_transition_state(),
+                Error::<T>::TrusteeTransitionPeriod
+            );
+
             // committer must be in the trustee list
             Self::ensure_trustee(&from)?;
 
@@ -316,6 +320,8 @@ pub mod pallet {
         NoWithdrawalRecord,
         /// already vote for this withdrawal proposal
         DuplicateVote,
+        /// Trustee transition period
+        TrusteeTransitionPeriod,
     }
 
     #[pallet::event]

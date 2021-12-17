@@ -88,7 +88,7 @@ impl BtcTxTypeDetector {
                 };
             }
             if let Some(last_trustee_pair) = last_trustee_pair {
-                if input_addr.hash == last_trustee_pair.1.hash && all_outputs_is_trustee {
+                if is_trustee_addr(input_addr, last_trustee_pair) && all_outputs_is_trustee {
                     // inputs should from last trustee cold address, outputs should all be current trustee addresses
                     return BtcTxMetaType::TrusteeTransition;
                 }

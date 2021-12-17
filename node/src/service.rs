@@ -199,8 +199,12 @@ where
         + cumulus_primitives_core::CollectCollationInfo<Block>
         + pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
         + substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
-        + xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance>
-        + xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<
+        + xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<
+            Block,
+            AccountId,
+            Balance,
+            BlockNumber,
+        > + xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<
             Block,
             AccountId,
             Balance,

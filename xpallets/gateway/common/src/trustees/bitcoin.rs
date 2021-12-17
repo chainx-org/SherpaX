@@ -12,7 +12,8 @@ use crate::traits::ChainProvider;
 use crate::types::{TrusteeIntentionProps, TrusteeSessionInfo};
 use xp_assets_registrar::Chain;
 pub type BtcAddress = Vec<u8>;
-pub type BtcTrusteeSessionInfo<AccountId> = TrusteeSessionInfo<AccountId, BtcTrusteeAddrInfo>;
+pub type BtcTrusteeSessionInfo<AccountId, BlockNumber> =
+    TrusteeSessionInfo<AccountId, BlockNumber, BtcTrusteeAddrInfo>;
 pub type BtcTrusteeIntentionProps<AccountId> = TrusteeIntentionProps<AccountId, BtcTrusteeType>;
 pub type BtcTrusteeSessionManager<T> = TrusteeSessionManager<T, BtcTrusteeAddrInfo>;
 pub type BtcTrusteeMultisig<T> = TrusteeMultisigProvider<T, BtcTrusteeType>;
