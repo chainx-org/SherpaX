@@ -45,28 +45,28 @@ pub trait WeightInfo {
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
     fn push_header() -> Weight {
-        (104_000_000 as Weight)
+        (75_000_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(14 as Weight))
             .saturating_add(T::DbWeight::get().writes(7 as Weight))
     }
     fn push_transaction() -> Weight {
-        (504_000_000 as Weight)
+        (162_000_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(21 as Weight))
             .saturating_add(T::DbWeight::get().writes(9 as Weight))
     }
     fn create_taproot_withdraw_tx() -> Weight {
-        (277_000_000 as Weight)
+        (90_000_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(14 as Weight))
             .saturating_add(T::DbWeight::get().writes(4 as Weight))
     }
     fn set_best_index() -> Weight {
-        (3_000_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
+        (2_000_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn set_confirmed_index() -> Weight {
-        (6_000_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
+        (2_000_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn remove_pending() -> Weight {
-        (362_000_000 as Weight)
+        (126_000_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(7 as Weight))
             .saturating_add(T::DbWeight::get().writes(5 as Weight))
     }
@@ -84,28 +84,28 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 // For backwards compatibility and tests
 impl WeightInfo for () {
     fn push_header() -> Weight {
-        (104_000_000 as Weight)
+        (75_000_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(14 as Weight))
             .saturating_add(RocksDbWeight::get().writes(7 as Weight))
     }
     fn push_transaction() -> Weight {
-        (504_000_000 as Weight)
+        (162_000_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(21 as Weight))
             .saturating_add(RocksDbWeight::get().writes(9 as Weight))
     }
     fn create_taproot_withdraw_tx() -> Weight {
-        (277_000_000 as Weight)
+        (90_000_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(14 as Weight))
             .saturating_add(RocksDbWeight::get().writes(4 as Weight))
     }
     fn set_best_index() -> Weight {
-        (3_000_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
+        (2_000_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn set_confirmed_index() -> Weight {
-        (6_000_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
+        (2_000_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn remove_pending() -> Weight {
-        (362_000_000 as Weight)
+        (126_000_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(7 as Weight))
             .saturating_add(RocksDbWeight::get().writes(5 as Weight))
     }

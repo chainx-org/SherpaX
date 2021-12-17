@@ -2,9 +2,11 @@
 
 use codec::{Decode, Encode};
 use frame_benchmarking::benchmarks;
-use frame_support::traits::Get;
+use frame_support::traits::{Currency, Get};
 use frame_system::RawOrigin;
 use sp_core::crypto::AccountId32;
+#[cfg(feature = "runtime-benchmarks")]
+use sp_runtime::traits::CheckedDiv;
 use sp_runtime::traits::StaticLookup;
 use sp_std::prelude::*;
 
@@ -12,8 +14,8 @@ use xp_assets_registrar::Chain;
 use xpallet_gateway_records::{Pallet as XGatewayRecords, WithdrawalRecordId, WithdrawalState};
 
 use crate::{
-    types::*, Call, Config, LittleBlackHouse, Pallet, TrusteeIntentionPropertiesOf,
-    TrusteeMultiSigAddr, TrusteeSessionInfoLen, TrusteeSessionInfoOf,
+    traits::TrusteeSession, types::*, Balanceof, Call, Config, LittleBlackHouse, Pallet,
+    TrusteeIntentionPropertiesOf, TrusteeMultiSigAddr, TrusteeSessionInfoLen, TrusteeSessionInfoOf,
 };
 
 fn create_default_asset<T: Config>(who: T::AccountId) {
@@ -26,6 +28,19 @@ fn create_default_asset<T: Config>(who: T::AccountId) {
         1u32.into(),
     );
     xpallet_gateway_records::AssetChainOf::<T>::insert(T::BtcAssetId::get(), Chain::Bitcoin);
+}
+#[cfg(feature = "runtime-benchmarks")]
+fn update_trustee_info<T: Config>(session_num: u32) {
+    TrusteeSessionInfoOf::<T>::mutate(Chain::Bitcoin, session_num, |info| match info {
+        None => (),
+        Some(trustee) => {
+            for i in 0..trustee.0.trustee_list.len() {
+                trustee.0.trustee_list[i].1 = i as u64 + 1;
+            }
+            let end_height = 10u32.into();
+            trustee.0.end_height = Some(end_height);
+        }
+    });
 }
 
 fn account<T: Config>(pubkey: &str) -> T::AccountId {
@@ -47,14 +62,18 @@ fn charlie<T: Config>() -> T::AccountId {
     // sr25519 Charlie
     account::<T>("90b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22")
 }
+fn dave<T: Config>() -> T::AccountId {
+    // sr25519 Dave
+    account::<T>("306721211d5404bd9da88e0204360a1a9ab8b87c66c1bc2fcdd37f3c2222cc20")
+}
 fn new_trustees<T: Config>() -> Vec<(T::AccountId, Vec<u8>, Vec<u8>, Vec<u8>)> {
     vec![
         (
             alice::<T>(),
             b"Alice".to_vec(),
-            hex::decode("02df92e88c4380778c9c48268460a124a8f4e7da883f80477deaa644ced486efc6")
-                .unwrap(),
             hex::decode("0386b58f51da9b37e59c40262153173bdb59d7e4e45b73994b99eec4d964ee7e88")
+                .unwrap(),
+            hex::decode("02df92e88c4380778c9c48268460a124a8f4e7da883f80477deaa644ced486efc6")
                 .unwrap(),
         ),
         (
@@ -63,6 +82,14 @@ fn new_trustees<T: Config>() -> Vec<(T::AccountId, Vec<u8>, Vec<u8>, Vec<u8>)> {
             hex::decode("0244d81efeb4171b1a8a433b87dd202117f94e44c909c49e42e77b69b5a6ce7d0d")
                 .unwrap(),
             hex::decode("02e4631e46255571122d6e11cda75d5d601d5eb2585e65e4e87fe9f68c7838a278")
+                .unwrap(),
+        ),
+        (
+            dave::<T>(),
+            b"Charlie".to_vec(),
+            hex::decode("0263d46c760d3e04883d4b433c9ce2bc32130acd9faad0192a2b375dbba9f865c3")
+                .unwrap(),
+            hex::decode("03a36339f413da869df12b1ab0def91749413a0dee87f0bfa85ba7196e6cdad102")
                 .unwrap(),
         ),
         (
@@ -225,6 +252,84 @@ benchmarks! {
     verify {
         assert_eq!(Pallet::<T>::trustee_admin(), who);
     }
+
+    tranfer_trustee_reward {
+        let caller: T::AccountId = alice::<T>();
+        clean::<T>();
+        TrusteeMultiSigAddr::<T>::insert(Chain::Bitcoin, caller.clone());
+        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 0);
+        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 0).is_none());
+        let mut candidators = vec![];
+        let trustee_info = new_trustees::<T>();
+        let trustee_len = trustee_info.len();
+        for (account, about, hot, cold) in (&trustee_info[0..trustee_len-1]).to_vec() {
+            Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
+            candidators.push(account);
+        }
+        assert_eq!(Pallet::<T>::transition_trustee_session_impl(Chain::Bitcoin, candidators), Ok(()));
+
+        let mut candidators = vec![];
+        let trustee_info = new_trustees::<T>();
+        let trustee_len = trustee_info.len();
+        for (account, about, hot, cold) in (&trustee_info[1..trustee_len]).to_vec() {
+            Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
+            candidators.push(account);
+        }
+        assert_eq!(Pallet::<T>::transition_trustee_session_impl(Chain::Bitcoin, candidators), Ok(()));
+        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 2);
+        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 2).is_some());
+        let reward: Balanceof<T> = 1_00_000_000u32.into();
+        let session_num = 1;
+        #[cfg(not(feature = "runtime-benchmarks"))]
+        <T as xpallet_gateway_records::Config>::Currency::deposit_creating(&caller, reward);
+        #[cfg(feature = "runtime-benchmarks")]
+        update_trustee_info::<T>(session_num);
+        #[cfg(feature = "runtime-benchmarks")]
+        let reward: Balanceof<T> = <T as xpallet_gateway_records::Config>::Currency::free_balance(&caller).checked_div(&2u32.into()).unwrap();
+    }: _(RawOrigin::Signed(caller.clone()), session_num, reward)
+    verify {
+        #[cfg(not(feature = "runtime-benchmarks"))]
+        assert_eq!(<T as xpallet_gateway_records::Config>::Currency::free_balance(&trustee_info[0].0), 16666666u32.into());
+    }
+
+    claim_trustee_reward {
+        let caller: T::AccountId = alice::<T>();
+        clean::<T>();
+        TrusteeMultiSigAddr::<T>::insert(Chain::Bitcoin, caller.clone());
+        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 0);
+        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 0).is_none());
+        let mut candidators = vec![];
+        let trustee_info = new_trustees::<T>();
+        let trustee_len = trustee_info.len();
+        for (account, about, hot, cold) in (&trustee_info[0..trustee_len-1]).to_vec() {
+            Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
+            candidators.push(account);
+        }
+        assert_eq!(Pallet::<T>::transition_trustee_session_impl(Chain::Bitcoin, candidators), Ok(()));
+
+        let mut candidators = vec![];
+        let trustee_info = new_trustees::<T>();
+        let trustee_len = trustee_info.len();
+        for (account, about, hot, cold) in (&trustee_info[1..trustee_len]).to_vec() {
+            Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
+            candidators.push(account);
+        }
+        assert_eq!(Pallet::<T>::transition_trustee_session_impl(Chain::Bitcoin, candidators), Ok(()));
+        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 2);
+        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 2).is_some());
+        let reward: Balanceof<T> = 1_00_000_000u32.into();
+        let session_num = 1;
+        #[cfg(feature = "runtime-benchmarks")]
+        update_trustee_info::<T>(session_num);
+        #[cfg(feature = "runtime-benchmarks")]
+        let reward: Balanceof<T> = <T as xpallet_gateway_records::Config>::Currency::free_balance(&caller).checked_div(&2u32.into()).unwrap();
+        let multi_account = <T as crate::Config>::BitcoinTrusteeSessionProvider::trustee_session(session_num).unwrap().multi_account.unwrap();
+        <T as xpallet_gateway_records::Config>::Currency::deposit_creating(&multi_account, reward);
+    }: _(RawOrigin::Signed(caller.clone()), session_num)
+    verify {
+        #[cfg(not(feature = "runtime-benchmarks"))]
+        assert_eq!(<T as xpallet_gateway_records::Config>::Currency::free_balance(&trustee_info[0].0), 16666666u32.into());
+    }
 }
 
 #[cfg(test)]
@@ -245,6 +350,8 @@ mod tests {
             assert_ok!(Pallet::<Test>::test_benchmark_change_trustee_transition_duration());
             assert_ok!(Pallet::<Test>::test_benchmark_set_relayer());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_admin());
+            assert_ok!(Pallet::<Test>::test_benchmark_tranfer_trustee_reward());
+            assert_ok!(Pallet::<Test>::test_benchmark_claim_trustee_reward());
         });
     }
 }

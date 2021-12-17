@@ -114,6 +114,7 @@ parameter_types! {
 impl Config for Test {
     type Event = ();
     type BtcAssetId = BtcAssetId;
+    type Currency = Balances;
     type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Test>;
 }
 

@@ -12,8 +12,8 @@ use sp_core::{crypto::UncheckedInto, H256};
 use sp_io::hashing::blake2_256;
 use sp_runtime::{
     testing::Header,
-    traits::{BlakeTwo256, IdentityLookup},
-    AccountId32, DispatchError, DispatchResult,
+    traits::{BlakeTwo256, IdentityLookup, Saturating},
+    AccountId32, DispatchError, DispatchResult, SaturatedConversion,
 };
 
 use sherpax_primitives::AssetId;
@@ -306,7 +306,11 @@ impl<T: xpallet_gateway_bitcoin::Config>
         let len = props.len();
         Ok((
             TrusteeSessionInfo {
-                trustee_list: props.into_iter().map(|(a, _)| (a, 0)).collect::<_>(),
+                trustee_list: props
+                    .into_iter()
+                    .enumerate()
+                    .map(|(k, a)| (a.0, k as u64 + 1))
+                    .collect::<_>(),
                 threshold: len as u16,
                 hot_address: BtcTrusteeAddrInfo {
                     addr: vec![],
@@ -316,9 +320,9 @@ impl<T: xpallet_gateway_bitcoin::Config>
                     addr: vec![],
                     redeem_script: vec![],
                 },
-                multi_account: None,
-                start_height: None,
-                end_height: None,
+                multi_account: Some(T::AccountId::default()),
+                start_height: Some(T::BlockNumber::default()),
+                end_height: Some(T::BlockNumber::default().saturating_add(10u32.saturated_into())),
             },
             ScriptInfo {
                 agg_pubkeys: vec![],

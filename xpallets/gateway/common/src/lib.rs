@@ -355,7 +355,7 @@ pub mod pallet {
         }
 
         /// A certain trust member declares the reward
-        #[pallet::weight(100_000_000u64)]
+        #[pallet::weight(< T as Config >::WeightInfo::tranfer_trustee_reward())]
         pub fn tranfer_trustee_reward(
             origin: OriginFor<T>,
             session_num: u32,
@@ -372,7 +372,7 @@ pub mod pallet {
         }
 
         /// A certain trust member declares the reward
-        #[pallet::weight(100_000_000u64)]
+        #[pallet::weight(< T as Config >::WeightInfo::claim_trustee_reward())]
         pub fn claim_trustee_reward(origin: OriginFor<T>, session_num: u32) -> DispatchResult {
             let who = ensure_signed(origin)?;
             let trustee_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
@@ -984,7 +984,7 @@ impl<T: Config> Pallet<T> {
             &who,
             &multi_account,
             amount,
-            ExistenceRequirement::KeepAlive,
+            ExistenceRequirement::AllowDeath,
         )?;
 
         Self::deposit_event(Event::<T>::TransferTrusteeReward(
@@ -1014,13 +1014,15 @@ impl<T: Config> Pallet<T> {
         };
 
         ensure!(
-            !<T as xpallet_gateway_records::Config>::Currency::free_balance(who).is_zero(),
+            !<T as xpallet_gateway_records::Config>::Currency::free_balance(&multi_account)
+                .is_zero(),
             Error::<T>::MultiAccountRewardZero
         );
 
         let mut reward_info = RewardInfo { rewards: vec![] };
         let trustee_len = trustee_info.trustee_list.len();
-        let sum_balance = <T as xpallet_gateway_records::Config>::Currency::free_balance(who);
+        let sum_balance =
+            <T as xpallet_gateway_records::Config>::Currency::free_balance(&multi_account);
         let sum_weight: Balanceof<T> = trustee_info
             .trustee_list
             .iter()
@@ -1034,27 +1036,31 @@ impl<T: Config> Pallet<T> {
                 .saturating_mul(trustee_weight)
                 .checked_div(&sum_weight)
                 .ok_or(Error::<T>::InvalidTrusteeWeight)?;
-            <T as xpallet_gateway_records::Config>::Currency::transfer(
-                &multi_account,
-                &trustee_info.trustee_list[i].0,
-                amount,
-                ExistenceRequirement::AllowDeath,
-            )?;
             reward_info
                 .rewards
                 .push((trustee_info.trustee_list[i].0.clone(), amount));
             acc_balance = acc_balance.saturating_add(amount);
         }
         let amount = sum_balance.saturating_sub(acc_balance);
-        <T as xpallet_gateway_records::Config>::Currency::transfer(
-            &multi_account,
-            &trustee_info.trustee_list[trustee_len - 1].0,
-            amount,
-            ExistenceRequirement::AllowDeath,
-        )?;
         reward_info
             .rewards
             .push((trustee_info.trustee_list[trustee_len - 1].0.clone(), amount));
+        for (acc, amount) in reward_info.rewards.iter() {
+            <T as xpallet_gateway_records::Config>::Currency::transfer(
+                &multi_account,
+                acc,
+                *amount,
+                ExistenceRequirement::AllowDeath,
+            )
+            .map_err(|e| {
+                error!(
+                    target: "runtime::gateway::common",
+                    "[apply_claim_trustee_reward] error {:?}, sum_balance:{:?}, reward_info:{:?}.",
+                    e, sum_balance, reward_info.clone()
+                );
+                e
+            })?;
+        }
         Self::deposit_event(Event::<T>::TrusteeRewardComplete(
             who.clone(),
             Chain::Bitcoin,
