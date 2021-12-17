@@ -20,8 +20,8 @@ use hex_literal::hex;
 use runtime_common::{AccountId, AuraId, Balance, BlockNumber, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
-use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use sp_core::{crypto::UncheckedInto, sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use std::collections::BTreeMap;
@@ -131,6 +131,10 @@ pub fn sherpax_staging_config(id: ParaId) -> ChainSpec {
     let mut properties = sc_chain_spec::Properties::new();
     properties.insert("tokenSymbol".into(), "KSX".into());
     properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert(
+        "ss58Format".into(),
+        sherpax_runtime::SS58Prefix::get().into(),
+    );
 
     ChainSpec::from_genesis(
         // Name
@@ -150,7 +154,48 @@ pub fn sherpax_staging_config(id: ParaId) -> ChainSpec {
                     hex!("2a077c909d0c5dcb3748cc11df2fb406ab8f35901b1a93010b78353e4a2bde0d").into(),
                 ],
                 id,
-                false
+                false,
+            )
+        },
+        vec![],
+        None,
+        None,
+        Some(properties),
+        Extensions {
+            relay_chain: "kusama".into(),
+            para_id: id.into(),
+        },
+    )
+}
+
+pub fn sherpax_testnet_config(id: ParaId) -> ChainSpec {
+    let mut properties = sc_chain_spec::Properties::new();
+    properties.insert("tokenSymbol".into(), "KSX".into());
+    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert(
+        "ss58Format".into(),
+        sherpax_runtime::SS58Prefix::get().into(),
+    );
+
+    ChainSpec::from_genesis(
+        // Name
+        "SherpaX",
+        // ID
+        "sherpax",
+        ChainType::Local,
+        move || {
+            sherpax_genesis(
+                hex!("a62add1af3bcf9256aa2def0fea1b9648cb72517ccee92a891dc2903a9093e52").into(),
+                vec![(
+                    hex!("5c333d4602e0840ec6595339d1eebca542e55e3f13bbebf1d76c08915b457b2a").into(),
+                    hex!("5c333d4602e0840ec6595339d1eebca542e55e3f13bbebf1d76c08915b457b2a")
+                        .unchecked_into(),
+                )],
+                vec![
+                    hex!("a62add1af3bcf9256aa2def0fea1b9648cb72517ccee92a891dc2903a9093e52").into(),
+                ],
+                id,
+                true,
             )
         },
         vec![],
@@ -233,20 +278,21 @@ fn sherpax_genesis(
     }
 }
 
-fn load_genesis_config() -> (Vec<(AccountId, Balance)>, Vec<(AccountId, BlockNumber, BlockNumber, Balance)>) {
-    let non_zero_balances = include_bytes!(
-        concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/res/genesis_config/balances/non_zero_airdrop_18016_10500000000000000000000000.json"
-        )
-    ).to_vec();
+fn load_genesis_config() -> (
+    Vec<(AccountId, Balance)>,
+    Vec<(AccountId, BlockNumber, BlockNumber, Balance)>,
+) {
+    let non_zero_balances = include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/res/genesis_config/balances/non_zero_airdrop_18016_10500000000000000000000000.json"
+    ))
+    .to_vec();
 
-    let vestings = include_bytes!(
-        concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/res/genesis_config/vesting/vesting_airdrop_18015_943318423258727000000000.json"
-        )
-    ).to_vec();
+    let vestings = include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/res/genesis_config/vesting/vesting_airdrop_18015_943318423258727000000000.json"
+    ))
+    .to_vec();
 
     let balances_configs: Vec<sherpax_runtime::BalancesConfig> =
         config_from_json_bytes(vec![non_zero_balances]).unwrap();
@@ -258,33 +304,47 @@ fn load_genesis_config() -> (Vec<(AccountId, Balance)>, Vec<(AccountId, BlockNum
     let balances = balances_configs
         .into_iter()
         .flat_map(|bc| bc.balances)
-        .fold(BTreeMap::<AccountId, Balance>::new(), |mut acc, (account_id, amount)| {
-            if let Some(balance) = acc.get_mut(&account_id) {
-                *balance = balance
-                    .checked_add(amount)
-                    .expect("balance cannot overflow when building genesis");
-            } else {
-                acc.insert(account_id.clone(), amount);
-            }
+        .fold(
+            BTreeMap::<AccountId, Balance>::new(),
+            |mut acc, (account_id, amount)| {
+                if let Some(balance) = acc.get_mut(&account_id) {
+                    *balance = balance
+                        .checked_add(amount)
+                        .expect("balance cannot overflow when building genesis");
+                } else {
+                    acc.insert(account_id.clone(), amount);
+                }
 
-            total_issuance = total_issuance
-                .checked_add(amount)
-                .expect("total insurance cannot overflow when building genesis");
-            acc
-        })
+                total_issuance = total_issuance
+                    .checked_add(amount)
+                    .expect("total insurance cannot overflow when building genesis");
+                acc
+            },
+        )
         .into_iter()
         .collect();
 
-    assert_eq!(total_issuance, 10_500_000* SHERPAX_UNITS, "total issuance must be equal to 10_500_000 KSX");
+    assert_eq!(
+        total_issuance,
+        10_500_000 * SHERPAX_UNITS,
+        "total issuance must be equal to 10_500_000 KSX"
+    );
 
-    let vestings: Vec<(AccountId, BlockNumber, BlockNumber, Balance)> = vesting_configs.into_iter().flat_map(|vc| vc.vesting).collect();
-    let vesting_liquid = vestings
-        .iter()
-        .map(|(_,_,_,free)|free)
-        .sum::<u128>();
+    let vestings: Vec<(AccountId, BlockNumber, BlockNumber, Balance)> = vesting_configs
+        .into_iter()
+        .flat_map(|vc| vc.vesting)
+        .collect();
+    let vesting_liquid = vestings.iter().map(|(_, _, _, free)| free).sum::<u128>();
 
-    assert_eq!(vestings.len(), 18015, "total vesting accounts must be equal 18_015.");
-    assert_eq!(vesting_liquid, 943318423258727000000000, "total vesting liquid must be equal 943_318.423258727 KSX");
+    assert_eq!(
+        vestings.len(),
+        18015,
+        "total vesting accounts must be equal 18_015."
+    );
+    assert_eq!(
+        vesting_liquid, 943318423258727000000000,
+        "total vesting liquid must be equal 943_318.423258727 KSX"
+    );
 
     (balances, vestings)
 }
