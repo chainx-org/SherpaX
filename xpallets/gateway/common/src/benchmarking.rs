@@ -289,7 +289,7 @@ benchmarks! {
     }: _(RawOrigin::Signed(caller.clone()), session_num, reward)
     verify {
         #[cfg(not(feature = "runtime-benchmarks"))]
-        assert_eq!(<T as xpallet_gateway_records::Config>::Currency::free_balance(&trustee_info[0].0), 16666666u32.into());
+        assert_eq!(<T as xpallet_gateway_records::Config>::Currency::free_balance(&trustee_info[0].0), 33333333u32.into());
     }
 
     claim_trustee_reward {
@@ -328,7 +328,7 @@ benchmarks! {
     }: _(RawOrigin::Signed(caller.clone()), session_num)
     verify {
         #[cfg(not(feature = "runtime-benchmarks"))]
-        assert_eq!(<T as xpallet_gateway_records::Config>::Currency::free_balance(&trustee_info[0].0), 16666666u32.into());
+        assert_eq!(<T as xpallet_gateway_records::Config>::Currency::free_balance(&trustee_info[0].0), 33333333u32.into());
     }
 }
 

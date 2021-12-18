@@ -1,8 +1,8 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
-use std::{cell::RefCell, convert::TryFrom, time::Duration};
 use std::cmp::max;
 use std::convert::TryInto;
+use std::{cell::RefCell, convert::TryFrom, time::Duration};
 
 use codec::{Decode, Encode};
 use frame_support::{
@@ -18,17 +18,18 @@ use sp_io::hashing::blake2_256;
 use sp_keyring::sr25519;
 use sp_runtime::{
     testing::Header,
-    traits::{BlakeTwo256, IdentityLookup},
+    traits::{BlakeTwo256, IdentityLookup, Saturating},
     AccountId32, DispatchError, DispatchResult,
 };
 
 use sherpax_primitives::AssetId;
 use xp_assets_registrar::Chain;
 pub use xp_protocol::{X_BTC, X_ETH};
+use xpallet_gateway_bitcoin::trustee::check_keys;
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
 use xpallet_support::traits::{MultisigAddressFor, Validator};
-use xpallet_gateway_bitcoin::trustee::check_keys;
 
+use crate::utils::{two_thirds_unsafe, MAX_TAPROOT_NODES};
 use crate::{
     self as xpallet_gateway_common,
     traits::TrusteeForChain,
@@ -37,8 +38,8 @@ use crate::{
         bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeMultisig, BtcTrusteeType},
     },
     types::*,
+    SaturatedConversion,
 };
-use crate::utils::{MAX_TAPROOT_NODES, two_thirds_unsafe};
 
 pub(crate) type AccountId = AccountId32;
 pub(crate) type BlockNumber = u64;
@@ -365,24 +366,32 @@ impl<T: xpallet_gateway_bitcoin::Config>
         // Set hot address for taproot threshold address
         let hot_pks = hot_keys
             .into_iter()
-            .map(|k| k.try_into().map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidPublicKey))
+            .map(|k| {
+                k.try_into()
+                    .map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidPublicKey)
+            })
             .collect::<Result<Vec<_>, xpallet_gateway_bitcoin::Error<T>>>()?;
 
-        let hot_mast = Mast::new(hot_pks, sig_num).map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?;
+        let hot_mast = Mast::new(hot_pks, sig_num)
+            .map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?;
 
         let hot_threshold_addr: Address = hot_mast
             .generate_address(&xpallet_gateway_bitcoin::Pallet::<T>::network_id().to_string())
-            .map_err(|_|xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?
+            .map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?
             .parse()
             .map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?;
 
         // Set cold address for taproot threshold address
         let cold_pks = cold_keys
             .into_iter()
-            .map(|k| k.try_into().map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress))
+            .map(|k| {
+                k.try_into()
+                    .map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)
+            })
             .collect::<Result<Vec<_>, xpallet_gateway_bitcoin::Error<T>>>()?;
 
-        let cold_mast = Mast::new(cold_pks, sig_num).map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?;
+        let cold_mast = Mast::new(cold_pks, sig_num)
+            .map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?;
 
         let cold_threshold_addr: Address = cold_mast
             .generate_address(&xpallet_gateway_bitcoin::Pallet::<T>::network_id().to_string())
@@ -423,14 +432,14 @@ impl<T: xpallet_gateway_bitcoin::Config>
             TrusteeSessionInfo {
                 trustee_list: trustees
                     .into_iter()
-                    .zip(vec![0u64; trustee_num])
+                    .zip(vec![1u64; trustee_num])
                     .collect::<Vec<_>>(),
-                multi_account: None,
+                multi_account: Some(T::AccountId::default()),
                 start_height: Some(start_height),
                 threshold: sig_num as u16,
                 hot_address: hot_trustee_addr_info,
                 cold_address: cold_trustee_addr_info,
-                end_height: None,
+                end_height: Some(T::BlockNumber::default().saturating_add(10u32.saturated_into())),
             },
             ScriptInfo {
                 agg_pubkeys,

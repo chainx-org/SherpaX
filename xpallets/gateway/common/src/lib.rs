@@ -213,9 +213,11 @@ pub mod pallet {
             );
 
             if let Some(trustees) = trustees {
-                for trustee in trustees {
-                    LittleBlackHouse::<T>::append(trustee);
-                }
+                LittleBlackHouse::<T>::mutate(|l| {
+                    for trustee in trustees.iter() {
+                        l.push(trustee.clone());
+                    }
+                });
             }
 
             Self::do_trustee_election()?;
@@ -705,7 +707,7 @@ impl<T: Config> Pallet<T> {
         let new_trustee_pool: Vec<T::AccountId> = Self::generate_trustee_pool()
             .iter()
             .filter_map(|who| {
-                match filter_members.contains(who) && Self::ensure_set_address(who, Chain::Bitcoin)
+                match filter_members.contains(who) || !Self::ensure_set_address(who, Chain::Bitcoin)
                 {
                     true => None,
                     false => Some(who.clone()),
@@ -713,15 +715,7 @@ impl<T: Config> Pallet<T> {
             })
             .collect::<Vec<T::AccountId>>();
 
-        let remain_filter_members = filter_members
-            .iter()
-            .filter_map(|who| match new_trustee_pool.contains(who) {
-                true => Some(who.clone()),
-                false => None,
-            })
-            .collect::<Vec<_>>();
-
-        LittleBlackHouse::<T>::put(remain_filter_members);
+        LittleBlackHouse::<T>::put(filter_members);
 
         let desired_members =
             <T as pallet_elections_phragmen::Config>::DesiredMembers::get() as usize;
