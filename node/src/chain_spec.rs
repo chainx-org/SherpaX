@@ -235,6 +235,13 @@ fn sherpax_genesis(
         })
         .expect("bitcoin trustees generation can not fail; qed");
 
+    let members = vec![
+        (get_account_id_from_seed::<sr25519::Public>("Alice"), 0),
+        (get_account_id_from_seed::<sr25519::Public>("Bob"), 0),
+        (get_account_id_from_seed::<sr25519::Public>("Charlie"), 0),
+        (get_account_id_from_seed::<sr25519::Public>("Dave"), 0),
+    ];
+
     sherpax_runtime::GenesisConfig {
         system: sherpax_runtime::SystemConfig {
             code: sherpax_runtime::WASM_BINARY
@@ -275,7 +282,9 @@ fn sherpax_genesis(
             key: root_key.clone(),
         },
         council: sherpax_runtime::CouncilConfig::default(),
-        elections: sherpax_runtime::ElectionsConfig::default(),
+        elections: sherpax_runtime::ElectionsConfig {
+            members
+        },
         x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
             trustees,
             genesis_trustee_transition_duration: 30 * DAYS,
@@ -295,7 +304,7 @@ fn sherpax_genesis(
                 10 * 60,              // target_spacing_seconds
                 4,                    // retargeting_factor
             ), // retargeting_factor
-            btc_withdrawal_fee: 500000,
+            btc_withdrawal_fee: 0,
             max_withdrawal_count: 100,
             verifier: BtcTxVerifier::Recover,
         },

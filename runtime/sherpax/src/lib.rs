@@ -393,8 +393,8 @@ parameter_types! {
     pub const VotingBondFactor: Balance = deposit(0, 32);
     pub const VotingBond: Balance = EXISTENTIAL_DEPOSIT;
     pub const TermDuration: BlockNumber = DAYS;
-    pub const DesiredMembers: u32 = 11;
-    pub const DesiredRunnersUp: u32 = 7;
+    pub const DesiredMembers: u32 = 4;
+    pub const DesiredRunnersUp: u32 = 2;
     pub const ElectionsPhragmenPalletId: LockIdentifier = *b"pcx/phre";
 }
 

@@ -524,14 +524,7 @@ fn trustees() -> Vec<(
             hex::decode("0263d46c760d3e04883d4b433c9ce2bc32130acd9faad0192a2b375dbba9f865c3")
                 .expect("hex decode failed"),
         ),
-        (
-            dave(),
-            b"".to_vec(),
-            hex::decode("029f9830fe29e28064ee2ee57423f000146b75f7f92131d9089e5b395f6e51daf7")
-                .expect("hex decode failed"),
-            hex::decode("033ad05ed2677f49c9591a7c273b5d13afb26c2e964deee403178c053e2149a1fd")
-                .expect("hex decode failed"),
-        ),
+
     ];
     let btc_config = TrusteeInfoConfig {
         min_trustee_count: 3,
