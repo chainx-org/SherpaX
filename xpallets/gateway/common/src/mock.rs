@@ -1,6 +1,8 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
 use std::{cell::RefCell, convert::TryFrom, time::Duration};
+use std::cmp::max;
+use std::convert::TryInto;
 
 use codec::{Decode, Encode};
 use frame_support::{
@@ -8,12 +10,16 @@ use frame_support::{
     traits::{ChangeMembers, GenesisBuild, LockIdentifier, UnixTime},
 };
 use frame_system::{EnsureRoot, EnsureSignedBy};
-use sp_core::{crypto::UncheckedInto, H256};
+use light_bitcoin::keys::{Address, Public};
+use light_bitcoin::mast::{compute_min_threshold, Mast};
+use light_bitcoin::script::{Builder, Bytes, Opcode};
+use sp_core::H256;
 use sp_io::hashing::blake2_256;
+use sp_keyring::sr25519;
 use sp_runtime::{
     testing::Header,
-    traits::{BlakeTwo256, IdentityLookup, Saturating},
-    AccountId32, DispatchError, DispatchResult, SaturatedConversion,
+    traits::{BlakeTwo256, IdentityLookup},
+    AccountId32, DispatchError, DispatchResult,
 };
 
 use sherpax_primitives::AssetId;
@@ -21,6 +27,7 @@ use xp_assets_registrar::Chain;
 pub use xp_protocol::{X_BTC, X_ETH};
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
 use xpallet_support::traits::{MultisigAddressFor, Validator};
+use xpallet_gateway_bitcoin::trustee::check_keys;
 
 use crate::{
     self as xpallet_gateway_common,
@@ -31,6 +38,7 @@ use crate::{
     },
     types::*,
 };
+use crate::utils::{MAX_TAPROOT_NODES, two_thirds_unsafe};
 
 pub(crate) type AccountId = AccountId32;
 pub(crate) type BlockNumber = u64;
@@ -49,7 +57,7 @@ frame_support::construct_runtime!(
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         Elections: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>},
         Assets: pallet_assets::{Pallet, Call, Storage, Event<T>},
-        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>},
+        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>},
         XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>},
         XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>},
     }
@@ -109,8 +117,8 @@ frame_support::parameter_types! {
     pub static VotingBondBase: u64 = 2;
     pub static VotingBondFactor: u64 = 0;
     pub static CandidacyBond: u64 = 3;
-    pub static DesiredMembers: u32 = 11;
-    pub static DesiredRunnersUp: u32 = 7;
+    pub static DesiredMembers: u32 = 4;
+    pub static DesiredRunnersUp: u32 = 2;
     pub static TermDuration: u64 = 5;
     pub static Members: Vec<u64> = vec![];
     pub static Prime: Option<u64> = None;
@@ -280,14 +288,39 @@ impl<T: xpallet_gateway_bitcoin::Config> ChainT<T::AssetId, T::Balance> for Mock
         xpallet_gateway_bitcoin::Pallet::<T>::withdrawal_limit(asset_id)
     }
 }
+
+const EC_P: [u8; 32] = [
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 254, 255, 255, 252, 47,
+];
+
+const ZERO_P: [u8; 32] = [0; 32];
+
 impl<T: xpallet_gateway_bitcoin::Config>
     TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, BtcTrusteeAddrInfo>
     for MockBitcoin<T>
 {
     fn check_trustee_entity(raw_addr: &[u8]) -> Result<BtcTrusteeType, DispatchError> {
-        let trustee_type =
-            BtcTrusteeType::try_from(raw_addr.to_vec()).map_err(|_| "InvalidPublicKey")?;
-        Ok(trustee_type)
+        let trustee_type = BtcTrusteeType::try_from(raw_addr.to_vec())
+            .map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidPublicKey)?;
+        let public = trustee_type.0;
+        if let Public::Normal(_) = public {
+            return Err(xpallet_gateway_bitcoin::Error::<T>::InvalidPublicKey.into());
+        }
+
+        if 2 != raw_addr[0] && 3 != raw_addr[0] {
+            return Err(xpallet_gateway_bitcoin::Error::<T>::InvalidPublicKey.into());
+        }
+
+        if ZERO_P == raw_addr[1..33] {
+            return Err(xpallet_gateway_bitcoin::Error::<T>::InvalidPublicKey.into());
+        }
+
+        if raw_addr[1..33].to_vec() >= EC_P.to_vec() {
+            return Err(xpallet_gateway_bitcoin::Error::<T>::InvalidPublicKey.into());
+        }
+
+        Ok(BtcTrusteeType(public))
     }
 
     fn generate_trustee_session_info(
@@ -295,7 +328,7 @@ impl<T: xpallet_gateway_bitcoin::Config>
             T::AccountId,
             TrusteeIntentionProps<T::AccountId, BtcTrusteeType>,
         )>,
-        _: TrusteeInfoConfig,
+        config: TrusteeInfoConfig,
     ) -> Result<
         (
             TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
@@ -303,30 +336,105 @@ impl<T: xpallet_gateway_bitcoin::Config>
         ),
         DispatchError,
     > {
-        let len = props.len();
+        let (trustees, props_info): (
+            Vec<T::AccountId>,
+            Vec<TrusteeIntentionProps<T::AccountId, BtcTrusteeType>>,
+        ) = props.into_iter().unzip();
+
+        let (hot_keys, cold_keys): (Vec<Public>, Vec<Public>) = props_info
+            .into_iter()
+            .map(|props| (props.hot_entity.0, props.cold_entity.0))
+            .unzip();
+
+        // judge all props has different pubkey
+        check_keys::<T>(&hot_keys)?;
+        check_keys::<T>(&cold_keys)?;
+
+        // [min, max] e.g. bitcoin min is 4, max is 15
+        if (trustees.len() as u32) < config.min_trustee_count
+            || (trustees.len() as u32) > config.max_trustee_count
+        {
+            return Err(xpallet_gateway_bitcoin::Error::<T>::InvalidTrusteeCount.into());
+        }
+
+        let sig_num = max(
+            two_thirds_unsafe(trustees.len() as u32),
+            compute_min_threshold(trustees.len() as u32, MAX_TAPROOT_NODES) as u32,
+        );
+
+        // Set hot address for taproot threshold address
+        let hot_pks = hot_keys
+            .into_iter()
+            .map(|k| k.try_into().map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidPublicKey))
+            .collect::<Result<Vec<_>, xpallet_gateway_bitcoin::Error<T>>>()?;
+
+        let hot_mast = Mast::new(hot_pks, sig_num).map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?;
+
+        let hot_threshold_addr: Address = hot_mast
+            .generate_address(&xpallet_gateway_bitcoin::Pallet::<T>::network_id().to_string())
+            .map_err(|_|xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?
+            .parse()
+            .map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?;
+
+        // Set cold address for taproot threshold address
+        let cold_pks = cold_keys
+            .into_iter()
+            .map(|k| k.try_into().map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress))
+            .collect::<Result<Vec<_>, xpallet_gateway_bitcoin::Error<T>>>()?;
+
+        let cold_mast = Mast::new(cold_pks, sig_num).map_err(|_| xpallet_gateway_bitcoin::Error::<T>::InvalidAddress)?;
+
+        let cold_threshold_addr: Address = cold_mast
+            .generate_address(&xpallet_gateway_bitcoin::Pallet::<T>::network_id().to_string())
+            .map_err(|_| "InvalidAddress")?
+            .parse()
+            .map_err(|_| "InvalidAddress")?;
+
+        // Aggregate public key script and corresponding personal public key index
+        let mut agg_pubkeys: Vec<Vec<u8>> = vec![];
+        let mut personal_accounts: Vec<Vec<T::AccountId>> = vec![];
+        for (i, p) in hot_mast.person_pubkeys.iter().enumerate() {
+            let script: Bytes = Builder::default()
+                .push_bytes(&p.x_coor().to_vec())
+                .push_opcode(Opcode::OP_CHECKSIG)
+                .into_script()
+                .into();
+            let mut accounts = vec![];
+            for index in hot_mast.indexs[i].iter() {
+                accounts.push(trustees[(index - 1) as usize].clone())
+            }
+            agg_pubkeys.push(script.into());
+            personal_accounts.push(accounts);
+        }
+
+        let hot_trustee_addr_info: BtcTrusteeAddrInfo = BtcTrusteeAddrInfo {
+            addr: hot_threshold_addr.to_string().into_bytes(),
+            redeem_script: vec![],
+        };
+
+        let cold_trustee_addr_info: BtcTrusteeAddrInfo = BtcTrusteeAddrInfo {
+            addr: cold_threshold_addr.to_string().into_bytes(),
+            redeem_script: vec![],
+        };
+
+        let start_height = frame_system::Pallet::<T>::block_number();
+        let trustee_num = trustees.len();
         Ok((
             TrusteeSessionInfo {
-                trustee_list: props
+                trustee_list: trustees
                     .into_iter()
-                    .enumerate()
-                    .map(|(k, a)| (a.0, k as u64 + 1))
-                    .collect::<_>(),
-                threshold: len as u16,
-                hot_address: BtcTrusteeAddrInfo {
-                    addr: vec![],
-                    redeem_script: vec![],
-                },
-                cold_address: BtcTrusteeAddrInfo {
-                    addr: vec![],
-                    redeem_script: vec![],
-                },
-                multi_account: Some(T::AccountId::default()),
-                start_height: Some(T::BlockNumber::default()),
-                end_height: Some(T::BlockNumber::default().saturating_add(10u32.saturated_into())),
+                    .zip(vec![0u64; trustee_num])
+                    .collect::<Vec<_>>(),
+                multi_account: None,
+                start_height: Some(start_height),
+                threshold: sig_num as u16,
+                hot_address: hot_trustee_addr_info,
+                cold_address: cold_trustee_addr_info,
+                end_height: None,
             },
             ScriptInfo {
-                agg_pubkeys: vec![],
-                personal_accounts: vec![],
+                agg_pubkeys,
+                personal_accounts,
             },
         ))
     }
@@ -340,6 +448,19 @@ impl crate::Config for Test {
     type BitcoinTrustee = MockBitcoin<Test>;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type WeightInfo = ();
+}
+
+pub fn alice() -> AccountId32 {
+    sr25519::Keyring::Alice.to_account_id()
+}
+pub fn bob() -> AccountId32 {
+    sr25519::Keyring::Bob.to_account_id()
+}
+pub fn charlie() -> AccountId32 {
+    sr25519::Keyring::Charlie.to_account_id()
+}
+pub fn dave() -> AccountId32 {
+    sr25519::Keyring::Dave.to_account_id()
 }
 
 pub struct ExtBuilder;
@@ -365,6 +486,10 @@ impl ExtBuilder {
         }
         .assimilate_storage(&mut storage);
 
+        let members = vec![(alice(), 0), (bob(), 0), (charlie(), 0), (dave(), 0)];
+        let _ = pallet_elections_phragmen::GenesisConfig::<Test> { members }
+            .assimilate_storage(&mut storage);
+
         sp_io::TestExternalities::new(storage)
     }
 }
@@ -376,7 +501,7 @@ fn trustees() -> Vec<(
 )> {
     let btc_trustees = vec![
         (
-            H256::repeat_byte(1).unchecked_into(),
+            alice(),
             b"".to_vec(),
             hex::decode("02df92e88c4380778c9c48268460a124a8f4e7da883f80477deaa644ced486efc6")
                 .expect("hex decode failed"),
@@ -384,7 +509,7 @@ fn trustees() -> Vec<(
                 .expect("hex decode failed"),
         ),
         (
-            H256::repeat_byte(2).unchecked_into(),
+            bob(),
             b"".to_vec(),
             hex::decode("0244d81efeb4171b1a8a433b87dd202117f94e44c909c49e42e77b69b5a6ce7d0d")
                 .expect("hex decode failed"),
@@ -392,11 +517,19 @@ fn trustees() -> Vec<(
                 .expect("hex decode failed"),
         ),
         (
-            H256::repeat_byte(3).unchecked_into(),
+            charlie(),
             b"".to_vec(),
             hex::decode("03a36339f413da869df12b1ab0def91749413a0dee87f0bfa85ba7196e6cdad102")
                 .expect("hex decode failed"),
             hex::decode("0263d46c760d3e04883d4b433c9ce2bc32130acd9faad0192a2b375dbba9f865c3")
+                .expect("hex decode failed"),
+        ),
+        (
+            dave(),
+            b"".to_vec(),
+            hex::decode("029f9830fe29e28064ee2ee57423f000146b75f7f92131d9089e5b395f6e51daf7")
+                .expect("hex decode failed"),
+            hex::decode("033ad05ed2677f49c9591a7c273b5d13afb26c2e964deee403178c053e2149a1fd")
                 .expect("hex decode failed"),
         ),
     ];

@@ -27,7 +27,6 @@ use frame_support::{
     ensure,
     log::{error, info},
     traits::{ChangeMembers, Currency, Get},
-    weights::Weight,
 };
 use frame_system::{ensure_root, ensure_signed};
 use sp_runtime::traits::{CheckedDiv, Saturating, Zero};
@@ -219,7 +218,7 @@ pub mod pallet {
                 }
             }
 
-            Self::do_trustee_election();
+            Self::do_trustee_election()?;
             Ok(())
         }
 
@@ -244,7 +243,7 @@ pub mod pallet {
                 }
             };
 
-            Self::do_trustee_election();
+            Self::do_trustee_election()?;
             Ok(Pays::No.into())
         }
 
@@ -678,10 +677,10 @@ impl<T: Config> Pallet<T> {
         [members, runnersup].concat()
     }
 
-    pub fn do_trustee_election() -> Weight {
+    pub fn do_trustee_election() -> DispatchResult {
         if Self::trustee_transition_status() {
             Self::deposit_event(Event::TrusteeTransitionNotCompleted);
-            return T::DbWeight::get().reads(1);
+            return Ok(());
         }
 
         // Current trust list
@@ -729,9 +728,7 @@ impl<T: Config> Pallet<T> {
 
         if new_trustee_pool.len() < desired_members {
             Self::deposit_event(Event::TrusteeMembersNotChanged);
-            return 0u64
-                .saturating_add(T::DbWeight::get().writes(1))
-                .saturating_add(T::DbWeight::get().reads(7));
+            return Ok(());
         }
 
         let new_trustee_candidate = new_trustee_pool[..desired_members].to_vec();
@@ -747,23 +744,12 @@ impl<T: Config> Pallet<T> {
             );
         if incoming.is_empty() && outgoing.is_empty() {
             Self::deposit_event(Event::TrusteeMembersNotChanged);
-            return 0u64
-                .saturating_add(T::DbWeight::get().writes(1))
-                .saturating_add(T::DbWeight::get().reads(7));
+            return Ok(());
         }
-        if Self::transition_trustee_session_impl(Chain::Bitcoin, new_trustee_candidate).is_err() {
-            Self::deposit_event(Event::TrusteeTransitionFail);
-            return 0u64
-                .saturating_add(T::DbWeight::get().writes(1))
-                .saturating_add(T::DbWeight::get().reads(7))
-                .saturating_add(<T as Config>::WeightInfo::transition_trustee_session());
-        }
+        Self::transition_trustee_session_impl(Chain::Bitcoin, new_trustee_candidate)?;
 
         TrusteeTransitionStatus::<T>::put(true);
-
-        0u64.saturating_add(T::DbWeight::get().writes(2))
-            .saturating_add(T::DbWeight::get().reads(7))
-            .saturating_add(<T as Config>::WeightInfo::transition_trustee_session())
+        Ok(())
     }
 }
 

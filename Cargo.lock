@@ -11505,6 +11505,7 @@ dependencies = [
  "sherpax-primitives",
  "sp-core",
  "sp-io",
+ "sp-keyring",
  "sp-runtime",
  "sp-std",
  "xp-assets-registrar",

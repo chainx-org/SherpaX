@@ -84,7 +84,7 @@ pub fn get_last_trustee_address_pair<T: Config>() -> Result<(Address, Address), 
     })
 }
 
-fn check_keys<T: Config>(keys: &[Public]) -> DispatchResult {
+pub fn check_keys<T: Config>(keys: &[Public]) -> DispatchResult {
     let has_duplicate = (1..keys.len()).any(|i| keys[i..].contains(&keys[i - 1]));
     if has_duplicate {
         log!(

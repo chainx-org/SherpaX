@@ -46,6 +46,8 @@ frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch =
 pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
 xp-gateway-bitcoin = { path = "../../../primitives/gateway/bitcoin" }
 xpallet-gateway-bitcoin = { path = "../bitcoin" }
+sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11" }
+
 
 [features]
 default = ["std"]
