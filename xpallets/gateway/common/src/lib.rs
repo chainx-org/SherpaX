@@ -960,13 +960,17 @@ impl<T: Config> Pallet<T> {
             .clone()
             .ok_or(Error::<T>::InvalidMultiAccount)?;
 
-        let _start_height = trustee_info
+        let start_height = trustee_info
             .start_height
             .ok_or(Error::<T>::InvalidTrusteeStartHeight)?;
-        let _end_height = trustee_info
-            .end_height
-            .ok_or(Error::<T>::InvalidTrusteeEndHeight)?;
 
+        if frame_system::Pallet::<T>::block_number().saturating_sub(start_height)
+            < Self::trustee_transition_duration()
+        {
+            let _end_height = trustee_info
+                .end_height
+                .ok_or(Error::<T>::InvalidTrusteeEndHeight)?;
+        }
         ensure!(
             !trustee_info
                 .trustee_list
