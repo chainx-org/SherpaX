@@ -394,8 +394,19 @@ pub mod pallet {
 
         /// A certain trust member declares the reward
         #[pallet::weight(< T as Config >::WeightInfo::claim_trustee_reward())]
-        pub fn claim_trustee_reward(origin: OriginFor<T>, session_num: u32) -> DispatchResult {
+        pub fn claim_trustee_reward(origin: OriginFor<T>, session_num: i32) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            let session_num: u32 = if session_num < 0 {
+                match session_num {
+                    -1i32 => Self::trustee_session_info_len(Chain::Bitcoin),
+                    -2i32 => Self::trustee_session_info_len(Chain::Bitcoin)
+                        .checked_sub(1)
+                        .ok_or(Error::<T>::InvalidSessionNum)?,
+                    _ => return Err(Error::<T>::InvalidSessionNum.into()),
+                }
+            } else {
+                session_num as u32
+            };
             let trustee_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
 
             Self::apply_claim_trustee_reward(&who, session_num, &trustee_info)
