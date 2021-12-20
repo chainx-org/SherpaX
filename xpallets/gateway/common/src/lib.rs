@@ -400,12 +400,6 @@ pub mod pallet {
             GenericTrusteeSessionInfo<T::AccountId, T::BlockNumber>,
             ScriptInfo<T::AccountId>,
         ),
-        /// The last trust transition was not completed.
-        TrusteeTransitionNotCompleted,
-        /// The trust members was not changed.
-        TrusteeMembersNotChanged,
-        /// The trust transition was failed.
-        TrusteeTransitionFail,
         /// Treasury transfer to trustee. [source, target, chain, session_number, reward_total]
         TransferTrusteeReward(T::AccountId, T::AccountId, Chain, u32, Balanceof<T>),
         /// The reward of trustee is assigned. [who, chain, session_number, reward_info]
@@ -461,6 +455,10 @@ pub mod pallet {
         InvalidTrusteeEndHeight,
         /// not multi signature count
         NotMultiSigCount,
+        /// The last trust transition was not completed.
+        LastTransitionNotCompleted,
+        /// The trust members was not enough.
+        TrusteeMembersNotEnough,
     }
 
     #[pallet::storage]
@@ -681,8 +679,7 @@ impl<T: Config> Pallet<T> {
 
     pub fn do_trustee_election() -> DispatchResult {
         if Self::trustee_transition_status() {
-            Self::deposit_event(Event::TrusteeTransitionNotCompleted);
-            return Ok(());
+            return Err(Error::<T>::LastTransitionNotCompleted.into());
         }
 
         // Current trust list
@@ -704,7 +701,9 @@ impl<T: Config> Pallet<T> {
         let filter_members: Vec<T::AccountId> =
             [Self::little_black_house(), multi_count_0].concat();
 
-        let new_trustee_pool: Vec<T::AccountId> = Self::generate_trustee_pool()
+        let all_trustee_pool = Self::generate_trustee_pool();
+
+        let new_trustee_pool: Vec<T::AccountId> = all_trustee_pool
             .iter()
             .filter_map(|who| {
                 match filter_members.contains(who) || !Self::ensure_set_address(who, Chain::Bitcoin)
@@ -715,14 +714,21 @@ impl<T: Config> Pallet<T> {
             })
             .collect::<Vec<T::AccountId>>();
 
-        LittleBlackHouse::<T>::put(filter_members);
+        let remain_filter_members = filter_members
+            .iter()
+            .filter_map(|who| match all_trustee_pool.contains(who) {
+                true => Some(who.clone()),
+                false => None,
+            })
+            .collect::<Vec<_>>();
+
+        LittleBlackHouse::<T>::put(remain_filter_members);
 
         let desired_members =
             <T as pallet_elections_phragmen::Config>::DesiredMembers::get() as usize;
 
         if new_trustee_pool.len() < desired_members {
-            Self::deposit_event(Event::TrusteeMembersNotChanged);
-            return Ok(());
+            return Err(Error::<T>::TrusteeMembersNotEnough.into());
         }
 
         let new_trustee_candidate = new_trustee_pool[..desired_members].to_vec();
@@ -737,8 +743,7 @@ impl<T: Config> Pallet<T> {
                 &new_trustee_candidate_sorted,
             );
         if incoming.is_empty() && outgoing.is_empty() {
-            Self::deposit_event(Event::TrusteeMembersNotChanged);
-            return Ok(());
+            return Err(Error::<T>::TrusteeMembersNotEnough.into());
         }
         Self::transition_trustee_session_impl(Chain::Bitcoin, new_trustee_candidate)?;
 
