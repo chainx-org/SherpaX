@@ -316,7 +316,16 @@ pub mod pallet {
         /// This is a root-only operation.
         #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin())]
         pub fn set_relayer(origin: OriginFor<T>, relayer: T::AccountId) -> DispatchResult {
-            ensure_root(origin)?;
+            match ensure_signed(origin.clone()) {
+                Ok(who) => {
+                    if who != Self::trustee_multisig_addr(Chain::Bitcoin) {
+                        return Err(Error::<T>::InvalidMultisig.into());
+                    }
+                }
+                Err(_) => {
+                    ensure_root(origin)?;
+                }
+            };
             Relayer::<T>::put(relayer);
             Ok(())
         }
@@ -581,6 +590,7 @@ pub mod pallet {
         )>,
         pub genesis_trustee_transition_duration: T::BlockNumber,
         pub genesis_trustee_transition_status: bool,
+        pub relayer: T::AccountId,
     }
 
     #[cfg(feature = "std")]
@@ -590,6 +600,7 @@ pub mod pallet {
                 trustees: Default::default(),
                 genesis_trustee_transition_duration: Default::default(),
                 genesis_trustee_transition_status: Default::default(),
+                relayer: Default::default(),
             }
         }
     }
@@ -616,6 +627,7 @@ pub mod pallet {
                 }
                 TrusteeTransitionDuration::<T>::put(config.genesis_trustee_transition_duration);
                 TrusteeTransitionStatus::<T>::put(&config.genesis_trustee_transition_status);
+                Relayer::<T>::put(&config.relayer)
             };
             extra_genesis_builder(self);
         }

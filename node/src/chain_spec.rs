@@ -117,6 +117,7 @@ pub fn benchmarks_config(id: ParaId) -> Result<ChainSpec, String> {
                 id,
                 btc_genesis_params(include_str!("../res/btc_genesis_params_testnet.json")),
                 crate::bitcoin::benchmarks_trustees(),
+                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         vec![],
@@ -156,6 +157,7 @@ pub fn dev_config(id: ParaId) -> ChainSpec {
                 id,
                 btc_genesis_params(include_str!("../res/btc_genesis_params_testnet.json")),
                 crate::bitcoin::local_testnet_trustees(),
+                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         vec![],
@@ -193,7 +195,8 @@ pub fn sherpax_staging_config(id: ParaId) -> ChainSpec {
                 ],
                 id,
                 btc_genesis_params(include_str!("../res/btc_genesis_params_testnet.json")),
-                crate::bitcoin::local_testnet_trustees(),
+                vec![],
+                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         vec![],
@@ -218,6 +221,7 @@ fn sherpax_genesis(
     id: ParaId,
     bitcoin: BtcGenesisParams,
     trustees: Vec<(Chain, TrusteeInfoConfig, Vec<BtcTrusteeParams>)>,
+    relayer: AccountId,
 ) -> sherpax_runtime::GenesisConfig {
     let btc_genesis_trustees = trustees
         .iter()
@@ -280,6 +284,7 @@ fn sherpax_genesis(
             trustees,
             genesis_trustee_transition_duration: 30 * DAYS,
             genesis_trustee_transition_status: false,
+            relayer,
         },
         x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
             genesis_trustees: btc_genesis_trustees,
