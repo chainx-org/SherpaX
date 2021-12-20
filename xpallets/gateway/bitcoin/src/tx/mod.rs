@@ -209,6 +209,18 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
         let tx_hash = tx.hash();
 
         if proposal_hash == tx_hash {
+            // Check if the transaction is normal witness
+            let input = &tx.inputs()[0];
+            if input.script_witness.len() != 3 {
+                error!(
+                    target: "runtime::bitcoin",
+                    "[withdraw] Withdraw tx {:?} is not normal witness, proposal:{:?}",
+                    tx,
+                    proposal
+                );
+                return BtcTxResult::Failure;
+            }
+
             let mut total = T::Balance::zero();
             for number in proposal.withdrawal_id_list.iter() {
                 // just for event record
@@ -233,10 +245,6 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
             }
 
             // Record trustee signature
-            let input = &tx.inputs()[0];
-            if input.script_witness.len() != 3 {
-                return BtcTxResult::Failure;
-            }
             T::TrusteeInfoUpdate::update_trustee_sig_record(
                 input.script_witness[1].as_slice(),
                 tx.outputs.iter().map(|info| info.value).sum(),
