@@ -43,6 +43,8 @@ pub trait TrusteeSession<AccountId, BlockNumber, TrusteeAddress: BytesLike> {
     fn current_trustee_session(
     ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError>;
 
+    fn current_proxy_account() -> Result<Vec<AccountId>, DispatchError>;
+
     fn last_trustee_session(
     ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError>;
 
@@ -63,6 +65,10 @@ impl<AccountId, BlockNumber, TrusteeAddress: BytesLike>
 
     fn current_trustee_session(
     ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError> {
+        Err("NoTrustee".into())
+    }
+
+    fn current_proxy_account() -> Result<Vec<AccountId>, DispatchError> {
         Err("NoTrustee".into())
     }
 

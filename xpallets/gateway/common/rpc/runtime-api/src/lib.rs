@@ -38,7 +38,7 @@ sp_api::decl_runtime_apis! {
 
         fn trustee_properties(chain: Chain, who: AccountId) -> Option<GenericTrusteeIntentionProps<AccountId>>;
 
-        fn trustee_session_info(chain: Chain) -> Option<GenericTrusteeSessionInfo<AccountId, BlockNumber>>;
+        fn trustee_session_info(chain: Chain, session_number: i32) -> Option<GenericTrusteeSessionInfo<AccountId, BlockNumber>>;
 
         fn generate_trustee_session_info(chain: Chain, Vec<AccountId>) -> Result<(GenericTrusteeSessionInfo<AccountId, BlockNumber>, ScriptInfo<AccountId>), DispatchError>;
     }

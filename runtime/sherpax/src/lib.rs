@@ -684,9 +684,23 @@ impl_runtime_apis! {
             XGatewayCommon::trustee_intention_props_of(who, chain)
         }
 
-        fn trustee_session_info(chain: Chain) -> Option<GenericTrusteeSessionInfo<AccountId, BlockNumber>> {
-            let number = XGatewayCommon::trustee_session_info_len(chain);
-            XGatewayCommon::trustee_session_info_of(chain, number)
+        fn trustee_session_info(chain: Chain, session_number: i32) -> Option<GenericTrusteeSessionInfo<AccountId, BlockNumber>> {
+            if session_number < 0 {
+                let number = match session_number {
+                    -1i32 => Some(XGatewayCommon::trustee_session_info_len(chain)),
+                    -2i32 => XGatewayCommon::trustee_session_info_len(chain).checked_sub(1),
+                    _ => None
+                };
+                if let Some(number) = number {
+                    XGatewayCommon::trustee_session_info_of(chain, number)
+                }else{
+                    None
+                }
+            }else{
+                let number = session_number as u32;
+                XGatewayCommon::trustee_session_info_of(chain, number)
+            }
+
         }
 
         fn generate_trustee_session_info(chain: Chain, candidates: Vec<AccountId>) -> Result<(GenericTrusteeSessionInfo<AccountId, BlockNumber>, ScriptInfo<AccountId>), DispatchError> {

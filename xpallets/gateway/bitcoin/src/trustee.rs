@@ -44,6 +44,10 @@ pub fn current_trustee_session<T: Config>(
     T::TrusteeSessionProvider::current_trustee_session()
 }
 
+pub fn current_proxy_account<T: Config>() -> Result<Vec<T::AccountId>, DispatchError> {
+    T::TrusteeSessionProvider::current_proxy_account()
+}
+
 #[inline]
 fn current_trustee_addr_pair<T: Config>(
 ) -> Result<(BtcTrusteeAddrInfo, BtcTrusteeAddrInfo), DispatchError> {
@@ -295,6 +299,10 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, Bt
 
 impl<T: Config> Pallet<T> {
     pub fn ensure_trustee(who: &T::AccountId) -> DispatchResult {
+        if current_proxy_account::<T>()?.iter().any(|n| n == who) {
+            return Ok(());
+        }
+
         let trustee_session_info = current_trustee_session::<T>()?;
         if trustee_session_info
             .trustee_list

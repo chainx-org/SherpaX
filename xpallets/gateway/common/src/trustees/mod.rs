@@ -57,6 +57,19 @@ impl<T: Config, TrusteeAddress: BytesLike + ChainProvider>
         Self::trustee_session(number)
     }
 
+    fn current_proxy_account() -> Result<Vec<T::AccountId>, DispatchError> {
+        Ok(Self::current_trustee_session()?
+            .trustee_list
+            .iter()
+            .filter_map(|info| {
+                match Pallet::<T>::trustee_intention_props_of(&info.0, Chain::Bitcoin) {
+                    None => None,
+                    Some(n) => n.0.proxy_account,
+                }
+            })
+            .collect::<Vec<T::AccountId>>())
+    }
+
     fn last_trustee_session(
     ) -> Result<TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddress>, DispatchError>
     {

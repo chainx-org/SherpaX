@@ -77,6 +77,7 @@ where
     #[rpc(name = "xgatewaycommon_bitcoinTrusteeSessionInfo")]
     fn btc_trustee_session_info(
         &self,
+        session_number: i32,
         at: Option<BlockHash>,
     ) -> Result<BtcTrusteeSessionInfo<AccountId, BlockNumber>>;
 
@@ -135,13 +136,14 @@ where
     fn generic_trustee_session_info(
         &self,
         chain: Chain,
+        session_number: i32,
         at: Option<<Block as BlockT>::Hash>,
     ) -> Result<GenericTrusteeSessionInfo<AccountId, BlockNumber>> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
 
         let result = api
-            .trustee_session_info(&at, chain)
+            .trustee_session_info(&at, chain, session_number)
             .map_err(runtime_error_into_rpc_err)?
             .ok_or_else(trustee_inexistent_rpc_err)?;
 
@@ -283,9 +285,10 @@ where
 
     fn btc_trustee_session_info(
         &self,
+        session_number: i32,
         at: Option<<Block as BlockT>::Hash>,
     ) -> Result<BtcTrusteeSessionInfo<AccountId, BlockNumber>> {
-        let info = self.generic_trustee_session_info(Chain::Bitcoin, at)?;
+        let info = self.generic_trustee_session_info(Chain::Bitcoin, session_number, at)?;
         BtcTrusteeSessionInfo::<_, _>::try_from(info).map_err(trustee_decode_error_into_rpc_err)
     }
 
