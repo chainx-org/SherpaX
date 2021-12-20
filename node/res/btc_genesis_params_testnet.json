@@ -1,6 +1,6 @@
 {
     "network": "Testnet",
-    "confirmation_number": 6,
+    "confirmation_number": 2,
     "height": 69150,
     "hash": "00000089fb0187d683ca18ed77a30f2e16107bb5a64c2fcdacec482ca9bb6bdf",
     "version": 536870912,

@@ -163,7 +163,7 @@ pub mod pallet {
 
             let tx = Self::deserialize_tx(tx.as_slice())?;
             let spent_outputs = Self::deserialize_spent_outputs(spent_outputs.as_slice())?;
-            // log!(debug, "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}, spent_outputs: {:?}", from, withdrawal_id_list, tx, spent_outputs);
+            log!(debug, "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}, spent_outputs: {:?}", from, withdrawal_id_list, tx, spent_outputs);
 
             Self::apply_create_taproot_withdraw(from, tx, withdrawal_id_list, spent_outputs)?;
             Ok(())
