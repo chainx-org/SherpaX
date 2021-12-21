@@ -33,7 +33,7 @@ AssetId Admin设置想要mint的金额
 ```txt
 网络名称: ShapaX-Testnet
 RPC URL:https://sherpax-testnet.chainx.org/rpc
-链ID:1510
+链ID:1505
 Currency Symbol:KSX
 ```
 之后我们就可以在EVM部署相对应的erc20合约: name=WBTC Token, symbol=WBTC, decimals=18
