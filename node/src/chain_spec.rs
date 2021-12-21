@@ -18,6 +18,8 @@ use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use std::collections::BTreeMap;
+use sp_core::crypto::UncheckedInto;
+
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
@@ -212,6 +214,68 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         // Extensions
         Default::default(),
     ))
+}
+
+#[allow(unused)]
+pub fn testnet_config() -> Result<ChainSpec, String> {
+    let mut properties = Properties::new();
+    properties.insert("tokenSymbol".into(), "KSX".into());
+    properties.insert("tokenDecimals".into(), 18i32.into());
+    properties.insert(
+        "ss58Format".into(),
+        sherpax_runtime::SS58Prefix::get().into(),
+    );
+
+    Ok(ChainSpec::from_genesis(
+        // Name
+        "SherpaX Testnet",
+        // ID
+        "sherpax_testnet",
+        ChainType::Live,
+        move || {
+            sherpax_genesis(
+                // Initial PoA authorities
+                vec![
+                    (
+                        hex!("30c72a127fbbadf95c6b0ef5f27c8471e7fc602d8ceaf6e28f9519354b99a63d").into(),
+                        hex!("e07d42d9b6a3403be406efaaaf952981c2e124cabc305b49b179546d5cfe7f0e").unchecked_into(),
+                        hex!("67b4639b336f7fcefc2b7696be57dbf5059208d01ad67e08ff9688d97efdb519").unchecked_into(),
+                    ),
+                    (
+                        hex!("a4c41a8cce0963ae34319687d5f6b52be531586e49448d63b9366b86f7455438").into(),
+                        hex!("86a185b97c75744c614355991d5faac5ea8a57eb6b24a4baf352246f5eb58221").unchecked_into(),
+                        hex!("c17b592b9ccf92127726607881c51304df8b8bb002caff9cd864a046cc85d4d0").unchecked_into(),
+                    ),
+                ],
+                // Sudo account
+                hex!("a62add1af3bcf9256aa2def0fea1b9648cb72517ccee92a891dc2903a9093e52").into(),
+                // Pre-funded accounts
+                vec![
+                    hex!("a62add1af3bcf9256aa2def0fea1b9648cb72517ccee92a891dc2903a9093e52").into(),
+                ],
+                true,
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                vec![],
+                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
+            )
+        },
+        // Bootnodes
+        vec![],
+        // Telemetry
+        None,
+        // Protocol ID
+        None,
+        // Properties
+        Some(properties),
+        // Extensions
+        Default::default(),
+    ))
+}
+
+pub fn live_testnet_config() -> Result<ChainSpec, String> {
+    ChainSpec::from_json_bytes(&include_bytes!("../res/sherpax-testnet-raw.json")[..])
 }
 
 fn sherpax_session_keys(aura: AuraId, grandpa: GrandpaId) -> SessionKeys {

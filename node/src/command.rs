@@ -65,6 +65,7 @@ impl SubstrateCli for Cli {
                     );
                 }
             }
+            "testnet" => Box::new(chain_spec::live_testnet_config()?),
             "" | "local" => Box::new(chain_spec::local_testnet_config()?),
             path => {
                 use std::fs::File;
