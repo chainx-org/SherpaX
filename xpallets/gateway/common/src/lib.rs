@@ -780,8 +780,9 @@ impl<T: Config> Pallet<T> {
             return Err(Error::<T>::TrusteeMembersNotEnough.into());
         }
         Self::transition_trustee_session_impl(Chain::Bitcoin, new_trustee_candidate)?;
-
-        TrusteeTransitionStatus::<T>::put(true);
+        if Self::trustee_session_info_len(Chain::Bitcoin) != 1 {
+            TrusteeTransitionStatus::<T>::put(true);
+        }
         Ok(())
     }
 }
