@@ -1004,7 +1004,7 @@ impl<T: Config> Pallet<T> {
         );
 
         <T as xpallet_gateway_records::Config>::Currency::transfer(
-            &who,
+            who,
             &multi_account,
             amount,
             ExistenceRequirement::AllowDeath,

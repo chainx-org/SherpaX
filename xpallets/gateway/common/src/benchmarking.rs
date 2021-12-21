@@ -318,12 +318,12 @@ benchmarks! {
         assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 2);
         assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 2).is_some());
         let reward: Balanceof<T> = 1_00_000_000u32.into();
-        let session_num = 1;
+        let session_num = 1_i32;
         #[cfg(feature = "runtime-benchmarks")]
         update_trustee_info::<T>(session_num);
         #[cfg(feature = "runtime-benchmarks")]
         let reward: Balanceof<T> = <T as xpallet_gateway_records::Config>::Currency::free_balance(&caller).checked_div(&2u32.into()).unwrap();
-        let multi_account = <T as crate::Config>::BitcoinTrusteeSessionProvider::trustee_session(session_num).unwrap().multi_account.unwrap();
+        let multi_account = <T as crate::Config>::BitcoinTrusteeSessionProvider::trustee_session(session_num as u32).unwrap().multi_account.unwrap();
         <T as xpallet_gateway_records::Config>::Currency::deposit_creating(&multi_account, reward);
     }: _(RawOrigin::Signed(caller.clone()), session_num)
     verify {

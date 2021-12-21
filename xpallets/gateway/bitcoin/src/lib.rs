@@ -497,12 +497,12 @@ pub mod pallet {
             Verifier::<T>::put(self.verifier);
 
             // init trustee (not this action should ha)
-            // if !self.genesis_trustees.is_empty() {
-            //     T::TrusteeSessionProvider::genesis_trustee(
-            //         Pallet::<T>::chain(),
-            //         &self.genesis_trustees,
-            //     );
-            // }
+            if !self.genesis_trustees.is_empty() {
+                T::TrusteeSessionProvider::genesis_trustee(
+                    Pallet::<T>::chain(),
+                    &self.genesis_trustees,
+                );
+            }
         }
     }
 

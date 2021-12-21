@@ -295,13 +295,14 @@ impl ExtBuilder {
             trustees: info,
             genesis_trustee_transition_duration: Default::default(),
             genesis_trustee_transition_status: Default::default(),
+            ..Default::default()
         }
         .assimilate_storage(&mut storage);
 
         let (genesis_info, genesis_hash, network_id) = load_mainnet_btc_genesis_header_info();
 
         let _ = xpallet_gateway_bitcoin::GenesisConfig::<Test> {
-            genesis_trustees,
+            genesis_trustees: genesis_trustees.clone(),
             genesis_info,
             genesis_hash,
             network_id,

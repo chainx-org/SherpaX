@@ -125,8 +125,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
         if Self::trustee_transition_status() && !status {
             AggPubkeyInfo::<T>::remove_all(None);
             let last_session_num = Self::trustee_session_info_len(Chain::Bitcoin)
-                .checked_sub(1)
-                .unwrap_or_else(|| 0);
+                .saturating_sub(1);
             TrusteeSessionInfoOf::<T>::mutate(
                 Chain::Bitcoin,
                 last_session_num,
