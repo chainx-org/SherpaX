@@ -140,7 +140,9 @@ scan:https://signet.bitcoinexplorer.org/tx/3af6ff1d16e38c349cc87da12b4b6fae51884
 
 ##### 查询提现手续费
 
-todo!
+![img](https://cdn.jsdelivr.net/gh/hacpy/PictureBed@master/Document/16400554712471640055471241.png)
+
+唯一的参数是资产ID，默认使用1就是sbtc
 
 #### 信托提交提现
 
@@ -234,16 +236,12 @@ scan:https://signet.bitcoinexplorer.org/tx/840a8f49d8dbd88b623cbbd13b72a487e2f1c
 
 1.每个月上一届信托可以向国库申请`10500000/12*0.05=43750` ksx奖励到多签账户。多签账户的查询参考`xgatewaycommon_bitcoinTrusteeSessionInfo`，传入参数-2查询上一届信托信息(如下图所示)。
 
-todo!(-1 --> -2)
-
-![img](https://cdn.jsdelivr.net/gh/hacpy/PictureBed@master/Document/16399983843311639998384325.png)
+![img](https://cdn.jsdelivr.net/gh/hacpy/PictureBed@master/Document/16400561829991640056182992.png)
 
 ### 奖励分配
 
 奖励申请到账后，上一届信托成员中任一人通过下图所示交易进行奖励分配，最终奖励会分发到各个信托的账户中。
 
-![img](https://cdn.jsdelivr.net/gh/hacpy/PictureBed@master/Document/16399982708971639998270888.png)
+![img](https://cdn.jsdelivr.net/gh/hacpy/PictureBed@master/Document/16400556024121640055602407.png)
 
 - sessionNum: 负数：-1表示查询当前届信托信息，-2表示查询上一届信托信息。正数：表示具体某届的信托信息
-
-todo!(上图需要重新截，u32已经换成i32)
