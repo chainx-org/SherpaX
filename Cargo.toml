@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "node",
+    "runtime/sherpax",
+
+    "xpallets/assets",
+    "xpallets/assets-bridge"
+]
+
+[profile.release]
+# Substrate runtime requires unwinding.
+panic = "unwind"
