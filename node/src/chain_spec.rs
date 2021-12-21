@@ -1,3 +1,8 @@
+use crate::bitcoin::{
+    btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, BtcTxVerifier, Chain,
+    TrusteeInfoConfig,
+};
+use hex_literal::hex;
 use sc_chain_spec::ChainSpecExtension;
 use sc_service::{ChainType, Properties};
 use serde::de::DeserializeOwned;
@@ -6,14 +11,13 @@ pub use sherpax_runtime::{
     constants::currency::UNITS, opaque::SessionKeys, AccountId, AssetsBridgeConfig, AssetsConfig,
     AuraConfig, Balance, BalancesConfig, BlockNumber, EthereumConfig, EvmConfig, GenesisAccount,
     GenesisConfig, GrandpaConfig, SessionConfig, Signature, SudoConfig, SystemConfig,
-    VestingConfig, WASM_BINARY,
+    VestingConfig, DAYS, WASM_BINARY,
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use std::collections::BTreeMap;
-
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
@@ -63,7 +67,7 @@ pub fn authority_keys_from_seed(s: &str) -> (AccountId, AuraId, GrandpaId) {
 pub fn benchmarks_config() -> Result<ChainSpec, String> {
     let mut properties = Properties::new();
     properties.insert("tokenSymbol".into(), "KSX".into());
-    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("tokenDecimals".into(), 18i32.into());
     properties.insert(
         "ss58Format".into(),
         sherpax_runtime::SS58Prefix::get().into(),
@@ -87,6 +91,11 @@ pub fn benchmarks_config() -> Result<ChainSpec, String> {
                     caller.clone(),
                 ],
                 false,
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                crate::bitcoin::benchmarks_trustees(),
+                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         // Bootnodes
@@ -105,7 +114,7 @@ pub fn benchmarks_config() -> Result<ChainSpec, String> {
 pub fn development_config() -> Result<ChainSpec, String> {
     let mut properties = Properties::new();
     properties.insert("tokenSymbol".into(), "KSX".into());
-    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("tokenDecimals".into(), 18i32.into());
     properties.insert(
         "ss58Format".into(),
         sherpax_runtime::SS58Prefix::get().into(),
@@ -131,6 +140,11 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 true,
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                crate::bitcoin::local_testnet_trustees(),
+                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         // Bootnodes
@@ -149,7 +163,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let mut properties = Properties::new();
     properties.insert("tokenSymbol".into(), "KSX".into());
-    properties.insert("tokenDecimals".into(), 18.into());
+    properties.insert("tokenDecimals".into(), 18i32.into());
     properties.insert(
         "ss58Format".into(),
         sherpax_runtime::SS58Prefix::get().into(),
@@ -180,6 +194,11 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie"),
                 ],
                 true,
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                vec![],
+                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         // Bootnodes
@@ -205,6 +224,9 @@ pub fn sherpax_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     load_genesis: bool,
+    bitcoin: BtcGenesisParams,
+    trustees: Vec<(Chain, TrusteeInfoConfig, Vec<BtcTrusteeParams>)>,
+    relayer: AccountId,
 ) -> GenesisConfig {
     let (balances, vesting) = if load_genesis {
         let (balances, vesting) = load_genesis_config();
@@ -224,6 +246,22 @@ pub fn sherpax_genesis(
 
         (balances, Default::default())
     };
+
+    let btc_genesis_trustees = trustees
+        .iter()
+        .find_map(|(chain, _, trustee_params)| {
+            if *chain == Chain::Bitcoin {
+                Some(
+                    trustee_params
+                        .iter()
+                        .map(|i| (i.0).clone())
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                None
+            }
+        })
+        .expect("bitcoin trustees generation can not fail; qed");
 
     let wasm_binary = WASM_BINARY.unwrap();
     GenesisConfig {
@@ -249,13 +287,42 @@ pub fn sherpax_genesis(
         },
         sudo: SudoConfig {
             // Assign network admin rights.
-            key: root_key,
+            key: root_key.clone(),
         },
         vesting: VestingConfig { vesting },
         evm: Default::default(),
         ethereum: Default::default(),
         assets: Default::default(),
         assets_bridge: AssetsBridgeConfig { admin_key: None },
+        council: sherpax_runtime::CouncilConfig::default(),
+        elections: sherpax_runtime::ElectionsConfig::default(),
+        x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
+            trustees,
+            genesis_trustee_transition_duration: 30 * DAYS,
+            genesis_trustee_transition_status: false,
+            relayer,
+        },
+        x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
+            genesis_trustees: btc_genesis_trustees,
+            network_id: bitcoin.network,
+            confirmation_number: bitcoin.confirmation_number,
+            genesis_hash: bitcoin.hash(),
+            genesis_info: (bitcoin.header(), bitcoin.height),
+            params_info: BtcParams::new(
+                // for signet and regtest
+                545259519,            // max_bits
+                2 * 60 * 60,          // block_max_future
+                2 * 7 * 24 * 60 * 60, // target_timespan_seconds
+                10 * 60,              // target_spacing_seconds
+                4,                    // retargeting_factor
+            ), // retargeting_factor
+            btc_withdrawal_fee: 500000,
+            max_withdrawal_count: 100,
+            verifier: BtcTxVerifier::Recover,
+        },
+        x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
+            initial_asset_chain: vec![(root_key, 1, Chain::Bitcoin)],
+        },
     }
 }
 

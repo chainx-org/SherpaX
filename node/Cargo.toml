@@ -14,6 +14,7 @@ name = "sherpax"
 [dependencies]
 structopt = "0.3.8"
 jsonrpc-core = "18.0.0"
+hex = "0.4"
 hex-literal = "0.3.3"
 serde = { version = "1.0.119", features = ["derive"] }
 serde_json = "1.0.68"
@@ -70,6 +71,14 @@ fc-rpc = { git = "https://github.com/chainx-org/frontier", branch = "new-polkado
 fc-mapping-sync = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
 fc-db = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
 pallet-ethereum = { git="https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+
+# Cross Chain
+sherpax-primitives = { path = "../primitives" }
+xpallet-gateway-common-rpc = { path = "../xpallets/gateway/common/rpc" }
+xpallet-gateway-common-rpc-runtime-api = { path = "../xpallets/gateway/common/rpc/runtime-api" }
+xpallet-gateway-records-rpc = { path = "../xpallets/gateway/records/rpc" }
+xpallet-gateway-records-rpc-runtime-api = { path = "../xpallets/gateway/records/rpc/runtime-api" }
+
 
 [build-dependencies]
 substrate-build-script-utils = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }

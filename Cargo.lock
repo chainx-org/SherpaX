@@ -400,6 +400,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
+name = "bech32"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
+
+[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -425,6 +431,23 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
+]
+
+[[package]]
+name = "bitcoin-bech32"
+version = "0.12.1"
+source = "git+https://github.com/chainx-org/rust-bech32-bitcoin?branch=master#1de465d410c8f83e16409e71303b3389a82a3e50"
+dependencies = [
+ "bech32",
+]
+
+[[package]]
+name = "bitcoin_hashes"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "006cc91e1a1d99819bc5b8214be3555c1f0611b169f527a1fdc54ed1f2b745b0"
+dependencies = [
+ "core2",
 ]
 
 [[package]]
@@ -553,6 +576,12 @@ dependencies = [
  "futures-lite",
  "once_cell",
 ]
+
+[[package]]
+name = "bs58"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "476e9cd489f9e121e02ffa6014a8ef220ecb15c05ed23fc34cca13925dc283fb"
 
 [[package]]
 name = "bs58"
@@ -821,6 +850,15 @@ name = "core-foundation-sys"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
+
+[[package]]
+name = "core2"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2cf12d2dad3ed124aa116f59561428478993d69ab81ae4d30e5349c9c5b5a5f6"
+dependencies = [
+ "memchr",
+]
 
 [[package]]
 name = "cpp_demangle"
@@ -2944,7 +2982,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af9b4abdeaa420593a297c8592f63fad4234f4b88dc9343b8fd8e736c35faa59"
 dependencies = [
  "asn1_der",
- "bs58",
+ "bs58 0.4.0",
  "ed25519-dalek",
  "either",
  "fnv",
@@ -3370,9 +3408,9 @@ dependencies = [
  "base64 0.12.3",
  "digest 0.9.0",
  "hmac-drbg 0.3.0",
- "libsecp256k1-core",
- "libsecp256k1-gen-ecmult",
- "libsecp256k1-gen-genmult",
+ "libsecp256k1-core 0.2.2",
+ "libsecp256k1-gen-ecmult 0.2.1",
+ "libsecp256k1-gen-genmult 0.2.1",
  "rand 0.7.3",
  "serde",
  "sha2 0.9.8",
@@ -3389,10 +3427,46 @@ dependencies = [
  "base64 0.12.3",
  "digest 0.9.0",
  "hmac-drbg 0.3.0",
- "libsecp256k1-core",
- "libsecp256k1-gen-ecmult",
- "libsecp256k1-gen-genmult",
+ "libsecp256k1-core 0.2.2",
+ "libsecp256k1-gen-ecmult 0.2.1",
+ "libsecp256k1-gen-genmult 0.2.1",
  "rand 0.7.3",
+ "serde",
+ "sha2 0.9.8",
+ "typenum",
+]
+
+[[package]]
+name = "libsecp256k1"
+version = "0.7.0"
+source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
+dependencies = [
+ "arrayref",
+ "base64 0.13.0",
+ "digest 0.9.0",
+ "hmac-drbg 0.3.0",
+ "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
+ "libsecp256k1-gen-ecmult 0.3.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
+ "libsecp256k1-gen-genmult 0.3.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
+ "rand 0.8.4",
+ "serde",
+ "sha2 0.9.8",
+ "typenum",
+]
+
+[[package]]
+name = "libsecp256k1"
+version = "0.7.0"
+source = "git+https://github.com/chainx-org/libsecp256k1.git#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
+dependencies = [
+ "arrayref",
+ "base64 0.13.0",
+ "digest 0.9.0",
+ "hmac-drbg 0.3.0",
+ "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
+ "libsecp256k1-gen-ecmult 0.3.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
+ "libsecp256k1-gen-genmult 0.3.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
+ "rand 0.8.4",
  "serde",
  "sha2 0.9.8",
  "typenum",
@@ -3410,12 +3484,52 @@ dependencies = [
 ]
 
 [[package]]
+name = "libsecp256k1-core"
+version = "0.3.0"
+source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
+dependencies = [
+ "crunchy",
+ "digest 0.9.0",
+ "parity-scale-codec",
+ "scale-info",
+ "subtle 2.4.1",
+]
+
+[[package]]
+name = "libsecp256k1-core"
+version = "0.3.0"
+source = "git+https://github.com/chainx-org/libsecp256k1.git#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
+dependencies = [
+ "crunchy",
+ "digest 0.9.0",
+ "parity-scale-codec",
+ "scale-info",
+ "subtle 2.4.1",
+]
+
+[[package]]
 name = "libsecp256k1-gen-ecmult"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ccab96b584d38fac86a83f07e659f0deafd0253dc096dab5a36d53efe653c5c3"
 dependencies = [
- "libsecp256k1-core",
+ "libsecp256k1-core 0.2.2",
+]
+
+[[package]]
+name = "libsecp256k1-gen-ecmult"
+version = "0.3.0"
+source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
+dependencies = [
+ "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
+]
+
+[[package]]
+name = "libsecp256k1-gen-ecmult"
+version = "0.3.0"
+source = "git+https://github.com/chainx-org/libsecp256k1.git#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
+dependencies = [
+ "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
 ]
 
 [[package]]
@@ -3424,7 +3538,23 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67abfe149395e3aa1c48a2beb32b068e2334402df8181f818d3aee2b304c4f5d"
 dependencies = [
- "libsecp256k1-core",
+ "libsecp256k1-core 0.2.2",
+]
+
+[[package]]
+name = "libsecp256k1-gen-genmult"
+version = "0.3.0"
+source = "git+https://github.com/chainx-org/libsecp256k1?branch=master#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
+dependencies = [
+ "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
+]
+
+[[package]]
+name = "libsecp256k1-gen-genmult"
+version = "0.3.0"
+source = "git+https://github.com/chainx-org/libsecp256k1.git#b208f8a32831de8c48d15ed9e90ed807f3fe2275"
+dependencies = [
+ "libsecp256k1-core 0.3.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
 ]
 
 [[package]]
@@ -3436,6 +3566,156 @@ dependencies = [
  "cc",
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "light-bitcoin"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "light-bitcoin-chain",
+ "light-bitcoin-crypto",
+ "light-bitcoin-keys",
+ "light-bitcoin-mast",
+ "light-bitcoin-merkle",
+ "light-bitcoin-primitives",
+ "light-bitcoin-script",
+ "light-bitcoin-serialization",
+]
+
+[[package]]
+name = "light-bitcoin-chain"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "hex",
+ "light-bitcoin-crypto",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
+name = "light-bitcoin-crypto"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "digest 0.9.0",
+ "light-bitcoin-primitives",
+ "ripemd160",
+ "sha-1 0.9.8",
+ "sha2 0.9.8",
+ "siphasher",
+]
+
+[[package]]
+name = "light-bitcoin-keys"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "arrayref",
+ "bitcoin-bech32",
+ "bs58 0.4.0",
+ "digest 0.9.0",
+ "hex",
+ "libsecp256k1 0.7.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
+ "light-bitcoin-crypto",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
+ "musig2",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sha2 0.9.8",
+]
+
+[[package]]
+name = "light-bitcoin-mast"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "arrayref",
+ "bitcoin-bech32",
+ "bitcoin_hashes",
+ "core2",
+ "digest 0.9.0",
+ "hex",
+ "light-bitcoin-keys",
+ "light-bitcoin-script",
+ "light-bitcoin-serialization",
+ "musig2",
+ "parity-scale-codec",
+ "rayon",
+ "scale-info",
+ "sha2 0.9.8",
+]
+
+[[package]]
+name = "light-bitcoin-merkle"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "light-bitcoin-chain",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
+name = "light-bitcoin-primitives"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "byteorder",
+ "fixed-hash",
+ "hex",
+ "impl-codec",
+ "impl-serde",
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
+name = "light-bitcoin-script"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "hex",
+ "libsecp256k1 0.7.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
+ "light-bitcoin-chain",
+ "light-bitcoin-crypto",
+ "light-bitcoin-keys",
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization",
+ "parity-scale-codec",
+ "scale-info",
+ "sha2 0.9.8",
+]
+
+[[package]]
+name = "light-bitcoin-serialization"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "light-bitcoin-primitives",
+ "light-bitcoin-serialization-derive",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
+name = "light-bitcoin-serialization-derive"
+version = "0.2.0"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -3741,7 +4021,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48ee4ea82141951ac6379f964f71b20876d43712bea8faf6dd1a375e08a46499"
 dependencies = [
  "arrayref",
- "bs58",
+ "bs58 0.4.0",
  "byteorder",
  "data-encoding",
  "multihash 0.14.0",
@@ -3825,6 +4105,25 @@ dependencies = [
  "pin-project 1.0.8",
  "smallvec",
  "unsigned-varint 0.7.1",
+]
+
+[[package]]
+name = "musig2"
+version = "0.1.0"
+source = "git+https://github.com/chainx-org/Musig2?branch=lib#1b665dfb33e3fe28fc9dd4b9f3a9969825992300"
+dependencies = [
+ "arrayref",
+ "digest 0.9.0",
+ "hex",
+ "lazy_static",
+ "libsecp256k1 0.7.0 (git+https://github.com/chainx-org/libsecp256k1?branch=master)",
+ "log",
+ "parity-scale-codec",
+ "rand 0.8.4",
+ "rand_core 0.6.3",
+ "scale-info",
+ "serde",
+ "sha2 0.9.8",
 ]
 
 [[package]]
@@ -4084,6 +4383,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28988d872ab76095a6e6ac88d99b54fd267702734fd7ffe610ca27f533ddb95a"
 
 [[package]]
+name = "orml-utilities"
+version = "0.4.1-dev"
+source = "git+https://github.com/chainx-org/ormls?branch=main#1696ab37189b249082d7d84c8c6c59df74d7c053"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "owning_ref"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4172,6 +4485,40 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-collective"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.11#57346f6b24875f8935280dba51fa8ab0a9ba1e39"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-elections-phragmen"
+version = "5.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.11#57346f6b24875f8935280dba51fa8ab0a9ba1e39"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-npos-elections",
  "sp-runtime",
  "sp-std",
 ]
@@ -4321,6 +4668,20 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.11#57346f6b24875f8935280dba51fa8ab0a9ba1e39"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-io",
+ "sp-runtime",
  "sp-std",
 ]
 
@@ -6609,6 +6970,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures 0.3.18",
+ "hex",
  "hex-literal",
  "jsonrpc-core",
  "jsonrpc-pubsub",
@@ -6633,6 +6995,7 @@ dependencies = [
  "sc-transaction-pool-api",
  "serde",
  "serde_json",
+ "sherpax-primitives",
  "sherpax-runtime",
  "sp-api",
  "sp-block-builder",
@@ -6647,6 +7010,24 @@ dependencies = [
  "structopt",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
+ "xpallet-gateway-common-rpc",
+ "xpallet-gateway-common-rpc-runtime-api",
+ "xpallet-gateway-records-rpc",
+ "xpallet-gateway-records-rpc-runtime-api",
+]
+
+[[package]]
+name = "sherpax-primitives"
+version = "3.0.0"
+dependencies = [
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6668,6 +7049,8 @@ dependencies = [
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
+ "pallet-collective",
+ "pallet-elections-phragmen",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
@@ -6677,6 +7060,7 @@ dependencies = [
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
  "pallet-grandpa",
+ "pallet-multisig",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
@@ -6686,6 +7070,7 @@ dependencies = [
  "pallet-vesting",
  "parity-scale-codec",
  "scale-info",
+ "sherpax-primitives",
  "smallvec",
  "sp-api",
  "sp-block-builder",
@@ -6699,7 +7084,17 @@ dependencies = [
  "sp-std",
  "sp-transaction-pool",
  "sp-version",
+ "static_assertions",
  "substrate-wasm-builder",
+ "xp-assets-registrar",
+ "xp-gateway-bitcoin",
+ "xp-runtime",
+ "xpallet-gateway-bitcoin",
+ "xpallet-gateway-common",
+ "xpallet-gateway-common-rpc-runtime-api",
+ "xpallet-gateway-records",
+ "xpallet-gateway-records-rpc-runtime-api",
+ "xpallet-support",
 ]
 
 [[package]]
@@ -6744,6 +7139,12 @@ dependencies = [
  "num-traits",
  "paste",
 ]
+
+[[package]]
+name = "siphasher"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "533494a8f9b724d33625ab53c6c4800f7cc445895924a8ef649222dcb76e938b"
 
 [[package]]
 name = "slab"
@@ -7174,6 +7575,32 @@ version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.11#57346f6b24875f8935280dba51fa8ab0a9ba1e39"
 dependencies = [
  "zstd",
+]
+
+[[package]]
+name = "sp-npos-elections"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.11#57346f6b24875f8935280dba51fa8ab0a9ba1e39"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-npos-elections-solution-type",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "sp-npos-elections-solution-type"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.11#57346f6b24875f8935280dba51fa8ab0a9ba1e39"
+dependencies = [
+ "proc-macro-crate 1.1.0",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -8693,6 +9120,254 @@ dependencies = [
  "curve25519-dalek 3.2.0",
  "rand_core 0.5.1",
  "zeroize",
+]
+
+[[package]]
+name = "xp-assets-registrar"
+version = "3.0.0"
+dependencies = [
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sherpax-primitives",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "xp-gateway-bitcoin"
+version = "3.0.0"
+dependencies = [
+ "frame-support",
+ "hex",
+ "light-bitcoin",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sherpax-primitives",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+ "xp-gateway-common",
+]
+
+[[package]]
+name = "xp-gateway-common"
+version = "3.0.0"
+dependencies = [
+ "bs58 0.3.1",
+ "frame-support",
+ "hex",
+ "sp-core",
+ "xp-io",
+]
+
+[[package]]
+name = "xp-io"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime",
+ "sp-runtime-interface",
+]
+
+[[package]]
+name = "xp-protocol"
+version = "3.0.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sherpax-primitives",
+ "sp-runtime",
+]
+
+[[package]]
+name = "xp-rpc"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "jsonrpc-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "xp-runtime"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "xpallet-gateway-bitcoin"
+version = "3.0.0"
+dependencies = [
+ "bs58 0.3.1",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "hex-literal",
+ "lazy_static",
+ "light-bitcoin",
+ "orml-utilities",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-elections-phragmen",
+ "pallet-multisig",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sherpax-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-keyring",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-gateway-bitcoin",
+ "xp-gateway-common",
+ "xp-protocol",
+ "xpallet-gateway-common",
+ "xpallet-gateway-records",
+ "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-common"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "lazy_static",
+ "light-bitcoin",
+ "musig2",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-elections-phragmen",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sherpax-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-keyring",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-gateway-bitcoin",
+ "xp-protocol",
+ "xp-rpc",
+ "xp-runtime",
+ "xpallet-gateway-bitcoin",
+ "xpallet-gateway-records",
+ "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-common-rpc"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+ "xp-rpc",
+ "xpallet-gateway-common-rpc-runtime-api",
+]
+
+[[package]]
+name = "xpallet-gateway-common-rpc-runtime-api"
+version = "3.0.0"
+dependencies = [
+ "parity-scale-codec",
+ "sherpax-primitives",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-runtime",
+ "xpallet-gateway-common",
+ "xpallet-gateway-records",
+]
+
+[[package]]
+name = "xpallet-gateway-records"
+version = "3.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "orml-utilities",
+ "pallet-assets",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sherpax-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-protocol",
+ "xp-runtime",
+ "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-records-rpc"
+version = "3.0.0"
+dependencies = [
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+ "xp-rpc",
+ "xpallet-gateway-records-rpc-runtime-api",
+]
+
+[[package]]
+name = "xpallet-gateway-records-rpc-runtime-api"
+version = "3.0.0"
+dependencies = [
+ "parity-scale-codec",
+ "sherpax-primitives",
+ "sp-api",
+ "sp-std",
+ "xp-assets-registrar",
+ "xpallet-gateway-records",
+]
+
+[[package]]
+name = "xpallet-support"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "sp-std",
 ]
 
 [[package]]

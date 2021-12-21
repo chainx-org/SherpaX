@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
-use sherpax_runtime::{opaque::Block, AccountId, Balance, Index};
+use sherpax_runtime::{opaque::Block, AccountId, Balance, BlockNumber, Index};
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
@@ -74,6 +74,18 @@ where
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     C::Api: BlockBuilder<Block>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    C::Api: xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<
+        Block,
+        AccountId,
+        Balance,
+        BlockNumber,
+    >,
+    C::Api: xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<
+        Block,
+        AccountId,
+        Balance,
+        BlockNumber,
+    >,
     P: TransactionPool<Block = Block> + Sync + Send + 'static,
     A: ChainApi<Block = Block> + 'static,
 {
@@ -83,6 +95,8 @@ where
     };
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
+    use xpallet_gateway_common_rpc::{XGatewayCommon, XGatewayCommonApi};
+    use xpallet_gateway_records_rpc::{XGatewayRecords, XGatewayRecordsApi};
 
     let mut io = jsonrpc_core::IoHandler::default();
     let FullDeps {
@@ -165,7 +179,7 @@ where
 
         io.extend_with(EthPubSubApiServer::to_delegate(EthPubSubApi::new(
             pool,
-            client,
+            client.clone(),
             network,
             SubscriptionManager::<HexEncodedIdProvider>::with_id_provider(
                 HexEncodedIdProvider::default(),
@@ -173,6 +187,11 @@ where
             ),
             overrides,
         )));
+
+        io.extend_with(XGatewayRecordsApi::to_delegate(XGatewayRecords::new(
+            client.clone(),
+        )));
+        io.extend_with(XGatewayCommonApi::to_delegate(XGatewayCommon::new(client)));
     }
 
     io

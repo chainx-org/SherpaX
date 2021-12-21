@@ -11,23 +11,26 @@ use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthority
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
-use sp_runtime::traits::{
-    AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, IdentifyAccount, NumberFor, Verify,
-};
+
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
+    traits::{
+        AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, IdentifyAccount, NumberFor,
+        Verify,
+    },
     transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, MultiSignature,
+    ApplyExtrinsicResult, DispatchError, MultiSignature,
 };
-use sp_std::prelude::*;
+use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
+use static_assertions::const_assert;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
     construct_runtime, parameter_types,
-    traits::{KeyOwnerProofSystem, Randomness},
+    traits::{KeyOwnerProofSystem, LockIdentifier, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         RuntimeDbWeight, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
@@ -113,6 +116,25 @@ pub mod opaque {
         }
     }
 }
+
+// Cross Chain
+pub use sherpax_primitives::{AddrStr, AssetId, ChainAddress};
+pub use xp_assets_registrar::Chain;
+pub use xp_runtime::Memo;
+#[cfg(feature = "std")]
+pub use xpallet_gateway_bitcoin::h256_rev;
+pub use xpallet_gateway_bitcoin::{
+    hash_rev, BtcHeader, BtcNetwork, BtcParams, BtcTxVerifier, Compact as BtcCompact,
+    H256 as BtcHash,
+};
+pub use xpallet_gateway_common::{
+    trustees,
+    types::{
+        GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo, TrusteeInfoConfig,
+    },
+};
+pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit};
+use xpallet_support::traits::MultisigAddressFor;
 
 // To learn more about runtime versioning and what each of the following value means:
 //   https://substrate.dev/docs/en/knowledgebase/runtime/upgrades#runtime-versioning
@@ -440,6 +462,120 @@ impl pallet_assets_bridge::Config for Runtime {
     type EvmCaller = EvmCaller;
 }
 
+parameter_types! {
+    // One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
+    pub const DepositBase: Balance = deposit(1, 88);
+    // Additional storage item size of 32 bytes.
+    pub const DepositFactor: Balance = deposit(0, 32);
+    pub const MaxSignatories: u16 = 100;
+}
+
+impl pallet_multisig::Config for Runtime {
+    type Event = Event;
+    type Call = Call;
+    type Currency = Balances;
+    type DepositBase = DepositBase;
+    type DepositFactor = DepositFactor;
+    type MaxSignatories = MaxSignatories;
+    type WeightInfo = ();
+}
+
+parameter_types! {
+    pub const CouncilMotionDuration: BlockNumber = 7 * DAYS;
+    pub const CouncilMaxProposals: u32 = 100;
+    pub const CouncilMaxMembers: u32 = 100;
+}
+
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+    type Origin = Origin;
+    type Proposal = Call;
+    type Event = Event;
+    type MotionDuration = CouncilMotionDuration;
+    type MaxProposals = CouncilMaxProposals;
+    type MaxMembers = CouncilMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    // 10 PCX
+    pub const CandidacyBond: Balance = 1000 * EXISTENTIAL_DEPOSIT;
+    // 1 storage item created, key size is 32 bytes, value size is 16+16.
+    pub const VotingBondBase: Balance = deposit(1, 64);
+    // additional data per vote is 32 bytes (account id).
+    pub const VotingBondFactor: Balance = deposit(0, 32);
+    pub const VotingBond: Balance = EXISTENTIAL_DEPOSIT;
+    pub const TermDuration: BlockNumber = DAYS;
+    pub const DesiredMembers: u32 = 11;
+    pub const DesiredRunnersUp: u32 = 7;
+    pub const ElectionsPhragmenPalletId: LockIdentifier = *b"ksx/phre";
+}
+
+// Make sure that there are no more than `MaxMembers` members elected via elections-phragmen.
+const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
+
+impl pallet_elections_phragmen::Config for Runtime {
+    type Event = Event;
+    type PalletId = ElectionsPhragmenPalletId;
+    type Currency = Balances;
+    type ChangeMembers = Council;
+    // NOTE: this implies that council's genesis members cannot be set directly and must come from
+    // this module.
+    type InitializeMembers = Council;
+    type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+    type CandidacyBond = CandidacyBond;
+    type VotingBondBase = VotingBondBase;
+    type VotingBondFactor = VotingBondFactor;
+    type LoserCandidate = ();
+    type KickedMember = ();
+    type DesiredMembers = DesiredMembers;
+    type DesiredRunnersUp = DesiredRunnersUp;
+    type TermDuration = TermDuration;
+    type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    pub const BtcAssetId: AssetId = 1;
+}
+
+impl xpallet_gateway_records::Config for Runtime {
+    type Event = Event;
+    type BtcAssetId = BtcAssetId;
+    type Currency = Balances;
+    type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
+}
+
+pub struct MultisigProvider;
+impl MultisigAddressFor<AccountId> for MultisigProvider {
+    fn calc_multisig(who: &[AccountId], threshold: u16) -> AccountId {
+        Multisig::multi_account_id(who, threshold)
+    }
+}
+
+impl xpallet_gateway_common::Config for Runtime {
+    type Event = Event;
+    type Validator = ();
+    type DetermineMultisigAddress = MultisigProvider;
+    type Bitcoin = XGatewayBitcoin;
+    type BitcoinTrustee = XGatewayBitcoin;
+    type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
+    type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
+}
+
+impl xpallet_gateway_bitcoin::Config for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
+    type TrusteeOrigin =
+        frame_system::EnsureSignedBy<trustees::bitcoin::BtcTrusteeMultisig<Runtime>, AccountId>;
+    type TrusteeInfoUpdate = XGatewayCommon;
+    type ReferralBinding = XGatewayCommon;
+    type AddressBinding = XGatewayCommon;
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
     pub enum Runtime where
@@ -464,13 +600,23 @@ construct_runtime!(
         Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
         Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event} = 24,
 
+        // Council
+        Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 25,
+        Elections: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 26,
+
         // Handy utilities.
         Utility: pallet_utility::{Pallet, Call, Event} = 30,
+        Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 31,
 
         // Ethereum compatibility
         Evm: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 40,
         Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin} = 41,
         AssetsBridge: pallet_assets_bridge::{Pallet, Call, Storage, Config<T>, Event<T>} = 42,
+
+        // Crypto gateway stuff.
+        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 43,
+        XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 44,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 45,
     }
 );
 
@@ -838,8 +984,84 @@ impl_runtime_apis! {
         }
     }
 
+    impl xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<Block, AccountId, Balance, BlockNumber> for Runtime {
+        fn withdrawal_list() -> BTreeMap<u32, Withdrawal<AccountId, AssetId, Balance, BlockNumber>> {
+            XGatewayRecords::withdrawal_list()
+        }
+
+        fn withdrawal_list_by_chain(chain: Chain) -> BTreeMap<u32, Withdrawal<AccountId, AssetId, Balance, BlockNumber>> {
+            XGatewayRecords::withdrawals_list_by_chain(chain)
+        }
+    }
+
+    impl xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance, BlockNumber> for Runtime {
+        fn bound_addrs(who: AccountId) -> BTreeMap<Chain, Vec<ChainAddress>> {
+            XGatewayCommon::bound_addrs(&who)
+        }
+
+        fn withdrawal_limit(asset_id: AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError> {
+            XGatewayCommon::withdrawal_limit(&asset_id)
+        }
+
+        fn verify_withdrawal(asset_id: AssetId, value: Balance, addr: AddrStr, memo: Memo) -> Result<(), DispatchError> {
+            XGatewayCommon::verify_withdrawal(asset_id, value, &addr, &memo)
+        }
+
+        fn trustee_multisigs() -> BTreeMap<Chain, AccountId> {
+            XGatewayCommon::trustee_multisigs()
+        }
+
+        fn trustee_properties(chain: Chain, who: AccountId) -> Option<GenericTrusteeIntentionProps<AccountId>> {
+            XGatewayCommon::trustee_intention_props_of(who, chain)
+        }
+
+        fn trustee_session_info(chain: Chain, session_number: i32) -> Option<GenericTrusteeSessionInfo<AccountId, BlockNumber>> {
+            if session_number < 0 {
+                let number = match session_number {
+                    -1i32 => Some(XGatewayCommon::trustee_session_info_len(chain)),
+                    -2i32 => XGatewayCommon::trustee_session_info_len(chain).checked_sub(1),
+                    _ => None
+                };
+                if let Some(number) = number {
+                    XGatewayCommon::trustee_session_info_of(chain, number)
+                }else{
+                    None
+                }
+            }else{
+                let number = session_number as u32;
+                XGatewayCommon::trustee_session_info_of(chain, number)
+            }
+
+        }
+
+        fn generate_trustee_session_info(chain: Chain, candidates: Vec<AccountId>) -> Result<(GenericTrusteeSessionInfo<AccountId, BlockNumber>, ScriptInfo<AccountId>), DispatchError> {
+            let info = XGatewayCommon::try_generate_session_info(chain, candidates)?;
+            // check multisig address
+            let _ = XGatewayCommon::generate_multisig_addr(chain, &info.0)?;
+            Ok(info)
+        }
+    }
+
     #[cfg(feature = "runtime-benchmarks")]
     impl frame_benchmarking::Benchmark<Block> for Runtime {
+        fn benchmark_metadata(extra: bool) -> (
+            Vec<frame_benchmarking::BenchmarkList>,
+            Vec<frame_support::traits::StorageInfo>,
+        ) {
+            use frame_benchmarking::{list_benchmark, Benchmarking, BenchmarkList};
+            use frame_support::traits::StorageInfoTrait;
+
+            let mut list = Vec::<BenchmarkList>::new();
+
+            list_benchmark!(list, extra, xpallet_gateway_records, XGatewayRecords);
+            list_benchmark!(list, extra, xpallet_gateway_common, XGatewayCommon);
+            list_benchmark!(list, extra, xpallet_gateway_bitcoin, XGatewayBitcoin);
+
+            let storage_info = AllPalletsWithSystem::storage_info();
+
+            return (list, storage_info)
+        }
+
         fn dispatch_benchmark(
             config: frame_benchmarking::BenchmarkConfig
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
@@ -864,9 +1086,9 @@ impl_runtime_apis! {
             let mut batches = Vec::<BenchmarkBatch>::new();
             let params = (&config, &whitelist);
 
-            add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
-            add_benchmark!(params, batches, pallet_balances, Balances);
-            add_benchmark!(params, batches, pallet_timestamp, Timestamp);
+            add_benchmark!(params, batches, xpallet_gateway_records, XGatewayRecords);
+            add_benchmark!(params, batches, xpallet_gateway_common, XGatewayCommon);
+            add_benchmark!(params, batches, xpallet_gateway_bitcoin, XGatewayBitcoin);
 
             if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
             Ok(batches)

@@ -12,6 +12,7 @@ codec = { package = "parity-scale-codec", version = "2.3.1", default-features = 
 hex-literal = { version = "0.3.1", optional = true }
 scale-info = { version = "1.0.0", default-features = false, features = ["derive"] }
 smallvec = "1.7.0"
+static_assertions = "1.1.0"
 
 sp-api = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11", default-features = false }
 sp-block-builder = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11", default-features = false }
@@ -38,6 +39,9 @@ frame-system-rpc-runtime-api = { git = 'https://github.com/paritytech/substrate'
 pallet-aura = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11", default-features = false }
 pallet-authorship = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
 pallet-balances = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11", default-features = false }
+pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
+pallet-elections-phragmen = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
+pallet-multisig = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.11" }
 pallet-grandpa = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11", default-features = false }
 pallet-session = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11", default-features = false }
 pallet-sudo = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11", default-features = false }
@@ -56,17 +60,29 @@ pallet-evm = { git = "https://github.com/chainx-org/frontier", branch = "new-pol
 pallet-ethereum = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11", default-features = false }
 
 # EVM precompile
-fp-evm = { git="https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
-pallet-evm-precompile-bn128 = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
-pallet-evm-precompile-dispatch = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
-pallet-evm-precompile-modexp = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
-pallet-evm-precompile-simple = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
-pallet-evm-precompile-sha3fips = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
-pallet-evm-precompile-blake2 = { git = "https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+fp-evm = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
+pallet-evm-precompile-bn128 = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
+pallet-evm-precompile-dispatch = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
+pallet-evm-precompile-modexp = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
+pallet-evm-precompile-simple = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
+pallet-evm-precompile-sha3fips = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
+pallet-evm-precompile-blake2 = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
 
 # ETH API
-fp-rpc = { git="https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
-fp-self-contained  = { git="https://github.com/chainx-org/frontier", default-features=false, branch="new-polkadot-v0.9.11" }
+fp-rpc = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
+fp-self-contained = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
+
+# Cross chain
+sherpax-primitives = { path = "../../primitives", default-features = false }
+xp-assets-registrar = { path = "../../primitives/assets-registrar", default-features = false }
+xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false }
+xp-runtime = { path = "../../primitives/runtime", default-features = false }
+xpallet-gateway-bitcoin = { path = "../../xpallets/gateway/bitcoin", default-features = false }
+xpallet-gateway-common = { path = "../../xpallets/gateway/common", default-features = false }
+xpallet-gateway-common-rpc-runtime-api = { path = "../../xpallets/gateway/common/rpc/runtime-api", default-features = false }
+xpallet-gateway-records = { path = "../../xpallets/gateway/records", default-features = false }
+xpallet-gateway-records-rpc-runtime-api = { path = "../../xpallets/gateway/records/rpc/runtime-api", default-features = false }
+xpallet-support = { path = "../../xpallets/support", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }
@@ -76,7 +92,6 @@ default = ["std"]
 std = [
     "codec/std",
     "scale-info/std",
-
     "sp-api/std",
     "sp-block-builder/std",
     "sp-consensus-aura/std",
@@ -93,7 +108,6 @@ std = [
     "frame-support/std",
     "frame-system/std",
     "frame-system-rpc-runtime-api/std",
-
     "pallet-aura/std",
     "pallet-authorship/std",
     "pallet-balances/std",
@@ -105,15 +119,26 @@ std = [
     "pallet-transaction-payment/std",
     "pallet-utility/std",
     "pallet-vesting/std",
-
     "pallet-assets/std",
     "pallet-assets-bridge/std",
-
+    "pallet-collective/std",
+    "pallet-elections-phragmen/std",
+    "pallet-multisig/std",
     "pallet-evm/std",
     "pallet-ethereum/std",
     "fp-evm/std",
     "fp-rpc/std",
-    "fp-self-contained/std"
+    "fp-self-contained/std",
+    "sherpax-primitives/std",
+    "xp-assets-registrar/std",
+    "xp-gateway-bitcoin/std",
+    "xp-runtime/std",
+    "xpallet-gateway-bitcoin/std",
+    "xpallet-gateway-common/std",
+    "xpallet-gateway-common-rpc-runtime-api/std",
+    "xpallet-gateway-records/std",
+    "xpallet-gateway-records-rpc-runtime-api/std",
+    "xpallet-support/std",
 ]
 runtime-benchmarks = [
     "hex-literal",
@@ -123,5 +148,9 @@ runtime-benchmarks = [
     "frame-system-benchmarking",
     "frame-system/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
+    "pallet-collective/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
+    "xpallet-gateway-bitcoin/runtime-benchmarks",
+    "xpallet-gateway-common/runtime-benchmarks",
+    "xpallet-gateway-records/runtime-benchmarks",
 ]
