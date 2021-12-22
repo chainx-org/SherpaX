@@ -10,7 +10,11 @@ use pallet_grandpa::fg_primitives;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{
+    crypto::KeyTypeId,
+    u32_trait::{_1, _2, _3, _4, _5},
+    OpaqueMetadata,
+};
 
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
@@ -19,7 +23,7 @@ use sp_runtime::{
         Verify,
     },
     transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, DispatchError, MultiSignature,
+    ApplyExtrinsicResult, DispatchError, MultiSignature, Percent,
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 #[cfg(feature = "std")]
@@ -36,8 +40,10 @@ pub use frame_support::{
         RuntimeDbWeight, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
         WeightToFeePolynomial,
     },
-    StorageValue,
+    PalletId, StorageValue,
 };
+use frame_system::{EnsureOneOf, EnsureRoot};
+
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 #[cfg(any(feature = "std", test))]
@@ -147,7 +153,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 1,
+    spec_version: 2,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -358,6 +364,263 @@ impl pallet_utility::Config for Runtime {
     type WeightInfo = ();
 }
 
+parameter_types! {
+    pub const CouncilMotionDuration: BlockNumber = 7 * DAYS;
+    pub const CouncilMaxProposals: u32 = 100;
+    pub const CouncilMaxMembers: u32 = 100;
+}
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+    type Origin = Origin;
+    type Proposal = Call;
+    type Event = Event;
+    type MotionDuration = CouncilMotionDuration;
+    type MaxProposals = CouncilMaxProposals;
+    type MaxMembers = CouncilMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    pub const TechnicalMotionDuration: BlockNumber = 5 * DAYS;
+    pub const TechnicalMaxProposals: u32 = 100;
+    pub const TechnicalMaxMembers: u32 = 100;
+}
+type TechnicalCollective = pallet_collective::Instance2;
+impl pallet_collective::Config<TechnicalCollective> for Runtime {
+    type Origin = Origin;
+    type Proposal = Call;
+    type Event = Event;
+    type MotionDuration = TechnicalMotionDuration;
+    type MaxProposals = TechnicalMaxProposals;
+    type MaxMembers = TechnicalMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+type EnsureRootOrHalfCouncil = EnsureOneOf<
+    AccountId,
+    EnsureRoot<AccountId>,
+    pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>,
+>;
+impl pallet_membership::Config<pallet_membership::Instance1> for Runtime {
+    type Event = Event;
+    type AddOrigin = EnsureRootOrHalfCouncil;
+    type RemoveOrigin = EnsureRootOrHalfCouncil;
+    type SwapOrigin = EnsureRootOrHalfCouncil;
+    type ResetOrigin = EnsureRootOrHalfCouncil;
+    type PrimeOrigin = EnsureRootOrHalfCouncil;
+    type MembershipInitialized = TechnicalCommittee;
+    type MembershipChanged = TechnicalCommittee;
+    type MaxMembers = TechnicalMaxMembers;
+    type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    // 10 KSX
+    pub const CandidacyBond: Balance = 10 * UNITS;
+    // 1 storage item created, key size is 32 bytes, value size is 16+16.
+    pub const VotingBondBase: Balance = deposit(1, 64);
+    // additional data per vote is 32 bytes (account id).
+    pub const VotingBondFactor: Balance = deposit(0, 32);
+    pub const VotingBond: Balance = UNITS / 100;
+    pub const TermDuration: BlockNumber = DAYS;
+    pub const DesiredMembers: u32 = 11;
+    pub const DesiredRunnersUp: u32 = 7;
+    pub const ElectionsPhragmenPalletId: LockIdentifier = *b"ksx/phre";
+}
+// Make sure that there are no more than `MaxMembers` members elected via elections-phragmen.
+const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
+
+impl pallet_elections_phragmen::Config for Runtime {
+    type Event = Event;
+    type PalletId = ElectionsPhragmenPalletId;
+    type Currency = Balances;
+    type ChangeMembers = Council;
+    // NOTE: this implies that council's genesis members cannot be set directly and must come from
+    // this module.
+    type InitializeMembers = Council;
+    type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+    type CandidacyBond = CandidacyBond;
+    type VotingBondBase = VotingBondBase;
+    type VotingBondFactor = VotingBondFactor;
+    type LoserCandidate = ();
+    type KickedMember = ();
+    type DesiredMembers = DesiredMembers;
+    type DesiredRunnersUp = DesiredRunnersUp;
+    type TermDuration = TermDuration;
+    type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80) * BlockWeights::get().max_block;
+    pub const MaxScheduledPerBlock: u32 = 50;
+}
+impl pallet_scheduler::Config for Runtime {
+    type Event = Event;
+    type Origin = Origin;
+    type PalletsOrigin = OriginCaller;
+    type Call = Call;
+    type MaximumWeight = MaximumSchedulerWeight;
+    type ScheduleOrigin = EnsureRoot<AccountId>;
+    type MaxScheduledPerBlock = MaxScheduledPerBlock;
+    type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    pub const BasicDeposit: Balance = 10 * UNITS;       // 258 bytes on-chain
+    pub const FieldDeposit: Balance = 250 * CENTS;        // 66 bytes on-chain
+    pub const SubAccountDeposit: Balance = 2 * UNITS;   // 53 bytes on-chain
+    pub const MaxSubAccounts: u32 = 100;
+    pub const MaxAdditionalFields: u32 = 100;
+    pub const MaxRegistrars: u32 = 20;
+}
+impl pallet_identity::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type BasicDeposit = BasicDeposit;
+    type FieldDeposit = FieldDeposit;
+    type SubAccountDeposit = SubAccountDeposit;
+    type MaxSubAccounts = MaxSubAccounts;
+    type MaxAdditionalFields = MaxAdditionalFields;
+    type MaxRegistrars = MaxRegistrars;
+    type Slashed = Treasury;
+    type ForceOrigin = EnsureRootOrHalfCouncil;
+    type RegistrarOrigin = EnsureRootOrHalfCouncil;
+    type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+    pub const LaunchPeriod: BlockNumber = 7 * DAYS;
+    pub const VotingPeriod: BlockNumber = 7 * DAYS;
+    pub const FastTrackVotingPeriod: BlockNumber = 3 * HOURS;
+    pub const InstantAllowed: bool = true;
+    // 10 PCX
+    pub const MinimumDeposit: Balance = 1000 * UNITS;
+    pub const EnactmentPeriod: BlockNumber = 8 * DAYS;
+    pub const CooloffPeriod: BlockNumber = 7 * DAYS;
+    // One cent: $10,000 / MB
+    pub const PreimageByteDeposit: Balance = CENTS;
+    pub const MaxVotes: u32 = 100;
+    pub const MaxProposals: u32 = 100;
+}
+impl pallet_democracy::Config for Runtime {
+    type Proposal = Call;
+    type Event = Event;
+    type Currency = Balances;
+    type EnactmentPeriod = EnactmentPeriod;
+    type LaunchPeriod = LaunchPeriod;
+    type VotingPeriod = VotingPeriod;
+    type VoteLockingPeriod = EnactmentPeriod; // Same as EnactmentPeriod
+    type MinimumDeposit = MinimumDeposit;
+    /// A straight majority of the council can decide what their next motion is.
+    type ExternalOrigin =
+        pallet_collective::EnsureProportionAtLeast<_1, _2, AccountId, CouncilCollective>;
+    /// A super-majority can have the next scheduled referendum be a straight majority-carries vote.
+    type ExternalMajorityOrigin =
+        pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, CouncilCollective>;
+    /// A unanimous council can have the next scheduled referendum be a straight default-carries
+    /// (NTB) vote.
+    type ExternalDefaultOrigin =
+        pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, CouncilCollective>;
+    /// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
+    /// be tabled immediately and with a shorter voting/enactment period.
+    type FastTrackOrigin =
+        pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, TechnicalCollective>;
+    type InstantOrigin =
+        pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>;
+    type InstantAllowed = InstantAllowed;
+    type FastTrackVotingPeriod = FastTrackVotingPeriod;
+    // To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+    type CancellationOrigin =
+        pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
+    // To cancel a proposal before it has been passed, the technical committee must be unanimous or
+    // Root must agree.
+    type CancelProposalOrigin = EnsureOneOf<
+        AccountId,
+        pallet_collective::EnsureProportionAtLeast<_1, _1, AccountId, TechnicalCollective>,
+        EnsureRoot<AccountId>,
+    >;
+    type BlacklistOrigin = EnsureRoot<AccountId>;
+    // Any single technical committee member may veto a coming council proposal, however they can
+    // only do it once and it lasts only for the cooloff period.
+    type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+    type CooloffPeriod = CooloffPeriod;
+    type PreimageByteDeposit = PreimageByteDeposit;
+    type OperationalPreimageOrigin = pallet_collective::EnsureMember<AccountId, CouncilCollective>;
+    type Slash = Treasury;
+    type Scheduler = Scheduler;
+    type PalletsOrigin = OriginCaller;
+    type MaxVotes = MaxVotes;
+    type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
+    type MaxProposals = MaxProposals;
+}
+
+parameter_types! {
+    pub const ProposalBond: Permill = Permill::from_percent(5);
+    // 10 PCX
+    pub const ProposalBondMinimum: Balance = 1000 * UNITS;
+    pub const SpendPeriod: BlockNumber = 6 * DAYS;
+    pub const NoBurn: Permill = Permill::from_percent(0);
+    pub const TipCountdown: BlockNumber = 1 * DAYS;
+    pub const TipFindersFee: Percent = Percent::from_percent(20);
+    pub const TipReportDepositBase: Balance = 1 * UNITS;
+    pub const DataDepositPerByte: Balance = 1 * CENTS;
+    pub const BountyDepositBase: Balance = 1 * UNITS;
+    pub const BountyDepositPayoutDelay: BlockNumber = 4 * DAYS;
+    pub const TreasuryPalletId: PalletId = PalletId(*b"pcx/trsy");
+    pub const BountyUpdatePeriod: BlockNumber = 90 * DAYS;
+    pub const MaximumReasonLength: u32 = 16384;
+    pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
+    pub const BountyValueMinimum: Balance = 10 * UNITS;
+    pub const MaxApprovals: u32 = 100;
+}
+impl pallet_treasury::Config for Runtime {
+    type PalletId = TreasuryPalletId;
+    type Currency = Balances;
+    type ApproveOrigin = EnsureOneOf<
+        AccountId,
+        EnsureRoot<AccountId>,
+        pallet_collective::EnsureProportionAtLeast<_3, _5, AccountId, CouncilCollective>,
+    >;
+    type RejectOrigin = EnsureOneOf<
+        AccountId,
+        EnsureRoot<AccountId>,
+        pallet_collective::EnsureProportionMoreThan<_1, _2, AccountId, CouncilCollective>,
+    >;
+    type Event = Event;
+    type OnSlash = ();
+    type ProposalBond = ProposalBond;
+    type ProposalBondMinimum = ProposalBondMinimum;
+    type SpendPeriod = SpendPeriod;
+    type Burn = NoBurn;
+    type BurnDestination = ();
+    type SpendFunds = Bounties;
+    type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
+    type MaxApprovals = MaxApprovals;
+}
+impl pallet_bounties::Config for Runtime {
+    type Event = Event;
+    type BountyDepositBase = BountyDepositBase;
+    type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
+    type BountyUpdatePeriod = BountyUpdatePeriod;
+    type BountyCuratorDeposit = BountyCuratorDeposit;
+    type BountyValueMinimum = BountyValueMinimum;
+    type DataDepositPerByte = DataDepositPerByte;
+    type MaximumReasonLength = MaximumReasonLength;
+    type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
+}
+impl pallet_tips::Config for Runtime {
+    type Event = Event;
+    type DataDepositPerByte = DataDepositPerByte;
+    type MaximumReasonLength = MaximumReasonLength;
+    type Tippers = Elections;
+    type TipCountdown = TipCountdown;
+    type TipFindersFee = TipFindersFee;
+    type TipReportDepositBase = TipReportDepositBase;
+    type WeightInfo = pallet_tips::weights::SubstrateWeight<Runtime>;
+}
+
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
 /// Given the 500ms Weight, from which 75% only are used for transactions,
@@ -481,61 +744,6 @@ impl pallet_multisig::Config for Runtime {
 }
 
 parameter_types! {
-    pub const CouncilMotionDuration: BlockNumber = 7 * DAYS;
-    pub const CouncilMaxProposals: u32 = 100;
-    pub const CouncilMaxMembers: u32 = 100;
-}
-
-type CouncilCollective = pallet_collective::Instance1;
-impl pallet_collective::Config<CouncilCollective> for Runtime {
-    type Origin = Origin;
-    type Proposal = Call;
-    type Event = Event;
-    type MotionDuration = CouncilMotionDuration;
-    type MaxProposals = CouncilMaxProposals;
-    type MaxMembers = CouncilMaxMembers;
-    type DefaultVote = pallet_collective::PrimeDefaultVote;
-    type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
-}
-
-parameter_types! {
-    // 10 KSX
-    pub const CandidacyBond: Balance = 10 * UNITS;
-    // 1 storage item created, key size is 32 bytes, value size is 16+16.
-    pub const VotingBondBase: Balance = deposit(1, 64);
-    // additional data per vote is 32 bytes (account id).
-    pub const VotingBondFactor: Balance = deposit(0, 32);
-    pub const VotingBond: Balance = UNITS / 100;
-    pub const TermDuration: BlockNumber = DAYS;
-    pub const DesiredMembers: u32 = 11;
-    pub const DesiredRunnersUp: u32 = 7;
-    pub const ElectionsPhragmenPalletId: LockIdentifier = *b"ksx/phre";
-}
-
-// Make sure that there are no more than `MaxMembers` members elected via elections-phragmen.
-const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
-
-impl pallet_elections_phragmen::Config for Runtime {
-    type Event = Event;
-    type PalletId = ElectionsPhragmenPalletId;
-    type Currency = Balances;
-    type ChangeMembers = Council;
-    // NOTE: this implies that council's genesis members cannot be set directly and must come from
-    // this module.
-    type InitializeMembers = Council;
-    type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
-    type CandidacyBond = CandidacyBond;
-    type VotingBondBase = VotingBondBase;
-    type VotingBondFactor = VotingBondFactor;
-    type LoserCandidate = ();
-    type KickedMember = ();
-    type DesiredMembers = DesiredMembers;
-    type DesiredRunnersUp = DesiredRunnersUp;
-    type TermDuration = TermDuration;
-    type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
-}
-
-parameter_types! {
     pub const BtcAssetId: AssetId = 1;
 }
 
@@ -595,28 +803,36 @@ construct_runtime!(
         Vesting: pallet_vesting::{Pallet, Call, Storage, Event<T>, Config<T>} = 13,
 
         // Consensus stuff
-        Authorship: pallet_authorship::{Pallet, Call, Storage} = 21,
-        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
-        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
-        Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event} = 24,
+        Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
+        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 21,
+        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 22,
+        Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event} = 23,
 
-        // Council
-        Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 25,
-        Elections: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 26,
+        // Governance stuff.
+        Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>} = 30,
+        Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 31,
+        TechnicalCommittee: pallet_collective::<Instance2>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 32,
+        Elections: pallet_elections_phragmen::{Pallet, Call, Storage, Event<T>, Config<T>} = 33,
+        TechnicalMembership: pallet_membership::<Instance1>::{Pallet, Call, Storage, Event<T>, Config<T>} = 34,
+        Treasury: pallet_treasury::{Pallet, Call, Storage, Config, Event<T>} = 35,
+        Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>} = 36,
+        Identity: pallet_identity::{Pallet, Call, Storage, Event<T>} = 37,
+        Bounties: pallet_bounties::{Pallet, Call, Storage, Event<T>} = 38,
+        Tips: pallet_tips::{Pallet, Call, Storage, Event<T>} = 39,
 
         // Handy utilities.
-        Utility: pallet_utility::{Pallet, Call, Event} = 30,
-        Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 31,
+        Utility: pallet_utility::{Pallet, Call, Event} = 40,
+        Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 41,
 
         // Ethereum compatibility
-        Evm: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 40,
-        Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin} = 41,
-        AssetsBridge: pallet_assets_bridge::{Pallet, Call, Storage, Config<T>, Event<T>} = 42,
+        Evm: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 50,
+        Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin} = 51,
+        AssetsBridge: pallet_assets_bridge::{Pallet, Call, Storage, Config<T>, Event<T>} = 52,
 
         // Crypto gateway stuff.
-        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 43,
-        XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 44,
-        XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 45,
+        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 60,
+        XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 61,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 62,
     }
 );
 
