@@ -759,7 +759,7 @@ impl<T: Config> Pallet<T> {
         LittleBlackHouse::<T>::put(remain_filter_members);
 
         let desired_members =
-            <T as pallet_elections_phragmen::Config>::DesiredMembers::get() as usize;
+            (<T as pallet_elections_phragmen::Config>::DesiredMembers::get() - 1) as usize;
 
         if new_trustee_pool.len() < desired_members {
             return Err(Error::<T>::TrusteeMembersNotEnough.into());
