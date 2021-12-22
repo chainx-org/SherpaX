@@ -217,7 +217,7 @@ benchmarks! {
         ];
         PendingDeposits::<T>::insert(&addr, v);
         let receiver: T::AccountId = whitelisted_caller();
-    }: _(RawOrigin::Root, addr.clone(), Some(receiver.clone()))
+    }: _(RawOrigin::Root, addr.clone(), Some(receiver))
     verify {
         assert!(Pallet::<T>::pending_deposits(&addr).is_empty());
         // assert_eq!(XAssets::<T>::usable_balance(&receiver, &T::AssetId::default()), (100000000u32 + 200000000u32 + 300000000u32).into());

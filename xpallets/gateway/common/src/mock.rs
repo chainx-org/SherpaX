@@ -130,15 +130,15 @@ impl ChangeMembers<u64> for TestChangeMembers {
     fn change_members_sorted(incoming: &[u64], outgoing: &[u64], new: &[u64]) {
         // new, incoming, outgoing must be sorted.
         let mut new_sorted = new.to_vec();
-        new_sorted.sort();
+        new_sorted.sort_unstable();
         assert_eq!(new, &new_sorted[..]);
 
         let mut incoming_sorted = incoming.to_vec();
-        incoming_sorted.sort();
+        incoming_sorted.sort_unstable();
         assert_eq!(incoming, &incoming_sorted[..]);
 
         let mut outgoing_sorted = outgoing.to_vec();
-        outgoing_sorted.sort();
+        outgoing_sorted.sort_unstable();
         assert_eq!(outgoing, &outgoing_sorted[..]);
 
         // incoming and outgoing must be disjoint
@@ -148,11 +148,11 @@ impl ChangeMembers<u64> for TestChangeMembers {
 
         let mut old_plus_incoming = MEMBERS.with(|m| m.borrow().to_vec());
         old_plus_incoming.extend_from_slice(incoming);
-        old_plus_incoming.sort();
+        old_plus_incoming.sort_unstable();
 
         let mut new_plus_outgoing = new.to_vec();
         new_plus_outgoing.extend_from_slice(outgoing);
-        new_plus_outgoing.sort();
+        new_plus_outgoing.sort_unstable();
 
         assert_eq!(
             old_plus_incoming, new_plus_outgoing,

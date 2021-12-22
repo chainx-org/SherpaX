@@ -237,7 +237,7 @@ benchmarks! {
 
     set_relayer {
         let who: T::AccountId = alice::<T>();
-    }: _(RawOrigin::Root, who.clone().into())
+    }: _(RawOrigin::Root, who.clone())
     verify {
         assert_eq!(Pallet::<T>::relayer(), who);
     }
@@ -248,7 +248,7 @@ benchmarks! {
             Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
         }
         let chain = Chain::Bitcoin;
-    }: _(RawOrigin::Root, who.clone().into(), chain)
+    }: _(RawOrigin::Root, who.clone(), chain)
     verify {
         assert_eq!(Pallet::<T>::trustee_admin(), who);
     }
@@ -278,7 +278,7 @@ benchmarks! {
         assert_eq!(Pallet::<T>::transition_trustee_session_impl(Chain::Bitcoin, candidators), Ok(()));
         assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 2);
         assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 2).is_some());
-        let reward: Balanceof<T> = 1_00_000_000u32.into();
+        let reward: Balanceof<T> = 100_000_000u32.into();
         let session_num = 1;
         #[cfg(not(feature = "runtime-benchmarks"))]
         <T as xpallet_gateway_records::Config>::Currency::deposit_creating(&caller, reward);
@@ -317,7 +317,7 @@ benchmarks! {
         assert_eq!(Pallet::<T>::transition_trustee_session_impl(Chain::Bitcoin, candidators), Ok(()));
         assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 2);
         assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 2).is_some());
-        let reward: Balanceof<T> = 1_00_000_000u32.into();
+        let reward: Balanceof<T> = 100_000_000u32.into();
         let session_num = 1;
         #[cfg(feature = "runtime-benchmarks")]
         update_trustee_info::<T>(session_num);
