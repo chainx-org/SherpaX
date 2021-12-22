@@ -499,13 +499,13 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 }
 
 parameter_types! {
-    // 10 PCX
-    pub const CandidacyBond: Balance = 1000 * EXISTENTIAL_DEPOSIT;
+    // 10 KSX
+    pub const CandidacyBond: Balance = 10 * UNITS;
     // 1 storage item created, key size is 32 bytes, value size is 16+16.
     pub const VotingBondBase: Balance = deposit(1, 64);
     // additional data per vote is 32 bytes (account id).
     pub const VotingBondFactor: Balance = deposit(0, 32);
-    pub const VotingBond: Balance = EXISTENTIAL_DEPOSIT;
+    pub const VotingBond: Balance = UNITS / 100;
     pub const TermDuration: BlockNumber = DAYS;
     pub const DesiredMembers: u32 = 11;
     pub const DesiredRunnersUp: u32 = 7;

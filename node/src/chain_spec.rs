@@ -14,11 +14,11 @@ pub use sherpax_runtime::{
     VestingConfig, DAYS, WASM_BINARY,
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_core::crypto::UncheckedInto;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use std::collections::BTreeMap;
-use sp_core::crypto::UncheckedInto;
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -237,14 +237,20 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
                 // Initial PoA authorities
                 vec![
                     (
-                        hex!("30c72a127fbbadf95c6b0ef5f27c8471e7fc602d8ceaf6e28f9519354b99a63d").into(),
-                        hex!("e07d42d9b6a3403be406efaaaf952981c2e124cabc305b49b179546d5cfe7f0e").unchecked_into(),
-                        hex!("67b4639b336f7fcefc2b7696be57dbf5059208d01ad67e08ff9688d97efdb519").unchecked_into(),
+                        hex!("30c72a127fbbadf95c6b0ef5f27c8471e7fc602d8ceaf6e28f9519354b99a63d")
+                            .into(),
+                        hex!("e07d42d9b6a3403be406efaaaf952981c2e124cabc305b49b179546d5cfe7f0e")
+                            .unchecked_into(),
+                        hex!("67b4639b336f7fcefc2b7696be57dbf5059208d01ad67e08ff9688d97efdb519")
+                            .unchecked_into(),
                     ),
                     (
-                        hex!("a4c41a8cce0963ae34319687d5f6b52be531586e49448d63b9366b86f7455438").into(),
-                        hex!("86a185b97c75744c614355991d5faac5ea8a57eb6b24a4baf352246f5eb58221").unchecked_into(),
-                        hex!("c17b592b9ccf92127726607881c51304df8b8bb002caff9cd864a046cc85d4d0").unchecked_into(),
+                        hex!("a4c41a8cce0963ae34319687d5f6b52be531586e49448d63b9366b86f7455438")
+                            .into(),
+                        hex!("86a185b97c75744c614355991d5faac5ea8a57eb6b24a4baf352246f5eb58221")
+                            .unchecked_into(),
+                        hex!("c17b592b9ccf92127726607881c51304df8b8bb002caff9cd864a046cc85d4d0")
+                            .unchecked_into(),
                     ),
                 ],
                 // Sudo account
