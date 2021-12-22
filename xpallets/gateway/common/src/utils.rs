@@ -5,7 +5,9 @@ pub const MAX_TAPROOT_NODES: u32 = 350;
 /// equal or more than 2/3, return an unsigned integer
 #[inline]
 pub fn two_thirds(sum: u32) -> Option<u32> {
-    2_u32.checked_mul(sum).map(|m| m / 3)
+    2_u32
+        .checked_mul(sum)
+        .map(|m| if m % 3 == 0 { m / 3 } else { m / 3 + 1 })
 }
 
 #[inline]
