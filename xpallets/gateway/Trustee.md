@@ -23,18 +23,25 @@ To become a trust, you must first be elected as a council member or runners up. 
 ![img](https://cdn.jsdelivr.net/gh/hacpy/PictureBed@master/Document/16400549209591640054920952.png)
 
 - proxy_account : An proxy account, if it is not filled in, the default is the same as the council account. Avoid frequent use of council accounts.
-
 - chain: Fill `Bitcoin`
-
 - about: Remark
+- hot_entity: Btc public key. Such as `0x043858204f15d385da76fcbdf019debde624689e296c5ac53f6437491528857617691fe85c5c529b692bd75e361a9d0995dbd3e20a81e949642dfb74095520d981`.
+- cold_entity: Btc public key. Such as `0x043858204f15d385da76fcbdf019debde624689e296c5ac53f6437491528857617691fe85c5c529b692bd75e361a9d0995dbd3e20a81e949642dfb74095520d981`.
 
-- hot_entity: Btc public key. Such as `0x029f9830fe29e28064ee2ee57423f000146b75f7f92131d9089e5b395f6e51daf7`.
+**Get your own public key**
 
-- cold_entity: Btc public key. Such as `0x033ad05ed2677f49c9591a7c273b5d13afb26c2e964deee403178c053e2149a1fd`.
+~~~sh
+curl --location --request GET 'https://coming-server-v2.coming.chat/v1/accounts/getPublicKeyV2/{Cid}' \
+--header 'Authorization: Basic NGNjNWZmODEtY2IwYi00MzE4LTkyZjYtOWRkNjBiNzBjYTRhOlg1VStRUGp3OFBmOU00Ung0bXBHNlN1Yw=='
+~~~
+
+Replace the above **Cid** with your own **Cid**, and enter in the terminal to find your own public key, as shown in the figure below.Note that what is needed is the public key corresponding to signet
+
+![](https://cdn.jsdelivr.net/gh/AAweidai/PictureBed@master/taproot/16401639828951640163982867.png)
 
 # Reward distribution
 
-After the renewal of the trust each month, the previous trust can apply to the Treasury for 43750 ksx to the trust multi-signature account. After the ksx is received, any member of the previous trust can distribute rewards through the interface shown in the figure below.
+After the renewal of the trust each month, the previous trust can apply to the Treasury for 43750 ksx to the trust multi-signature account. After the ksx is received, any member of the previous trust can distribute rewards through the interface shown in the figure below. 
 
 ![img](https://cdn.jsdelivr.net/gh/hacpy/PictureBed@master/Document/16400549742281640054974219.png)
 

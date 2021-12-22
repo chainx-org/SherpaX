@@ -121,10 +121,12 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, Bt
         let trustee_type = BtcTrusteeType::try_from(raw_addr.to_vec())
             .map_err(|_| Error::<T>::InvalidPublicKey)?;
         let public = trustee_type.0;
-        if let Public::Normal(_) = public {
-            log!(error, "Disallow Normal Public for bitcoin now");
-            return Err(Error::<T>::InvalidPublicKey.into());
-        }
+        let public: musig2::PublicKey = public
+            .try_into()
+            .map_err(|_| Error::<T>::InvalidPublicKey)?;
+
+        let raw_addr = public.serialize_compressed();
+        let public = Public::from_slice(&raw_addr).map_err(|_| Error::<T>::InvalidPublicKey)?;
 
         if 2 != raw_addr[0] && 3 != raw_addr[0] {
             log!(error, "Not Compressed Public(prefix not 2|3)");

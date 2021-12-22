@@ -9220,6 +9220,7 @@ dependencies = [
  "hex-literal",
  "lazy_static",
  "light-bitcoin",
+ "musig2",
  "orml-utilities",
  "pallet-assets",
  "pallet-balances",
