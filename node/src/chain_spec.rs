@@ -145,7 +145,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
-                crate::bitcoin::local_testnet_trustees(),
+                crate::bitcoin::dev_trustees(),
                 hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
@@ -199,7 +199,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
-                vec![],
+                crate::bitcoin::mainnet_trustees(),
                 hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
@@ -263,7 +263,7 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
-                vec![],
+                crate::bitcoin::mainnet_trustees(),
                 hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
@@ -317,25 +317,21 @@ pub fn sherpax_genesis(
         (balances, Default::default())
     };
 
-    let btc_genesis_trustees = if trustees.is_empty() {
-        vec![]
-    } else {
-        trustees
-            .iter()
-            .find_map(|(chain, _, trustee_params)| {
-                if *chain == Chain::Bitcoin {
-                    Some(
-                        trustee_params
-                            .iter()
-                            .map(|i| (i.0).clone())
-                            .collect::<Vec<_>>(),
-                    )
-                } else {
-                    None
-                }
-            })
-            .expect("bitcoin trustees generation can not fail; qed")
-    };
+    let btc_genesis_trustees = trustees
+        .iter()
+        .find_map(|(chain, _, trustee_params)| {
+            if *chain == Chain::Bitcoin {
+                Some(
+                    trustee_params
+                        .iter()
+                        .map(|i| (i.0).clone())
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                None
+            }
+        })
+        .expect("bitcoin trustees generation can not fail; qed");
 
     let wasm_binary = WASM_BINARY.unwrap();
     GenesisConfig {

@@ -700,15 +700,23 @@ impl<T: Config> Pallet<T> {
     }
 
     pub fn generate_trustee_pool() -> Vec<T::AccountId> {
-        let members = pallet_elections_phragmen::Pallet::<T>::members()
-            .iter()
-            .map(|m| m.who.clone())
-            .collect::<Vec<T::AccountId>>();
-        let runnersup = pallet_elections_phragmen::Pallet::<T>::runners_up()
-            .iter()
-            .map(|m| m.who.clone())
-            .collect::<Vec<T::AccountId>>();
-        [members, runnersup].concat()
+        let members = {
+            let mut members = pallet_elections_phragmen::Pallet::<T>::members();
+            members.sort_unstable_by(|a, b| b.stake.cmp(&a.stake));
+            members
+                .iter()
+                .map(|m| m.who.clone())
+                .collect::<Vec<T::AccountId>>()
+        };
+        let runners_up = {
+            let mut runners_up = pallet_elections_phragmen::Pallet::<T>::runners_up();
+            runners_up.sort_unstable_by(|a, b| b.stake.cmp(&a.stake));
+            runners_up
+                .iter()
+                .map(|m| m.who.clone())
+                .collect::<Vec<T::AccountId>>()
+        };
+        [members, runners_up].concat()
     }
 
     pub fn do_trustee_election() -> DispatchResult {
@@ -770,7 +778,7 @@ impl<T: Config> Pallet<T> {
         new_trustee_candidate_sorted.sort_unstable();
 
         let mut old_trustee_candidate_sorted = old_trustee_candidate;
-        old_trustee_candidate_sorted.sort();
+        old_trustee_candidate_sorted.sort_unstable();
         let (incoming, outgoing) =
             <T as pallet_elections_phragmen::Config>::ChangeMembers::compute_members_diff_sorted(
                 &old_trustee_candidate_sorted,
