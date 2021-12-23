@@ -774,16 +774,7 @@ impl<T: Config> Pallet<T> {
                 vec![]
             };
 
-        let multi_count_0 = old_trustee_candidate
-            .iter()
-            .filter_map(|acc| match Self::trustee_sig_record(acc) {
-                0 => Some(acc.clone()),
-                _ => None,
-            })
-            .collect::<Vec<T::AccountId>>();
-
-        let filter_members: Vec<T::AccountId> =
-            [Self::little_black_house(), multi_count_0].concat();
+        let filter_members: Vec<T::AccountId> = Self::little_black_house();
 
         let all_trustee_pool = Self::generate_trustee_pool();
 
