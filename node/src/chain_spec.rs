@@ -64,6 +64,33 @@ pub fn authority_keys_from_seed(s: &str) -> (AccountId, AuraId, GrandpaId) {
         get_from_seed::<GrandpaId>(s),
     )
 }
+type AssetId = u32;
+type AssetName = Vec<u8>;
+type AssetSymbol = Vec<u8>;
+type AssetDecimals = u8;
+type AssetSufficient = bool;
+type AssetMinBalance = Balance;
+
+/// Asset registration
+fn sbtc() -> (
+    Chain,
+    AssetId,
+    AssetName,
+    AssetSymbol,
+    AssetDecimals,
+    AssetSufficient,
+    AssetMinBalance,
+) {
+    (
+        Chain::Bitcoin,
+        1,
+        "SBTC".to_string().into_bytes(),
+        "SBTC".to_string().into_bytes(),
+        8,
+        true,
+        1,
+    )
+}
 
 #[cfg(feature = "runtime-benchmarks")]
 pub fn benchmarks_config() -> Result<ChainSpec, String> {
@@ -332,7 +359,7 @@ pub fn sherpax_genesis(
             }
         })
         .expect("bitcoin trustees generation can not fail; qed");
-
+    let sbtc_info = sbtc();
     let wasm_binary = WASM_BINARY.unwrap();
     GenesisConfig {
         system: SystemConfig {
@@ -362,7 +389,11 @@ pub fn sherpax_genesis(
         vesting: VestingConfig { vesting },
         evm: Default::default(),
         ethereum: Default::default(),
-        assets: Default::default(),
+        assets: sherpax_runtime::AssetsConfig {
+            assets: vec![(sbtc_info.1, root_key.clone(), sbtc_info.5, sbtc_info.6)],
+            metadata: vec![(sbtc_info.1, sbtc_info.2, sbtc_info.3, sbtc_info.4)],
+            accounts: vec![],
+        },
         assets_bridge: AssetsBridgeConfig { admin_key: None },
         council: sherpax_runtime::CouncilConfig::default(),
         elections: sherpax_runtime::ElectionsConfig::default(),
@@ -391,7 +422,7 @@ pub fn sherpax_genesis(
             verifier: BtcTxVerifier::Recover,
         },
         x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
-            initial_asset_chain: vec![(root_key, 1, Chain::Bitcoin)],
+            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
         },
     }
 }

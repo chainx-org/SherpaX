@@ -56,7 +56,7 @@ pub mod pallet {
         pallet_prelude::*,
         traits::{LockableCurrency, ReservableCurrency},
     };
-    use frame_system::{pallet_prelude::*, RawOrigin};
+    use frame_system::pallet_prelude::*;
 
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_assets::Config {
@@ -217,7 +217,7 @@ pub mod pallet {
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         /// The initial asset chain.
-        pub initial_asset_chain: Vec<(T::AccountId, T::AssetId, Chain)>,
+        pub initial_asset_chain: Vec<(T::AssetId, Chain)>,
     }
 
     #[cfg(feature = "std")]
@@ -233,15 +233,7 @@ pub mod pallet {
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
             let extra_genesis_builder: fn(&Self) = |config| {
-                for (miner, asset_id, chain) in config.initial_asset_chain.iter() {
-                    let miner = T::Lookup::unlookup(miner.clone());
-                    let _ = pallet_assets::Pallet::<T>::force_create(
-                        RawOrigin::Root.into(),
-                        *asset_id,
-                        miner,
-                        true,
-                        1u32.into(),
-                    );
+                for (asset_id, chain) in config.initial_asset_chain.iter() {
                     AssetChainOf::<T>::insert(*asset_id, chain);
                 }
             };
