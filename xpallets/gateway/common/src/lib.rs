@@ -249,6 +249,48 @@ pub mod pallet {
             Ok(Pays::No.into())
         }
 
+        /// Regenerate the trustee's aggregated public key information.
+        ///
+        /// There is some problem with generating the number of aggregated
+        /// public keys, regenerate the aggregated public key information
+        /// after the repair is completed, and then remove the call.
+        ///
+        /// This is called by the root.
+        #[pallet::weight(100_000_000u64)]
+        pub fn regenerate_aggpubkey(origin: OriginFor<T>) -> DispatchResult {
+            ensure_root(origin)?;
+
+            info!(
+                target: "runtime::gateway::common",
+                "[regenerate_aggpubkey] Try to regenerate the aggregated public key information"
+            );
+            let trustee_session = T::BitcoinTrusteeSessionProvider::current_trustee_session()?;
+            let trustees = trustee_session
+                .trustee_list
+                .into_iter()
+                .unzip::<_, _, _, Vec<u64>>()
+                .0;
+            AggPubkeyInfo::<T>::remove_all(None);
+            let info = Self::try_generate_session_info(Chain::Bitcoin, trustees)?;
+            let session_number = Self::trustee_session_info_len(Chain::Bitcoin);
+
+            for index in 0..info.1.agg_pubkeys.len() {
+                AggPubkeyInfo::<T>::insert(
+                    &info.1.agg_pubkeys[index],
+                    info.1.personal_accounts[index].clone(),
+                );
+            }
+            // There is no multi-signature address inserted in info so
+            // the event will not display the multi-signature address.
+            Self::deposit_event(Event::<T>::TrusteeSetChanged(
+                Chain::Bitcoin,
+                session_number,
+                info.0,
+                info.1.agg_pubkeys.len() as u32,
+            ));
+            Ok(())
+        }
+
         /// Set the state of withdraw record by the trustees.
         #[pallet::weight(< T as Config >::WeightInfo::set_withdrawal_state())]
         pub fn set_withdrawal_state(
