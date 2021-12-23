@@ -245,7 +245,7 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, Bt
         // Aggregate public key script and corresponding personal public key index
         let mut agg_pubkeys: Vec<Vec<u8>> = vec![];
         let mut personal_accounts: Vec<Vec<T::AccountId>> = vec![];
-        for (i, p) in hot_mast.person_pubkeys.iter().enumerate() {
+        for (i, p) in hot_mast.pubkeys.iter().enumerate() {
             let script: Bytes = Builder::default()
                 .push_bytes(&p.x_coor().to_vec())
                 .push_opcode(Opcode::OP_CHECKSIG)

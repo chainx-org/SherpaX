@@ -33,7 +33,7 @@ use sp_runtime::traits::{CheckedDiv, Saturating, Zero};
 use sp_runtime::SaturatedConversion;
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
-use self::traits::{TrusteeForChain, TrusteeSession};
+use self::traits::{TrusteeForChain, TrusteeInfoUpdate, TrusteeSession};
 use self::types::{
     GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, TrusteeInfoConfig,
     TrusteeIntentionProps,
@@ -249,6 +249,61 @@ pub mod pallet {
             Ok(Pays::No.into())
         }
 
+        /// Force trustee election
+        ///
+        /// Mandatory trust renewal if the current trust is not doing anything
+        ///
+        /// This is called by the root.
+        #[pallet::weight(100_000_000u64)]
+        pub fn force_trustee_election(origin: OriginFor<T>) -> DispatchResult {
+            ensure_root(origin)?;
+            Self::update_transition_status(false);
+
+            Ok(())
+        }
+
+        /// Regenerate the trustee's aggregated public key information.
+        ///
+        /// There is some problem with generating the number of aggregated
+        /// public keys, regenerate the aggregated public key information
+        /// after the repair is completed, and then remove the call.
+        ///
+        /// This is called by the root.
+        #[pallet::weight(100_000_000u64)]
+        pub fn regenerate_aggpubkey(origin: OriginFor<T>) -> DispatchResult {
+            ensure_root(origin)?;
+
+            info!(
+                target: "runtime::gateway::common",
+                "[regenerate_aggpubkey] Try to regenerate the aggregated public key information"
+            );
+            let trustee_session = T::BitcoinTrusteeSessionProvider::current_trustee_session()?;
+            let trustees = trustee_session
+                .trustee_list
+                .into_iter()
+                .unzip::<_, _, _, Vec<u64>>()
+                .0;
+            AggPubkeyInfo::<T>::remove_all(None);
+            let info = Self::try_generate_session_info(Chain::Bitcoin, trustees)?;
+            let session_number = Self::trustee_session_info_len(Chain::Bitcoin);
+
+            for index in 0..info.1.agg_pubkeys.len() {
+                AggPubkeyInfo::<T>::insert(
+                    &info.1.agg_pubkeys[index],
+                    info.1.personal_accounts[index].clone(),
+                );
+            }
+            // There is no multi-signature address inserted in info so
+            // the event will not display the multi-signature address.
+            Self::deposit_event(Event::<T>::TrusteeSetChanged(
+                Chain::Bitcoin,
+                session_number,
+                info.0,
+                info.1.agg_pubkeys.len() as u32,
+            ));
+            Ok(())
+        }
+
         /// Set the state of withdraw record by the trustees.
         #[pallet::weight(< T as Config >::WeightInfo::set_withdrawal_state())]
         pub fn set_withdrawal_state(
@@ -429,7 +484,7 @@ pub mod pallet {
             Chain,
             u32,
             GenericTrusteeSessionInfo<T::AccountId, T::BlockNumber>,
-            ScriptInfo<T::AccountId>,
+            u32,
         ),
         /// Treasury transfer to trustee. [source, target, chain, session_number, reward_total]
         TransferTrusteeReward(T::AccountId, T::AccountId, Chain, u32, Balanceof<T>),
@@ -700,15 +755,23 @@ impl<T: Config> Pallet<T> {
     }
 
     pub fn generate_trustee_pool() -> Vec<T::AccountId> {
-        let members = pallet_elections_phragmen::Pallet::<T>::members()
-            .iter()
-            .map(|m| m.who.clone())
-            .collect::<Vec<T::AccountId>>();
-        let runnersup = pallet_elections_phragmen::Pallet::<T>::runners_up()
-            .iter()
-            .map(|m| m.who.clone())
-            .collect::<Vec<T::AccountId>>();
-        [members, runnersup].concat()
+        let members = {
+            let mut members = pallet_elections_phragmen::Pallet::<T>::members();
+            members.sort_unstable_by(|a, b| b.stake.cmp(&a.stake));
+            members
+                .iter()
+                .map(|m| m.who.clone())
+                .collect::<Vec<T::AccountId>>()
+        };
+        let runners_up = {
+            let mut runners_up = pallet_elections_phragmen::Pallet::<T>::runners_up();
+            runners_up.sort_unstable_by(|a, b| b.stake.cmp(&a.stake));
+            runners_up
+                .iter()
+                .map(|m| m.who.clone())
+                .collect::<Vec<T::AccountId>>()
+        };
+        [members, runners_up].concat()
     }
 
     pub fn do_trustee_election() -> DispatchResult {
@@ -724,16 +787,7 @@ impl<T: Config> Pallet<T> {
                 vec![]
             };
 
-        let multi_count_0 = old_trustee_candidate
-            .iter()
-            .filter_map(|acc| match Self::trustee_sig_record(acc) {
-                0 => Some(acc.clone()),
-                _ => None,
-            })
-            .collect::<Vec<T::AccountId>>();
-
-        let filter_members: Vec<T::AccountId> =
-            [Self::little_black_house(), multi_count_0].concat();
+        let filter_members: Vec<T::AccountId> = Self::little_black_house();
 
         let all_trustee_pool = Self::generate_trustee_pool();
 
@@ -770,7 +824,7 @@ impl<T: Config> Pallet<T> {
         new_trustee_candidate_sorted.sort_unstable();
 
         let mut old_trustee_candidate_sorted = old_trustee_candidate;
-        old_trustee_candidate_sorted.sort();
+        old_trustee_candidate_sorted.sort_unstable();
         let (incoming, outgoing) =
             <T as pallet_elections_phragmen::Config>::ChangeMembers::compute_members_diff_sorted(
                 &old_trustee_candidate_sorted,
@@ -914,7 +968,8 @@ impl<T: Config> Pallet<T> {
         info.0 .0.multi_account = Some(multi_addr.clone());
         TrusteeSessionInfoOf::<T>::insert(chain, session_number, info.0.clone());
         TrusteeMultiSigAddr::<T>::insert(chain, multi_addr);
-
+        // Remove the information of the previous aggregate public key，Withdrawal is prohibited at this time.
+        AggPubkeyInfo::<T>::remove_all(None);
         for index in 0..info.1.agg_pubkeys.len() {
             AggPubkeyInfo::<T>::insert(
                 &info.1.agg_pubkeys[index],
@@ -926,7 +981,7 @@ impl<T: Config> Pallet<T> {
             chain,
             session_number,
             info.0,
-            info.1,
+            info.1.agg_pubkeys.len() as u32,
         ));
         Ok(())
     }

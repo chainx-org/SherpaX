@@ -135,13 +135,28 @@ impl ExtBuilder {
             .unwrap();
 
         let _ = crate::GenesisConfig::<Test> {
-            initial_asset_chain: vec![
-                (ALICE, X_BTC, Chain::Bitcoin),
-                (ALICE, X_ETH, Chain::Ethereum),
-            ],
+            initial_asset_chain: vec![(X_BTC, Chain::Bitcoin), (X_ETH, Chain::Ethereum)],
         }
         .assimilate_storage(&mut storage);
-
+        let _ = pallet_assets::GenesisConfig::<Test> {
+            assets: vec![(X_BTC, ALICE, true, 1), (X_ETH, ALICE, true, 1)],
+            metadata: vec![
+                (
+                    X_BTC,
+                    "XBTC".to_string().into_bytes(),
+                    "XBTC".to_string().into_bytes(),
+                    8,
+                ),
+                (
+                    X_ETH,
+                    "XETH".to_string().into_bytes(),
+                    "XETH".to_string().into_bytes(),
+                    18,
+                ),
+            ],
+            accounts: vec![],
+        }
+        .assimilate_storage(&mut storage);
         sp_io::TestExternalities::new(storage)
     }
     pub fn build_and_execute(self, test: impl FnOnce()) {

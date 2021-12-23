@@ -64,6 +64,33 @@ pub fn authority_keys_from_seed(s: &str) -> (AccountId, AuraId, GrandpaId) {
         get_from_seed::<GrandpaId>(s),
     )
 }
+type AssetId = u32;
+type AssetName = Vec<u8>;
+type AssetSymbol = Vec<u8>;
+type AssetDecimals = u8;
+type AssetSufficient = bool;
+type AssetMinBalance = Balance;
+
+/// Asset registration
+fn sbtc() -> (
+    Chain,
+    AssetId,
+    AssetName,
+    AssetSymbol,
+    AssetDecimals,
+    AssetSufficient,
+    AssetMinBalance,
+) {
+    (
+        Chain::Bitcoin,
+        1,
+        "SBTC".to_string().into_bytes(),
+        "SBTC".to_string().into_bytes(),
+        8,
+        true,
+        1,
+    )
+}
 
 #[cfg(feature = "runtime-benchmarks")]
 pub fn benchmarks_config() -> Result<ChainSpec, String> {
@@ -145,7 +172,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
-                crate::bitcoin::local_testnet_trustees(),
+                crate::bitcoin::dev_trustees(),
                 hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
@@ -199,7 +226,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
-                vec![],
+                crate::bitcoin::mainnet_trustees(),
                 hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
@@ -263,7 +290,7 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
-                vec![],
+                crate::bitcoin::mainnet_trustees(),
                 hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
@@ -317,26 +344,22 @@ pub fn sherpax_genesis(
         (balances, Default::default())
     };
 
-    let btc_genesis_trustees = if trustees.is_empty() {
-        vec![]
-    } else {
-        trustees
-            .iter()
-            .find_map(|(chain, _, trustee_params)| {
-                if *chain == Chain::Bitcoin {
-                    Some(
-                        trustee_params
-                            .iter()
-                            .map(|i| (i.0).clone())
-                            .collect::<Vec<_>>(),
-                    )
-                } else {
-                    None
-                }
-            })
-            .expect("bitcoin trustees generation can not fail; qed")
-    };
-
+    let btc_genesis_trustees = trustees
+        .iter()
+        .find_map(|(chain, _, trustee_params)| {
+            if *chain == Chain::Bitcoin {
+                Some(
+                    trustee_params
+                        .iter()
+                        .map(|i| (i.0).clone())
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                None
+            }
+        })
+        .expect("bitcoin trustees generation can not fail; qed");
+    let sbtc_info = sbtc();
     let wasm_binary = WASM_BINARY.unwrap();
     GenesisConfig {
         system: SystemConfig {
@@ -366,7 +389,11 @@ pub fn sherpax_genesis(
         vesting: VestingConfig { vesting },
         evm: Default::default(),
         ethereum: Default::default(),
-        assets: Default::default(),
+        assets: sherpax_runtime::AssetsConfig {
+            assets: vec![(sbtc_info.1, root_key.clone(), sbtc_info.5, sbtc_info.6)],
+            metadata: vec![(sbtc_info.1, sbtc_info.2, sbtc_info.3, sbtc_info.4)],
+            accounts: vec![],
+        },
         assets_bridge: AssetsBridgeConfig { admin_key: None },
         council: sherpax_runtime::CouncilConfig::default(),
         elections: sherpax_runtime::ElectionsConfig::default(),
@@ -395,7 +422,7 @@ pub fn sherpax_genesis(
             verifier: BtcTxVerifier::Recover,
         },
         x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
-            initial_asset_chain: vec![(root_key, 1, Chain::Bitcoin)],
+            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
         },
     }
 }

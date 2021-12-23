@@ -491,7 +491,19 @@ impl ExtBuilder {
         .assimilate_storage(&mut storage);
 
         let _ = xpallet_gateway_records::GenesisConfig::<Test> {
-            initial_asset_chain: vec![(Default::default(), X_BTC, Chain::Bitcoin)],
+            initial_asset_chain: vec![(X_BTC, Chain::Bitcoin)],
+        }
+        .assimilate_storage(&mut storage);
+
+        let _ = pallet_assets::GenesisConfig::<Test> {
+            assets: vec![(X_BTC, Default::default(), true, 1)],
+            metadata: vec![(
+                X_BTC,
+                "XBTC".to_string().into_bytes(),
+                "XBTC".to_string().into_bytes(),
+                8,
+            )],
+            accounts: vec![],
         }
         .assimilate_storage(&mut storage);
 
