@@ -429,7 +429,7 @@ pub mod pallet {
             Chain,
             u32,
             GenericTrusteeSessionInfo<T::AccountId, T::BlockNumber>,
-            ScriptInfo<T::AccountId>,
+            u32,
         ),
         /// Treasury transfer to trustee. [source, target, chain, session_number, reward_total]
         TransferTrusteeReward(T::AccountId, T::AccountId, Chain, u32, Balanceof<T>),
@@ -934,7 +934,7 @@ impl<T: Config> Pallet<T> {
             chain,
             session_number,
             info.0,
-            info.1,
+            info.1.agg_pubkeys.len() as u32,
         ));
         Ok(())
     }

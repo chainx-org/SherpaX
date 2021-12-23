@@ -119,23 +119,38 @@ fn test_create_taproot_address() {
     let pubkey1_bytes = hex!("0283f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2");
     let pubkey2_bytes = hex!("027a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d");
     let pubkey3_bytes = hex!("02c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565f");
+    let pubkey4_bytes = hex!("0237322a5008a1b26ac72778167e770e1fa2272cfd9f9fe0f2c20bd41fe051da6c");
+    let pubkey5_bytes = hex!("03227368d7168173229f1898b8448dc5c0640ce35eb574639e42ec515b73d5f2d3");
+    let pubkey6_bytes = hex!("027196048a63ec7a3b9cb5a23a51952503e7fca8de2ec42388952e067d39fc83ff");
+    let pubkey7_bytes = hex!("025b9cd3170511ced44caf8067b1a759dfd7b2f2d52352c4a788b15a1cbc3afa56");
+    let pubkey8_bytes = hex!("030709034ebd0964796a11fab08fce940524bd7dfdbd99b8a7a7618b71754e7584");
+    let pubkey9_bytes = hex!("02f8c11e20a30a0683539ea579725eced3e055a4dcbef88f69162805f3dc609760");
+    let pubkey10_bytes = hex!("0379f12ca4c0fb587616aba27ab7f66245120b4e1f83a413769a5779af48146e87");
     hot_keys.push(Public::from_slice(&pubkey1_bytes).unwrap());
     hot_keys.push(Public::from_slice(&pubkey2_bytes).unwrap());
     hot_keys.push(Public::from_slice(&pubkey3_bytes).unwrap());
+    hot_keys.push(Public::from_slice(&pubkey4_bytes).unwrap());
+    hot_keys.push(Public::from_slice(&pubkey5_bytes).unwrap());
+    hot_keys.push(Public::from_slice(&pubkey6_bytes).unwrap());
+    hot_keys.push(Public::from_slice(&pubkey7_bytes).unwrap());
+    hot_keys.push(Public::from_slice(&pubkey8_bytes).unwrap());
+    hot_keys.push(Public::from_slice(&pubkey9_bytes).unwrap());
+    hot_keys.push(Public::from_slice(&pubkey10_bytes).unwrap());
     ExtBuilder::default().build_and_execute(|| {
         let pks = hot_keys
             .into_iter()
             .map(|k| k.try_into().unwrap())
             .collect::<Vec<_>>();
-        let threshold_addr: Address = Mast::new(pks, 2_u32)
-            .unwrap()
+        let mast = Mast::new(pks, 7_u32).unwrap();
+        let threshold_addr: Address = mast
             .generate_address(&crate::Pallet::<Test>::network_id().to_string())
             .unwrap()
             .parse()
             .unwrap();
+        assert_eq!(mast.pubkeys.len(), 120);
         assert_eq!(
             threshold_addr.to_string(),
-            "tb1pn202yeugfa25nssxk2hv902kmxrnp7g9xt487u256n20jgahuwasdcjfdw"
+            "tb1psaktm6w6nrh5xs8umla9qaw6zjarr4yuqk3m4x8pzc6ekve93v7ss20kuq"
         )
     })
 }
