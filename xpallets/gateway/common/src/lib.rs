@@ -955,7 +955,8 @@ impl<T: Config> Pallet<T> {
         info.0 .0.multi_account = Some(multi_addr.clone());
         TrusteeSessionInfoOf::<T>::insert(chain, session_number, info.0.clone());
         TrusteeMultiSigAddr::<T>::insert(chain, multi_addr);
-
+        // Remove the information of the previous aggregate public key，Withdrawal is prohibited at this time.
+        AggPubkeyInfo::<T>::remove_all(None);
         for index in 0..info.1.agg_pubkeys.len() {
             AggPubkeyInfo::<T>::insert(
                 &info.1.agg_pubkeys[index],

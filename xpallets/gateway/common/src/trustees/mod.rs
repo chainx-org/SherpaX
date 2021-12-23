@@ -123,7 +123,6 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
         // The renewal of the trustee is completed, the current trustee information is replaced
         // and the number of multiple signings is archived.
         if Self::trustee_transition_status() && !status {
-            AggPubkeyInfo::<T>::remove_all(None);
             let last_session_num = Self::trustee_session_info_len(Chain::Bitcoin).saturating_sub(1);
             TrusteeSessionInfoOf::<T>::mutate(
                 Chain::Bitcoin,
