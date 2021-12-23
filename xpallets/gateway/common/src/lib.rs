@@ -33,7 +33,7 @@ use sp_runtime::traits::{CheckedDiv, Saturating, Zero};
 use sp_runtime::SaturatedConversion;
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
-use self::traits::{TrusteeForChain, TrusteeSession};
+use self::traits::{TrusteeForChain, TrusteeInfoUpdate, TrusteeSession};
 use self::types::{
     GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, TrusteeInfoConfig,
     TrusteeIntentionProps,
@@ -247,6 +247,19 @@ pub mod pallet {
 
             Self::do_trustee_election()?;
             Ok(Pays::No.into())
+        }
+
+        /// Force trustee election
+        ///
+        /// Mandatory trust renewal if the current trust is not doing anything
+        ///
+        /// This is called by the root.
+        #[pallet::weight(100_000_000u64)]
+        pub fn force_trustee_election(origin: OriginFor<T>) -> DispatchResult {
+            ensure_root(origin)?;
+            Self::update_transition_status(false);
+
+            Ok(())
         }
 
         /// Regenerate the trustee's aggregated public key information.

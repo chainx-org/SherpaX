@@ -14,7 +14,7 @@ use xpallet_support::traits::MultiSig;
 use crate::types::TrusteeSessionInfo;
 use crate::{
     traits::{BytesLike, ChainProvider, TrusteeInfoUpdate, TrusteeSession},
-    AggPubkeyInfo, TrusteeSessionInfoOf, TrusteeSigRecord, TrusteeTransitionStatus,
+    TrusteeSessionInfoOf, TrusteeSigRecord, TrusteeTransitionStatus,
 };
 use crate::{Config, Error, Pallet};
 
