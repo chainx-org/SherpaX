@@ -68,6 +68,7 @@ pub fn validate_transaction<T: Config>(
 }
 
 /// Check Taproot tx
+#[allow(dead_code)]
 pub fn parse_check_taproot_tx<T: Config>(
     _tx: &Transaction,
     spent_outputs: &TransactionOutputArray,

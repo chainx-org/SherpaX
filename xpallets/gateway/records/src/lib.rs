@@ -598,7 +598,10 @@ impl<T: Config> Pallet<T> {
                     *amount = None;
                     Ok(None)
                 }
-                Ordering::Greater => Ok(acc.checked_sub(&value)),
+                Ordering::Greater => {
+                    *amount = acc.checked_sub(&value);
+                    Ok(*amount)
+                }
             },
         })?;
         Ok(())
