@@ -149,7 +149,6 @@ pub mod pallet {
             origin: OriginFor<T>,
             withdrawal_id_list: Vec<u32>,
             tx: Vec<u8>,
-            spent_outputs: Vec<u8>,
         ) -> DispatchResult {
             let from = ensure_signed(origin)?;
 
@@ -162,10 +161,15 @@ pub mod pallet {
             Self::ensure_trustee(&from)?;
 
             let tx = Self::deserialize_tx(tx.as_slice())?;
-            let spent_outputs = Self::deserialize_spent_outputs(spent_outputs.as_slice())?;
-            // log!(debug, "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}, spent_outputs: {:?}", from, withdrawal_id_list, tx, spent_outputs);
+            log!(
+                debug,
+                "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}",
+                from,
+                withdrawal_id_list,
+                tx
+            );
 
-            Self::apply_create_taproot_withdraw(from, tx, withdrawal_id_list, spent_outputs)?;
+            Self::apply_create_taproot_withdraw(from, tx, withdrawal_id_list)?;
             Ok(())
         }
 
@@ -582,6 +586,7 @@ pub mod pallet {
         }
 
         #[inline]
+        #[allow(dead_code)]
         pub(crate) fn deserialize_spent_outputs(
             input: &[u8],
         ) -> Result<TransactionOutputArray, Error<T>> {

@@ -140,6 +140,29 @@ pub mod pallet {
             }
             Ok(())
         }
+
+        /// Set locked assets of given account.
+        ///
+        /// This is a root-only operation.
+        #[pallet::weight(<T as Config>::WeightInfo::set_locked_assets())]
+        pub fn set_locked_assets(
+            origin: OriginFor<T>,
+            who: T::AccountId,
+            asset_id: T::AssetId,
+            locked_balance: T::Balance,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+            if Locks::<T>::contains_key(who.clone(), asset_id) {
+                Locks::<T>::mutate(who, asset_id, |balance| match balance {
+                    Some(amount) => *amount = locked_balance,
+                    None => *balance = Some(locked_balance),
+                });
+            } else {
+                Locks::<T>::insert(who, asset_id, locked_balance);
+            }
+
+            Ok(())
+        }
     }
 
     #[pallet::event]
@@ -596,9 +619,12 @@ impl<T: Config> Pallet<T> {
                 Ordering::Less => Err(Error::<T>::InsufficientLockedAssets),
                 Ordering::Equal => {
                     *amount = None;
-                    Ok(None)
+                    Ok(())
                 }
-                Ordering::Greater => Ok(acc.checked_sub(&value)),
+                Ordering::Greater => {
+                    *amount = acc.checked_sub(&value);
+                    Ok(())
+                }
             },
         })?;
         Ok(())

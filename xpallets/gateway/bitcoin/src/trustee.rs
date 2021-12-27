@@ -15,7 +15,7 @@ use sp_std::{
 };
 
 use light_bitcoin::{
-    chain::{Transaction, TransactionOutputArray},
+    chain::Transaction,
     crypto::dhash160,
     keys::{Address, AddressTypes, Public, Type},
     mast::{compute_min_threshold, Mast},
@@ -32,7 +32,6 @@ use xpallet_gateway_common::{
     utils::{two_thirds_unsafe, MAX_TAPROOT_NODES},
 };
 
-use crate::tx::validator::parse_check_taproot_tx;
 use crate::{
     log,
     types::{BtcWithdrawalProposal, VoteResult},
@@ -327,7 +326,6 @@ impl<T: Config> Pallet<T> {
         who: T::AccountId,
         tx: Transaction,
         withdrawal_id_list: Vec<u32>,
-        spent_outputs: TransactionOutputArray,
     ) -> DispatchResult {
         let withdraw_amount = Self::max_withdrawal_count();
         if withdrawal_id_list.len() > withdraw_amount as usize {
@@ -351,9 +349,9 @@ impl<T: Config> Pallet<T> {
         );
 
         // check sig
-        if parse_check_taproot_tx::<T>(&tx, &spent_outputs).is_err() {
-            return Err(Error::<T>::VerifySignFailed.into());
-        };
+        // if parse_check_taproot_tx::<T>(&tx, &spent_outputs).is_err() {
+        //     return Err(Error::<T>::VerifySignFailed.into());
+        // };
 
         xpallet_gateway_records::Pallet::<T>::process_withdrawals(
             &withdrawal_id_list,

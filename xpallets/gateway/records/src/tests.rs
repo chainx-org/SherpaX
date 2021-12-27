@@ -184,3 +184,16 @@ fn test_withdrawal_force_set_state() {
         );
     })
 }
+
+#[test]
+fn test_lock_unlock() {
+    ExtBuilder::default().build_and_execute(|| {
+        assert_ok!(XGatewayRecords::deposit(&ALICE, X_BTC, 100));
+
+        assert_ok!(Pallet::<Test>::lock(&ALICE, X_BTC, 10));
+        assert_eq!(Locks::<Test>::get(ALICE, X_BTC), Some(10));
+
+        assert_ok!(Pallet::<Test>::unlock(&ALICE, X_BTC, 5));
+        assert_eq!(Locks::<Test>::get(ALICE, X_BTC), Some(5));
+    })
+}

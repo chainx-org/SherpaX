@@ -18,10 +18,7 @@ use light_bitcoin::{
     serialization::{self, Reader, SERIALIZE_TRANSACTION_WITNESS},
 };
 
-use crate::{
-    types::*, Call, Config, Pallet, PendingDeposits, TransactionOutputArray, TxState,
-    WithdrawalProposal,
-};
+use crate::{types::*, Call, Config, Pallet, PendingDeposits, TxState, WithdrawalProposal};
 
 fn create_default_asset<T: Config>(who: T::AccountId) {
     let miner = T::Lookup::unlookup(who);
@@ -157,11 +154,6 @@ benchmarks! {
         let tx_hash = tx.hash();
         let tx_raw: Vec<u8> = serialization::serialize_with_flags(&tx, SERIALIZE_TRANSACTION_WITNESS).into();
 
-        let transaction_output = TransactionOutputArray {
-            outputs: vec![prev_tx.outputs[0].clone()],
-        };
-        let spent_outputs_raw = serialization::serialize(&transaction_output).into();
-
         let amount: T::Balance = 1_000_000_000u32.into();
 
         let withdrawal: T::Balance = 50000u32.into();
@@ -174,7 +166,7 @@ benchmarks! {
 
         XGatewayRecords::<T>::withdrawal_state_insert(0, WithdrawalState::Applying);
 
-    }: _(RawOrigin::Signed(caller), vec![0], tx_raw, spent_outputs_raw)
+    }: _(RawOrigin::Signed(caller), vec![0], tx_raw)
     verify {
         assert_eq!(WithdrawalProposal::<T>::get().unwrap().sig_state, VoteResult::Finish);
     }

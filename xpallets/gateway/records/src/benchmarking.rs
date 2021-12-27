@@ -100,6 +100,15 @@ benchmarks! {
     verify {
         assert_eq!(XGatewayRecords::<T>::state_of(0), None);
     }
+
+    set_locked_assets {
+        let receiver: T::AccountId = whitelisted_caller();
+        create_default_asset::<T>(receiver.clone());
+        let amount: T::Balance = 1000u32.into();
+    }: _(RawOrigin::Root, receiver.clone(), T::BtcAssetId::get(), amount.clone())
+    verify {
+        assert_eq!(XGatewayRecords::<T>::locks(receiver, T::BtcAssetId::get()), Some(amount));
+    }
 }
 
 #[cfg(test)]
@@ -115,6 +124,7 @@ mod tests {
             assert_ok!(Pallet::<Test>::test_benchmark_root_withdraw());
             assert_ok!(Pallet::<Test>::test_benchmark_set_withdrawal_state());
             assert_ok!(Pallet::<Test>::test_benchmark_set_withdrawal_state_list());
+            assert_ok!(Pallet::<Test>::test_benchmark_set_locked_assets());
         });
     }
 }

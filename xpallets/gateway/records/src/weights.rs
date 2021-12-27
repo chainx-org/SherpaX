@@ -2,7 +2,7 @@
 
 //! Weights for xpallet_gateway_records
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
-//! DATE: 2021-12-17, STEPS: 50, REPEAT: 20, LOW RANGE: [], HIGH RANGE: []
+//! DATE: 2021-12-27, STEPS: 50, REPEAT: 20, LOW RANGE: [], HIGH RANGE: []
 //! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("benchmarks"), DB CACHE: 128
 
 // Executed Command:
@@ -21,7 +21,6 @@
 
 #![allow(unused_parens)]
 #![allow(unused_imports)]
-#![allow(clippy::unnecessary_cast)]
 
 use frame_support::{
     traits::Get,
@@ -35,55 +34,64 @@ pub trait WeightInfo {
     fn root_withdraw() -> Weight;
     fn set_withdrawal_state() -> Weight;
     fn set_withdrawal_state_list(u: u32) -> Weight;
+    fn set_locked_assets() -> Weight;
 }
 
 /// Weights for xpallet_gateway_records using the Substrate node and recommended hardware.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
     fn root_deposit() -> Weight {
-        (48_000_000 as Weight)
-            .saturating_add(T::DbWeight::get().reads(6 as Weight))
-            .saturating_add(T::DbWeight::get().writes(4 as Weight))
+        (57_091_000 as Weight)
+            .saturating_add(T::DbWeight::get().reads(2 as Weight))
+            .saturating_add(T::DbWeight::get().writes(2 as Weight))
     }
     fn root_withdraw() -> Weight {
-        (43_000_000 as Weight)
-            .saturating_add(T::DbWeight::get().reads(8 as Weight))
-            .saturating_add(T::DbWeight::get().writes(6 as Weight))
+        (58_567_000 as Weight)
+            .saturating_add(T::DbWeight::get().reads(4 as Weight))
+            .saturating_add(T::DbWeight::get().writes(4 as Weight))
     }
     fn set_withdrawal_state() -> Weight {
-        (64_000_000 as Weight)
-            .saturating_add(T::DbWeight::get().reads(9 as Weight))
-            .saturating_add(T::DbWeight::get().writes(7 as Weight))
+        (74_773_000 as Weight)
+            .saturating_add(T::DbWeight::get().reads(5 as Weight))
+            .saturating_add(T::DbWeight::get().writes(5 as Weight))
     }
-    fn set_withdrawal_state_list(u: u32) -> Weight {
-        (65_208_000 as Weight)
-            .saturating_add((5_000 as Weight).saturating_mul(u as Weight))
-            .saturating_add(T::DbWeight::get().reads(9 as Weight))
-            .saturating_add(T::DbWeight::get().writes(7 as Weight))
+    fn set_withdrawal_state_list(_u: u32) -> Weight {
+        (78_772_000 as Weight)
+            .saturating_add(T::DbWeight::get().reads(5 as Weight))
+            .saturating_add(T::DbWeight::get().writes(5 as Weight))
+    }
+    fn set_locked_assets() -> Weight {
+        (8_421_000 as Weight)
+            .saturating_add(T::DbWeight::get().reads(1 as Weight))
+            .saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
 }
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
     fn root_deposit() -> Weight {
-        (48_000_000 as Weight)
-            .saturating_add(RocksDbWeight::get().reads(6 as Weight))
-            .saturating_add(RocksDbWeight::get().writes(4 as Weight))
+        (57_091_000 as Weight)
+            .saturating_add(RocksDbWeight::get().reads(2 as Weight))
+            .saturating_add(RocksDbWeight::get().writes(2 as Weight))
     }
     fn root_withdraw() -> Weight {
-        (43_000_000 as Weight)
-            .saturating_add(RocksDbWeight::get().reads(8 as Weight))
-            .saturating_add(RocksDbWeight::get().writes(6 as Weight))
+        (58_567_000 as Weight)
+            .saturating_add(RocksDbWeight::get().reads(4 as Weight))
+            .saturating_add(RocksDbWeight::get().writes(4 as Weight))
     }
     fn set_withdrawal_state() -> Weight {
-        (64_000_000 as Weight)
-            .saturating_add(RocksDbWeight::get().reads(9 as Weight))
-            .saturating_add(RocksDbWeight::get().writes(7 as Weight))
+        (74_773_000 as Weight)
+            .saturating_add(RocksDbWeight::get().reads(5 as Weight))
+            .saturating_add(RocksDbWeight::get().writes(5 as Weight))
     }
-    fn set_withdrawal_state_list(u: u32) -> Weight {
-        (65_208_000 as Weight)
-            .saturating_add((5_000 as Weight).saturating_mul(u as Weight))
-            .saturating_add(RocksDbWeight::get().reads(9 as Weight))
-            .saturating_add(RocksDbWeight::get().writes(7 as Weight))
+    fn set_withdrawal_state_list(_u: u32) -> Weight {
+        (78_772_000 as Weight)
+            .saturating_add(RocksDbWeight::get().reads(5 as Weight))
+            .saturating_add(RocksDbWeight::get().writes(5 as Weight))
+    }
+    fn set_locked_assets() -> Weight {
+        (8_421_000 as Weight)
+            .saturating_add(RocksDbWeight::get().reads(1 as Weight))
+            .saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
 }
