@@ -134,6 +134,24 @@ pub mod pallet {
         }
 
         /// Setup the trustee info.
+        ///
+        /// The hot and cold public keys of the current trustee cannot be replaced at will. If they
+        /// are randomly replaced, the hot and cold public keys of the current trustee before the
+        /// replacement will be lost, resulting in the inability to reconstruct the `Mast` tree and
+        /// generate the corresponding control block.
+        /// There are two solutions: the first is to record the hot and cold public keys for each
+        /// trustee renewal, and the trustee can update the hot and cold public keys at will.
+        /// The second is to move these trusts into the `lttle_black_house` when it is necessary
+        /// to update the hot and cold public keys of trusts, and renew the trustee.
+        /// After the renewal of the trustee is completed, the hot and cold public keys can be
+        /// updated. The second option is currently selected. `The time when the second option
+        /// allows the hot and cold public keys to be updated is that the member is not in the
+        /// current trustee and is not in a state of renewal of the trustee`.
+        /// The advantage of the second scheme is that there is no need to change the storage
+        /// structure and record the hot and cold public keys of previous trusts.
+        /// The disadvantage is that the update of the hot and cold public keys requires the
+        /// participation of the admin account and the user cannot update the hot and cold public
+        /// keys at will.
         #[pallet::weight(< T as Config >::WeightInfo::setup_trustee())]
         pub fn setup_trustee(
             origin: OriginFor<T>,
@@ -151,6 +169,12 @@ pub mod pallet {
                     || Self::little_black_house().contains(&who),
                 Error::<T>::NotTrusteePreselectedMember
             );
+
+            ensure!(
+                Self::ensure_not_current_trustee(&who) && !Self::trustee_transition_status(),
+                Error::<T>::ExistCurrentTrustee
+            );
+
             Self::setup_trustee_impl(who, proxy_account, chain, about, hot_entity, cold_entity)
         }
 
@@ -181,9 +205,9 @@ pub mod pallet {
             Self::transition_trustee_session_impl(chain, new_trustees)
         }
 
-        /// Move a current trust into a small black room.
+        /// Move a current trustee into a small black room.
         ///
-        /// This is to allow for timely replacement in the event of a problem with a particular trust.
+        /// This is to allow for timely replacement in the event of a problem with a particular trustee.
         /// The trustee will be moved into the small black room.
         ///
         /// This is called by the trustee admin and root.
@@ -208,7 +232,7 @@ pub mod pallet {
 
             info!(
                 target: "runtime::gateway::common",
-                "[move_trust_to_black_room] Try to move a trust to black room, trustee:{:?}",
+                "[move_trust_to_black_room] Try to move a trustee to black room, trustee:{:?}",
                 trustees
             );
 
@@ -224,11 +248,11 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Automatic trust transfer from relayer.
+        /// Automatic trustee transfer from relayer.
         ///
         /// Since the time of the function exectution only have 0.5 s during
-        /// the initialization of parachain, the action of the trust election
-        /// is not supported, so the automatic trust election is triggered by
+        /// the initialization of parachain, the action of the trustee election
+        /// is not supported, so the automatic trustee election is triggered by
         /// the Relayer.
         ///
         /// This is called by the relayer and root.
@@ -251,7 +275,7 @@ pub mod pallet {
 
         /// Force trustee election
         ///
-        /// Mandatory trust renewal if the current trust is not doing anything
+        /// Mandatory trustee renewal if the current trustee is not doing anything
         ///
         /// This is called by the root.
         #[pallet::weight(100_000_000u64)]
@@ -419,7 +443,7 @@ pub mod pallet {
             Ok(())
         }
 
-        /// A certain trust member declares the reward
+        /// A certain trustee member declares the reward
         #[pallet::weight(< T as Config >::WeightInfo::tranfer_trustee_reward())]
         pub fn tranfer_trustee_reward(
             origin: OriginFor<T>,
@@ -447,7 +471,7 @@ pub mod pallet {
             Self::apply_claim_trustee_reward(&who, session_num, &trustee_info)
         }
 
-        /// A certain trust member declares the reward
+        /// A certain trustee member declares the reward
         #[pallet::weight(< T as Config >::WeightInfo::claim_trustee_reward())]
         pub fn claim_trustee_reward(origin: OriginFor<T>, session_num: i32) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -519,7 +543,7 @@ pub mod pallet {
         NotValidator,
         /// just allow trustee admin to remove trustee
         NotTrusteeAdmin,
-        /// just allow trust preselected members to set their trust information
+        /// just allow trustee preselected members to set their trustee information
         NotTrusteePreselectedMember,
         /// invalid public key
         InvalidPublicKey,
@@ -541,10 +565,12 @@ pub mod pallet {
         InvalidTrusteeEndHeight,
         /// not multi signature count
         NotMultiSigCount,
-        /// The last trust transition was not completed.
+        /// The last trustee transition was not completed.
         LastTransitionNotCompleted,
-        /// The trust members was not enough.
+        /// The trustee members was not enough.
         TrusteeMembersNotEnough,
+        /// Exist in current trustee
+        ExistCurrentTrustee,
     }
 
     #[pallet::storage]
@@ -650,10 +676,10 @@ pub mod pallet {
     #[pallet::getter(fn trustee_transition_status)]
     pub type TrusteeTransitionStatus<T: Config> = StorageValue<_, bool, ValueQuery>;
 
-    /// Members not participating in trust elections.
+    /// Members not participating in trustee elections.
     ///
-    /// The current trust members did not conduct multiple signings and put the members in the
-    /// little black room. Filter out the member in the next trust election
+    /// The current trustee members did not conduct multiple signings and put the members in the
+    /// little black room. Filter out the member in the next trustee election
     #[pallet::storage]
     #[pallet::getter(fn little_black_house)]
     pub type LittleBlackHouse<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
@@ -779,7 +805,7 @@ impl<T: Config> Pallet<T> {
             return Err(Error::<T>::LastTransitionNotCompleted.into());
         }
 
-        // Current trust list
+        // Current trustee list
         let old_trustee_candidate: Vec<T::AccountId> =
             if let Ok(info) = T::BitcoinTrusteeSessionProvider::current_trustee_session() {
                 info.trustee_list.into_iter().unzip::<_, _, _, Vec<u64>>().0
@@ -852,6 +878,14 @@ pub fn is_valid_about<T: Config>(about: &[u8]) -> DispatchResult {
 
 // trustees
 impl<T: Config> Pallet<T> {
+    pub fn ensure_not_current_trustee(who: &T::AccountId) -> bool {
+        if let Ok(info) = T::BitcoinTrusteeSessionProvider::current_trustee_session() {
+            !info.trustee_list.into_iter().any(|n| &n.0 == who)
+        } else {
+            true
+        }
+    }
+
     pub fn setup_trustee_impl(
         who: T::AccountId,
         proxy_account: Option<T::AccountId>,
