@@ -45,7 +45,9 @@ pub use pallet::*;
 use sherpax_primitives::{AddrStr, ChainAddress, Text};
 use xp_assets_registrar::Chain;
 use xp_runtime::Memo;
-use xpallet_gateway_records::{ChainT, WithdrawalLimit, WithdrawalRecordId, WithdrawalState};
+use xpallet_gateway_records::{
+    ChainT, Withdrawal, WithdrawalLimit, WithdrawalRecordId, WithdrawalState,
+};
 use xpallet_support::traits::{MultisigAddressFor, Validator};
 
 type Balanceof<T> =
@@ -751,6 +753,42 @@ impl<T: Config> Pallet<T> {
             Chain::Bitcoin => T::Bitcoin::withdrawal_limit(asset_id),
             _ => Err(Error::<T>::NotSupportedChain.into()),
         }
+    }
+
+    pub fn withdrawal_list_with_fee_info(
+        asset_id: &T::AssetId,
+    ) -> Result<
+        BTreeMap<
+            WithdrawalRecordId,
+            (
+                Withdrawal<T::AccountId, T::AssetId, T::Balance, T::BlockNumber>,
+                WithdrawalLimit<T::Balance>,
+            ),
+        >,
+        DispatchError,
+    > {
+        let limit = Self::withdrawal_limit(asset_id)?;
+        let result: BTreeMap<
+            WithdrawalRecordId,
+            (
+                Withdrawal<T::AccountId, T::AssetId, T::Balance, T::BlockNumber>,
+                WithdrawalLimit<T::Balance>,
+            ),
+        > = xpallet_gateway_records::PendingWithdrawals::<T>::iter()
+            .map(|(id, record)| {
+                (
+                    id,
+                    (
+                        Withdrawal::new(
+                            record,
+                            xpallet_gateway_records::Pallet::<T>::state_of(id).unwrap_or_default(),
+                        ),
+                        limit.clone(),
+                    ),
+                )
+            })
+            .collect();
+        Ok(result)
     }
 
     // Make sure the hot and cold pubkey are set and do not check the validity of the address

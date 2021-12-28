@@ -1,6 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
+#![allow(clippy::type_complexity)]
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -133,7 +134,7 @@ pub use xpallet_gateway_common::{
         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo, TrusteeInfoConfig,
     },
 };
-pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit};
+pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit, WithdrawalRecordId};
 use xpallet_support::traits::MultisigAddressFor;
 
 // To learn more about runtime versioning and what each of the following value means:
@@ -1001,6 +1002,20 @@ impl_runtime_apis! {
 
         fn withdrawal_limit(asset_id: AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError> {
             XGatewayCommon::withdrawal_limit(&asset_id)
+        }
+
+        fn withdrawal_list_with_fee_info(asset_id: AssetId) -> Result<
+            BTreeMap<
+                WithdrawalRecordId,
+                (
+                    Withdrawal<AccountId, AssetId, Balance, BlockNumber>,
+                    WithdrawalLimit<Balance>,
+                ),
+            >,
+            DispatchError,
+        >
+        {
+            XGatewayCommon::withdrawal_list_with_fee_info(&asset_id)
         }
 
         fn verify_withdrawal(asset_id: AssetId, value: Balance, addr: AddrStr, memo: Memo) -> Result<(), DispatchError> {
