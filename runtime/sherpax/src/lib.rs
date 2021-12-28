@@ -1,6 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
+#![allow(clippy::type_complexity)]
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -10,7 +11,11 @@ use pallet_grandpa::fg_primitives;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{
+    crypto::KeyTypeId,
+    u32_trait::{_2, _3},
+    OpaqueMetadata,
+};
 
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
@@ -133,7 +138,7 @@ pub use xpallet_gateway_common::{
         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo, TrusteeInfoConfig,
     },
 };
-pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit};
+pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit, WithdrawalRecordId};
 use xpallet_support::traits::MultisigAddressFor;
 
 // To learn more about runtime versioning and what each of the following value means:
@@ -147,7 +152,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 5,
+    spec_version: 6,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -557,6 +562,8 @@ impl xpallet_gateway_common::Config for Runtime {
     type Event = Event;
     type Validator = ();
     type DetermineMultisigAddress = MultisigProvider;
+    type CouncilOrigin =
+        pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
     type Bitcoin = XGatewayBitcoin;
     type BitcoinTrustee = XGatewayBitcoin;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
@@ -1001,6 +1008,20 @@ impl_runtime_apis! {
 
         fn withdrawal_limit(asset_id: AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError> {
             XGatewayCommon::withdrawal_limit(&asset_id)
+        }
+
+        fn withdrawal_list_with_fee_info(asset_id: AssetId) -> Result<
+            BTreeMap<
+                WithdrawalRecordId,
+                (
+                    Withdrawal<AccountId, AssetId, Balance, BlockNumber>,
+                    WithdrawalLimit<Balance>,
+                ),
+            >,
+            DispatchError,
+        >
+        {
+            XGatewayCommon::withdrawal_list_with_fee_info(&asset_id)
         }
 
         fn verify_withdrawal(asset_id: AssetId, value: Balance, addr: AddrStr, memo: Memo) -> Result<(), DispatchError> {
