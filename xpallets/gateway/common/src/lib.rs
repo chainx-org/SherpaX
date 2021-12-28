@@ -139,12 +139,16 @@ pub mod pallet {
         /// are randomly replaced, the hot and cold public keys of the current trustee before the
         /// replacement will be lost, resulting in the inability to reconstruct the `Mast` tree and
         /// generate the corresponding control block.
-        /// There are two solutions: the first is to record the hot and cold public keys for each
+        ///
+        /// There are two solutions:
+        /// - the first is to record the hot and cold public keys for each
         /// trustee renewal, and the trustee can update the hot and cold public keys at will.
-        /// The second is to move these trusts into the `lttle_black_house` when it is necessary
+        /// - The second is to move these trusts into the `lttle_black_house` when it is necessary
         /// to update the hot and cold public keys of trusts, and renew the trustee.
         /// After the renewal of the trustee is completed, the hot and cold public keys can be
-        /// updated. The second option is currently selected. `The time when the second option
+        /// updated.
+        ///
+        /// The second option is currently selected. `The time when the second option
         /// allows the hot and cold public keys to be updated is that the member is not in the
         /// current trustee and is not in a state of renewal of the trustee`.
         /// The advantage of the second scheme is that there is no need to change the storage
