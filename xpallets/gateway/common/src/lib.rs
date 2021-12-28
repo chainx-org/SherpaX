@@ -1014,6 +1014,7 @@ impl<T: Config> Pallet<T> {
                 info.1.personal_accounts[index].clone(),
             );
         }
+        TrusteeAdmin::<T>::kill();
 
         Self::deposit_event(Event::<T>::TrusteeSetChanged(
             chain,
