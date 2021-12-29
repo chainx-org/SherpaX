@@ -73,6 +73,8 @@ pub mod pallet {
 
         type DetermineMultisigAddress: MultisigAddressFor<Self::AccountId>;
 
+        type CouncilOrigin: EnsureOrigin<Self::Origin>;
+
         // for bitcoin
         type Bitcoin: ChainT<Self::AssetId, Self::Balance>;
         type BitcoinTrustee: TrusteeForChain<
@@ -359,15 +361,11 @@ pub mod pallet {
             chain: Chain,
             config: TrusteeInfoConfig,
         ) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::trustee_multisig_addr(Chain::Bitcoin) {
-                        return Err(Error::<T>::InvalidMultisig.into());
-                    }
-                }
+            match T::CouncilOrigin::ensure_origin(origin.clone()) {
                 Err(_) => {
                     ensure_root(origin)?;
                 }
+                _ => (),
             };
             TrusteeInfoConfigOf::<T>::insert(chain, config);
             Ok(())
@@ -379,15 +377,11 @@ pub mod pallet {
             origin: OriginFor<T>,
             duration: T::BlockNumber,
         ) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::trustee_multisig_addr(Chain::Bitcoin) {
-                        return Err(Error::<T>::InvalidMultisig.into());
-                    }
-                }
+            match T::CouncilOrigin::ensure_origin(origin.clone()) {
                 Err(_) => {
                     ensure_root(origin)?;
                 }
+                _ => (),
             };
 
             TrusteeTransitionDuration::<T>::put(duration);
@@ -399,15 +393,11 @@ pub mod pallet {
         /// This is a root-only operation.
         #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin())]
         pub fn set_relayer(origin: OriginFor<T>, relayer: T::AccountId) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::trustee_multisig_addr(Chain::Bitcoin) {
-                        return Err(Error::<T>::InvalidMultisig.into());
-                    }
-                }
+            match T::CouncilOrigin::ensure_origin(origin.clone()) {
                 Err(_) => {
                     ensure_root(origin)?;
                 }
+                _ => (),
             };
             Relayer::<T>::put(relayer);
             Ok(())
@@ -423,15 +413,11 @@ pub mod pallet {
             admin: T::AccountId,
             chain: Chain,
         ) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::trustee_multisig_addr(Chain::Bitcoin) {
-                        return Err(Error::<T>::InvalidMultisig.into());
-                    }
-                }
+            match T::CouncilOrigin::ensure_origin(origin.clone()) {
                 Err(_) => {
                     ensure_root(origin)?;
                 }
+                _ => (),
             };
             Self::trustee_intention_props_of(&admin, chain).ok_or_else::<DispatchError, _>(
                 || {

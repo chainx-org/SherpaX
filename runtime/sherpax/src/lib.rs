@@ -10,7 +10,11 @@ use pallet_grandpa::fg_primitives;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{
+    crypto::KeyTypeId,
+    u32_trait::{_2, _3},
+    OpaqueMetadata,
+};
 
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
@@ -557,6 +561,8 @@ impl xpallet_gateway_common::Config for Runtime {
     type Event = Event;
     type Validator = ();
     type DetermineMultisigAddress = MultisigProvider;
+    type CouncilOrigin =
+        pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
     type Bitcoin = XGatewayBitcoin;
     type BitcoinTrustee = XGatewayBitcoin;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
