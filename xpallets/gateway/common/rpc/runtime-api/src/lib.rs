@@ -17,7 +17,9 @@ pub use xpallet_gateway_common::{
     trustees,
     types::{GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo},
 };
-pub use xpallet_gateway_records::WithdrawalLimit;
+pub use xpallet_gateway_records::{
+    Withdrawal, WithdrawalLimit, WithdrawalRecordId, WithdrawalState,
+};
 
 sp_api::decl_runtime_apis! {
     /// The API to query account nonce (aka transaction index).
@@ -30,6 +32,17 @@ sp_api::decl_runtime_apis! {
         fn bound_addrs(who: AccountId) -> BTreeMap<Chain, Vec<ChainAddress>>;
 
         fn withdrawal_limit(asset_id: AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError>;
+
+        fn withdrawal_list_with_fee_info(asset_id: AssetId) -> Result<
+        BTreeMap<
+            WithdrawalRecordId,
+            (
+                Withdrawal<AccountId, AssetId, Balance, BlockNumber>,
+                WithdrawalLimit<Balance>,
+            ),
+        >,
+        DispatchError,
+    >;
 
         fn verify_withdrawal(asset_id: AssetId, value: Balance, addr: AddrStr, memo: Memo) -> Result<(), DispatchError>;
 
