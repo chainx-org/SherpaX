@@ -14,7 +14,7 @@ type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 parameter_types! {
     pub const TargetBlockFullness: Perquintill = Perquintill::from_percent(25);
     pub AdjustmentVariable: Multiplier = Multiplier::saturating_from_rational(3, 100_000);
-    pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1_000_000u128);
+    pub MinimumMultiplier: Multiplier = Multiplier::saturating_from_rational(1, 1);
 }
 
 pub type SlowAdjustingFeeUpdate<R> =
