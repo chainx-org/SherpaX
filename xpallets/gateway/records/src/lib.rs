@@ -19,10 +19,7 @@ use frame_support::{
     dispatch::{DispatchError, DispatchResult},
     ensure,
     log::{error, info},
-    traits::{
-        fungibles::{Inspect, Mutate},
-        tokens::WithdrawConsequence,
-    },
+    traits::fungibles::{Inspect, Mutate},
 };
 use frame_system::ensure_root;
 use sp_runtime::traits::{CheckedSub, StaticLookup};
@@ -280,8 +277,8 @@ impl<T: Config> Pallet<T> {
         asset_id: T::AssetId,
         value: T::Balance,
     ) -> DispatchResult {
-        match pallet_assets::Pallet::<T>::can_withdraw(asset_id, who, value) {
-            WithdrawConsequence::Success => Ok(()),
+        match pallet_assets::Pallet::<T>::can_withdraw(asset_id, who, value).into_result() {
+            Ok(_) => Ok(()),
             _ => Err(pallet_assets::Error::<T>::BalanceLow.into()),
         }
     }
