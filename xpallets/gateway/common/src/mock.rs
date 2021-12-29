@@ -9,7 +9,7 @@ use frame_support::{
     parameter_types, sp_io,
     traits::{ChangeMembers, GenesisBuild, LockIdentifier, UnixTime},
 };
-use frame_system::{EnsureRoot, EnsureSignedBy};
+use frame_system::{EnsureRoot, EnsureSigned, EnsureSignedBy};
 use light_bitcoin::keys::{Address, Public};
 use light_bitcoin::mast::{compute_min_threshold, Mast};
 use light_bitcoin::script::{Builder, Bytes, Opcode};
@@ -456,6 +456,7 @@ impl crate::Config for Test {
     type Bitcoin = MockBitcoin<Test>;
     type BitcoinTrustee = MockBitcoin<Test>;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
+    type CouncilOrigin = EnsureSigned<AccountId>;
     type WeightInfo = ();
 }
 

@@ -12,7 +12,7 @@ use frame_support::{
     traits::{LockIdentifier, UnixTime},
     weights::Weight,
 };
-use frame_system::{EnsureRoot, EnsureSignedBy};
+use frame_system::{EnsureRoot, EnsureSignedBy, EnsureSigned};
 use sp_core::H256;
 use sp_keyring::sr25519;
 use sp_runtime::{
@@ -188,6 +188,7 @@ impl xpallet_gateway_common::Config for Test {
     type Bitcoin = XGatewayBitcoin;
     type BitcoinTrustee = XGatewayBitcoin;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
+    type CouncilOrigin = EnsureSigned<AccountId>;
     type WeightInfo = ();
 }
 
