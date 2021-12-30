@@ -35,6 +35,13 @@ pub type BalanceOf<T> = <<T as pallet_evm::Config>::Currency as Currency<
     <T as frame_system::Config>::AccountId,
 >>::Balance;
 
+#[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, TypeInfo)]
+pub enum ActionType {
+    Direct(H160),
+    FromSubToEth,
+    FromEthToSub,
+}
+
 pub use pallet::*;
 
 #[frame_support::pallet]
@@ -118,8 +125,8 @@ pub mod pallet {
         DepositExecuted(T::AssetId, T::AccountId, H160, T::Balance, H160),
         /// (asset_id, account_id, evm_address, amount, erc20_contract)
         WithdrawExecuted(T::AssetId, T::AccountId, H160, T::Balance, H160),
-        /// (account_id, evm_address, sub_account, amount, into_evm)
-        Teleport(T::AccountId, H160, T::AccountId, BalanceOf<T>, bool),
+        /// (account_id, amount, action)
+        Teleport(T::AccountId, BalanceOf<T>, ActionType),
         /// (account_id)
         SetAdmin(T::AccountId),
         /// (asset_id, erc20_contract)
@@ -263,37 +270,37 @@ pub mod pallet {
             Ok(())
         }
 
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn teleport(
             origin: OriginFor<T>,
             amount: BalanceOf<T>,
-            into_evm: bool,
+            action: ActionType,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
-            let evm_account =
-                Self::evm_accounts(who.clone()).ok_or(Error::<T>::EthAddressHasNotMapped)?;
 
-            let sub_account: T::AccountId = AddressMappingOf::<T>::into_account_id(evm_account);
-
-            let (from, to) = if into_evm {
-                (who.clone(), sub_account.clone())
-            } else {
-                (sub_account.clone(), who.clone())
+            let (from, to) = match action {
+                ActionType::Direct(unchecked) => {
+                    (&who, &AddressMappingOf::<T>::into_account_id(unchecked))
+                },
+                ActionType::FromSubToEth => {
+                    (&who, &Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?)
+                },
+                ActionType::FromEthToSub => {
+                    (&Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?, &who)
+                }
             };
 
             <T as pallet_evm::Config>::Currency::transfer(
-                &from,
-                &to,
+                from,
+                to,
                 amount,
                 ExistenceRequirement::AllowDeath,
             )?;
 
             Self::deposit_event(Event::Teleport(
                 who,
-                evm_account,
-                sub_account,
                 amount,
-                into_evm,
+                action,
             ));
 
             Ok(Pays::No.into())
