@@ -93,6 +93,7 @@ parameter_types! {
 
     // 0x1111111111111111111111111111111111111111
     pub EvmCaller: H160 = H160::from_slice(&[17u8;20][..]);
+    pub ClaimBond: u128 = 2;
 }
 
 impl pallet_assets::Config for Test {
@@ -132,6 +133,7 @@ impl pallet_evm::Config for Test {
 impl assets_bridge::Config for Test {
     type Event = Event;
     type EvmCaller = EvmCaller;
+    type ClaimBond = ClaimBond;
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
