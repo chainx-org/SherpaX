@@ -461,10 +461,12 @@ impl pallet_vesting::Config for Runtime {
 parameter_types! {
     // 0x1111111111111111111111111111111111111111
     pub EvmCaller: H160 = H160::from_slice(&[17u8;20][..]);
+    pub ClaimBond: Balance = 2 * UNITS;
 }
 impl pallet_assets_bridge::Config for Runtime {
     type Event = Event;
     type EvmCaller = EvmCaller;
+    type ClaimBond = ClaimBond;
 }
 
 parameter_types! {
