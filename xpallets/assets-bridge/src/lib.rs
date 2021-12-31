@@ -230,7 +230,7 @@ pub mod pallet {
             let evm_account = Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?;
 
             ensure!(
-                !SubAccounts::<T>::contains_key(&evm_account),
+                SubAccounts::<T>::contains_key(&evm_account),
                 Error::<T>::EthAddressHasNotMapped
             );
 
