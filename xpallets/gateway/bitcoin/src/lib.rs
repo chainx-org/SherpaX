@@ -72,6 +72,7 @@ pub mod pallet {
 
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::UnixTime};
     use frame_system::pallet_prelude::*;
+    use xpallet_gateway_common::traits::RelayerInfo;
 
     use super::*;
 
@@ -93,6 +94,7 @@ pub mod pallet {
         >;
         type TrusteeInfoUpdate: TrusteeInfoUpdate;
         type TrusteeOrigin: EnsureOrigin<Self::Origin, Success = Self::AccountId>;
+        type RelayerInfo: RelayerInfo<Self::AccountId>;
         type ReferralBinding: ReferralBinding<Self::AccountId, Self::AssetId>;
         type AddressBinding: AddressBinding<Self::AccountId, BtcAddress>;
         type WeightInfo: WeightInfo;
@@ -149,7 +151,7 @@ pub mod pallet {
             origin: OriginFor<T>,
             withdrawal_id_list: Vec<u32>,
             tx: Vec<u8>,
-        ) -> DispatchResult {
+        ) -> DispatchResultWithPostInfo {
             let from = ensure_signed(origin)?;
 
             ensure!(
@@ -157,8 +159,10 @@ pub mod pallet {
                 Error::<T>::TrusteeTransitionPeriod
             );
 
-            // committer must be in the trustee list
-            Self::ensure_trustee(&from)?;
+            // committer must be in the trustee list or relayer
+            if !Self::ensure_relayer(&from) {
+                Self::ensure_trustee(&from)?;
+            }
 
             let tx = Self::deserialize_tx(tx.as_slice())?;
             log!(
@@ -170,7 +174,7 @@ pub mod pallet {
             );
 
             Self::apply_create_taproot_withdraw(from, tx, withdrawal_id_list)?;
-            Ok(())
+            Ok(Pays::No.into())
         }
 
         /// Dangerous! Be careful to set BestIndex
