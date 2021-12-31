@@ -579,6 +579,7 @@ impl xpallet_gateway_bitcoin::Config for Runtime {
     type TrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
     type TrusteeOrigin =
         frame_system::EnsureSignedBy<trustees::bitcoin::BtcTrusteeMultisig<Runtime>, AccountId>;
+    type RelayerInfo = XGatewayCommon;
     type TrusteeInfoUpdate = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;

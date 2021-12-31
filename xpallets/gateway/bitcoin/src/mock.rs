@@ -221,6 +221,7 @@ impl Config for Test {
         xpallet_gateway_common::trustees::bitcoin::BtcTrusteeMultisig<Test>,
         AccountId,
     >;
+    type RelayerInfo = XGatewayCommon;
     type TrusteeInfoUpdate = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
