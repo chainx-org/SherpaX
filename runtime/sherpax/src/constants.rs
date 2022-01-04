@@ -13,7 +13,7 @@ pub mod currency {
     pub const MILLICENTS: Balance = CENTS / 1_000;
 
     pub const fn deposit(items: u32, bytes: u32) -> Balance {
-        (items as Balance) * 20 * UNITS + (bytes as Balance) * CENTS
+        (items as Balance) * 100 * CENTS + (bytes as Balance) * CENTS
     }
 }
 
