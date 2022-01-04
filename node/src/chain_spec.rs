@@ -2,6 +2,7 @@ use crate::bitcoin::{
     btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, BtcTxVerifier, Chain,
     TrusteeInfoConfig,
 };
+use frame_benchmarking::frame_support::PalletId;
 use hex_literal::hex;
 use sc_chain_spec::ChainSpecExtension;
 use sc_service::{ChainType, Properties};
@@ -9,17 +10,16 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 pub use sherpax_runtime::{
     constants::currency::UNITS, opaque::SessionKeys, AccountId, AssetsBridgeConfig, AssetsConfig,
-    AuraConfig, Balance, BalancesConfig, BlockNumber, EthereumConfig, EvmConfig, GenesisAccount,
-    GenesisConfig, GrandpaConfig, SessionConfig, Signature, SudoConfig, SystemConfig,
-    VestingConfig, DAYS, WASM_BINARY,
+    AuraConfig, Balance, BalancesConfig, BlockNumber, EthereumChainIdConfig, EthereumConfig,
+    EvmConfig, GenesisAccount, GenesisConfig, GrandpaConfig, SessionConfig, Signature, SudoConfig,
+    SystemConfig, VestingConfig, DAYS, WASM_BINARY, TechnicalMembershipConfig
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::crypto::UncheckedInto;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::traits::{IdentifyAccount, Verify, AccountIdConversion};
+use sp_runtime::traits::{AccountIdConversion, IdentifyAccount, Verify};
 use std::collections::BTreeMap;
-use frame_benchmarking::frame_support::PalletId;
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -76,20 +76,42 @@ type AssetMinBalance = Balance;
 fn sbtc() -> (
     Chain,
     AssetId,
-    AssetName,
-    AssetSymbol,
-    AssetDecimals,
-    AssetSufficient,
-    AssetMinBalance,
 ) {
     (
         Chain::Bitcoin,
         1,
-        "SBTC".to_string().into_bytes(),
-        "SBTC".to_string().into_bytes(),
-        8,
-        true,
-        1,
+    )
+}
+
+fn reserved_assets(root_key: &AccountId) -> (
+    Vec<(AssetId, AccountId, AssetSufficient, AssetMinBalance)>,
+    Vec<(AssetId, AssetName, AssetSymbol, AssetDecimals)>
+) {
+    (
+        vec![
+            (0, root_key.clone(), true, 10_000_000_000u128),
+            (1, root_key.clone(), true, 1u128),
+            (2, root_key.clone(), true, 10_000_000_000u128),
+            (3, root_key.clone(), true, 10_000_000_000u128),
+            (4, root_key.clone(), true, 10_000_000_000u128),
+            (5, root_key.clone(), true, 10_000_000_000u128),
+            (6, root_key.clone(), true, 10_000_000_000u128),
+            (7, root_key.clone(), true, 10_000_000_000u128),
+            (8, root_key.clone(), true, 10_000_000_000u128),
+            (9, root_key.clone(), true, 10_000_000_000u128),
+        ],
+        vec![
+            (0, "Reserved0".to_string().into_bytes(), "RSV0".to_string().into_bytes(), 18),
+            (1, "SBTC".to_string().into_bytes(),      "SBTC".to_string().into_bytes(), 8),
+            (2, "Reserved2".to_string().into_bytes(), "RSV2".to_string().into_bytes(), 18),
+            (3, "Reserved3".to_string().into_bytes(), "RSV3".to_string().into_bytes(), 18),
+            (4, "Reserved4".to_string().into_bytes(), "RSV4".to_string().into_bytes(), 18),
+            (5, "Reserved5".to_string().into_bytes(), "RSV5".to_string().into_bytes(), 18),
+            (6, "Reserved6".to_string().into_bytes(), "RSV6".to_string().into_bytes(), 18),
+            (7, "Reserved7".to_string().into_bytes(), "RSV7".to_string().into_bytes(), 18),
+            (8, "Reserved8".to_string().into_bytes(), "RSV8".to_string().into_bytes(), 18),
+            (9, "Reserved9".to_string().into_bytes(), "RSV9".to_string().into_bytes(), 18),
+        ]
     )
 }
 
@@ -165,9 +187,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 // Pre-funded accounts
                 vec![
                     get_account_id_from_seed::<sr25519::Public>("Alice"),
-                    get_account_id_from_seed::<sr25519::Public>("Bob"),
-                    get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-                    get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 true,
                 btc_genesis_params(include_str!(
@@ -265,7 +284,8 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
                 // Initial PoA authorities
                 vec![
                     (
-                        hex!("30c72a127fbbadf95c6b0ef5f27c8471e7fc602d8ceaf6e28f9519354b99a63d")
+                        // Ff3b3gdWT2nwC9BSjcys1S8Tth2XBayEgHZkX8pbCrErqgf
+                        hex!("884f4d6638c1f70ed80537be200df124efc384e8177f74377a2be919513dcc3a")
                             .into(),
                         hex!("e07d42d9b6a3403be406efaaaf952981c2e124cabc305b49b179546d5cfe7f0e")
                             .unchecked_into(),
@@ -273,7 +293,8 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
                             .unchecked_into(),
                     ),
                     (
-                        hex!("a4c41a8cce0963ae34319687d5f6b52be531586e49448d63b9366b86f7455438")
+                        // J1SDJ7KvkESXfT8RjSP9Sy8TfUh2UMstRTh7CN7be9NipQB
+                        hex!("f054d6fd1444f2e78f2839dc4ec5e4f35f0fc003cf006f3f712f659cdc2ecb63")
                             .into(),
                         hex!("86a185b97c75744c614355991d5faac5ea8a57eb6b24a4baf352246f5eb58221")
                             .unchecked_into(),
@@ -282,10 +303,11 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
                     ),
                 ],
                 // Sudo account
-                hex!("a62add1af3bcf9256aa2def0fea1b9648cb72517ccee92a891dc2903a9093e52").into(),
+                // FCcnKcbTe5EYDZXDCKwbhkPAoYyakG1iRBxS9Ai5m2uFTfn
+                hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
                 // Pre-funded accounts
                 vec![
-                    hex!("a62add1af3bcf9256aa2def0fea1b9648cb72517ccee92a891dc2903a9093e52").into(),
+                    hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
                 ],
                 true,
                 btc_genesis_params(include_str!(
@@ -308,12 +330,19 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
     ))
 }
 
-pub fn live_testnet_config() -> Result<ChainSpec, String> {
-    ChainSpec::from_json_bytes(&include_bytes!("../res/sherpax-testnet-raw.json")[..])
-}
-
 fn sherpax_session_keys(aura: AuraId, grandpa: GrandpaId) -> SessionKeys {
     SessionKeys { aura, grandpa }
+}
+
+fn technical_committee_membership() -> Vec<AccountId> {
+    vec![
+        // 5TPu4DCQRSbNS9ESUcNGUn9HcF9AzrHiDP395bDxM9ZAqSD8
+        hex!["a62add1af3bcf9256aa2def0fea1b9648cb72517ccee92a891dc2903a9093e52"].into(),
+        // 5GxS3YuwjhZZtmPmLEJuGPuz14gEJsunabqNLYTthXfThRwG
+        hex!["d86477344ad5c27a45c4c178c7cca1b7b111380a4fbe7e23b3488a42ce56ca30"].into(),
+        // DokRDMoUT1ZmTaG18MHKunBMoBv1vqR6xyypU1QRWLc7UH5
+        hex!["367a3f0acb9dcb2b000c8bc9deb93c4613512604c0847ff2c1ecd478e7e46714"].into(),
+    ]
 }
 
 /// Configure initial storage state for FRAME modules.
@@ -354,6 +383,7 @@ pub fn sherpax_genesis(
         })
         .expect("bitcoin trustees generation can not fail; qed");
     let sbtc_info = sbtc();
+    let assets_info = reserved_assets(&root_key);
     let wasm_binary = WASM_BINARY.unwrap();
     GenesisConfig {
         system: SystemConfig {
@@ -381,16 +411,24 @@ pub fn sherpax_genesis(
             key: root_key.clone(),
         },
         vesting: VestingConfig { vesting },
+        ethereum_chain_id: EthereumChainIdConfig { chain_id: 1506u64 },
         evm: Default::default(),
         ethereum: Default::default(),
         assets: sherpax_runtime::AssetsConfig {
-            assets: vec![(sbtc_info.1, root_key.clone(), sbtc_info.5, sbtc_info.6)],
-            metadata: vec![(sbtc_info.1, sbtc_info.2, sbtc_info.3, sbtc_info.4)],
+            assets: assets_info.0,
+            metadata: assets_info.1,
             accounts: vec![],
         },
         assets_bridge: AssetsBridgeConfig { admin_key: None },
-        council: sherpax_runtime::CouncilConfig::default(),
-        elections: sherpax_runtime::ElectionsConfig::default(),
+        council: Default::default(),
+        elections: Default::default(),
+        democracy: Default::default(),
+        technical_committee: Default::default(),
+        technical_membership: TechnicalMembershipConfig {
+            members: technical_committee_membership(),
+            phantom: Default::default(),
+        },
+        treasury: Default::default(),
         x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
             trustees,
             genesis_trustee_transition_duration: 30 * DAYS,
@@ -416,13 +454,17 @@ pub fn sherpax_genesis(
             verifier: BtcTxVerifier::Recover,
         },
         x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
-            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
+            initial_asset_chain: vec![
+                (sbtc_info.1, sbtc_info.0)
+            ],
         },
     }
 }
 
 #[allow(clippy::type_complexity)]
-fn load_genesis_config(root_key: &AccountId) -> (
+fn load_genesis_config(
+    root_key: &AccountId,
+) -> (
     Vec<(AccountId, Balance)>,
     Vec<(AccountId, BlockNumber, BlockNumber, Balance)>,
 ) {
@@ -448,23 +490,24 @@ fn load_genesis_config(root_key: &AccountId) -> (
         env!("CARGO_MANIFEST_DIR"),
         "/res/genesis_config/vesting/genesis_vesting_342133_894769078020746000000000.json"
     ))
-        .to_vec();
+    .to_vec();
 
-    let balances_configs: Vec<sherpax_runtime::BalancesConfig> =
-        config_from_json_bytes(
-            vec![chainx_snapshot, comingchat_miners, sherpax_contributors]
-        ).unwrap();
+    let balances_configs: Vec<sherpax_runtime::BalancesConfig> = config_from_json_bytes(vec![
+        chainx_snapshot,
+        comingchat_miners,
+        sherpax_contributors,
+    ])
+    .unwrap();
 
     let mut mutated_balances: Vec<(AccountId, u128)> = balances_configs
         .into_iter()
-        .flat_map(|bc|bc.balances)
+        .flat_map(|bc| bc.balances)
         .collect();
 
     // total transfer vesting balances
     let transfer_balances = 2631584779144690000000000u128;
     // 10000 ksx
-    let root_balance = 10000000000000000000000u128
-        .saturating_add(transfer_balances);
+    let root_balance = 10000000000000000000000u128.saturating_add(transfer_balances);
 
     let back_to_treasury = 21000000000000000000000000u128
         .saturating_sub(root_balance)
@@ -526,8 +569,7 @@ fn load_genesis_config(root_key: &AccountId) -> (
         "total vesting accounts must be equal 342138."
     );
     assert_eq!(
-        vesting_liquid,
-        894769078020746000000000u128,
+        vesting_liquid, 894769078020746000000000u128,
         "total vesting liquid must be equal 894769078020746000000000"
     );
 
