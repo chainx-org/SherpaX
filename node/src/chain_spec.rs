@@ -17,8 +17,9 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::crypto::UncheckedInto;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_runtime::traits::{IdentifyAccount, Verify, AccountIdConversion};
 use std::collections::BTreeMap;
+use frame_benchmarking::frame_support::PalletId;
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -326,14 +327,7 @@ pub fn sherpax_genesis(
     relayer: AccountId,
 ) -> GenesisConfig {
     let (balances, vesting) = if load_genesis {
-        let (balances, vesting) = load_genesis_config();
-        let other_balances = endowed_accounts
-            .iter()
-            .cloned()
-            .map(|k| (k, UNITS * 4096))
-            .collect();
-
-        (vec![balances, other_balances].concat(), vesting)
+        load_genesis_config(&root_key)
     } else {
         let balances = endowed_accounts
             .iter()
@@ -428,32 +422,66 @@ pub fn sherpax_genesis(
 }
 
 #[allow(clippy::type_complexity)]
-fn load_genesis_config() -> (
+fn load_genesis_config(root_key: &AccountId) -> (
     Vec<(AccountId, Balance)>,
     Vec<(AccountId, BlockNumber, BlockNumber, Balance)>,
 ) {
-    let non_zero_balances = include_bytes!(concat!(
+    let chainx_snapshot = include_bytes!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/res/genesis_config/balances/non_zero_airdrop_18016_10500000000000000000000000.json"
+        "/res/genesis_config/balances/genesis_balances_chainx_snapshot_7418_7868415220855310000000000.json"
     ))
-    .to_vec();
+        .to_vec();
+
+    let comingchat_miners = include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/res/genesis_config/balances/genesis_balances_comingchat_miners_334721_2140742819000000000000000.json"
+    ))
+        .to_vec();
+
+    let sherpax_contributors = include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/res/genesis_config/balances/genesis_balances_sherpax_contributors_1873_94046984872650000000000.json"
+    ))
+        .to_vec();
 
     let vestings = include_bytes!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/res/genesis_config/vesting/vesting_airdrop_18015_943318423258727000000000.json"
+        "/res/genesis_config/vesting/genesis_vesting_342133_894769078020746000000000.json"
     ))
-    .to_vec();
+        .to_vec();
 
     let balances_configs: Vec<sherpax_runtime::BalancesConfig> =
-        config_from_json_bytes(vec![non_zero_balances]).unwrap();
+        config_from_json_bytes(
+            vec![chainx_snapshot, comingchat_miners, sherpax_contributors]
+        ).unwrap();
+
+    let mut mutated_balances: Vec<(AccountId, u128)> = balances_configs
+        .into_iter()
+        .flat_map(|bc|bc.balances)
+        .collect();
+
+    // total transfer vesting balances
+    let transfer_balances = 2631584779144690000000000u128;
+    // 10000 ksx
+    let root_balance = 10000000000000000000000u128
+        .saturating_add(transfer_balances);
+
+    let back_to_treasury = 21000000000000000000000000u128
+        .saturating_sub(root_balance)
+        .saturating_sub(10103205024727960000000000u128);
+
+    // 5S7WgdAXVK7mh8REvXfk9LdHs3Xqu9B2E9zzY8e4LE8Gg2ZX
+    let treasury_account: AccountId = PalletId(*b"pcx/trsy").into_account();
+
+    mutated_balances.push((root_key.clone(), root_balance));
+    mutated_balances.push((treasury_account, back_to_treasury));
 
     let vesting_configs: Vec<sherpax_runtime::VestingConfig> =
         config_from_json_bytes(vec![vestings]).unwrap();
 
     let mut total_issuance: Balance = 0u128;
-    let balances = balances_configs
+    let balances: Vec<(AccountId, u128)> = mutated_balances
         .into_iter()
-        .flat_map(|bc| bc.balances)
         .fold(
             BTreeMap::<AccountId, Balance>::new(),
             |mut acc, (account_id, amount)| {
@@ -475,9 +503,15 @@ fn load_genesis_config() -> (
         .collect();
 
     assert_eq!(
+        balances.len(),
+        342133 + 1 + 1 + 1873 - 35,
+        "total accounts must be equal to 344013"
+    );
+
+    assert_eq!(
         total_issuance,
-        10_500_000 * UNITS,
-        "total issuance must be equal to 10_500_000 KSX"
+        21000000 * UNITS,
+        "total issuance must be equal to 21000000000000000000000000"
     );
 
     let vestings: Vec<(AccountId, BlockNumber, BlockNumber, Balance)> = vesting_configs
@@ -488,12 +522,13 @@ fn load_genesis_config() -> (
 
     assert_eq!(
         vestings.len(),
-        18015,
-        "total vesting accounts must be equal 18_015."
+        342133,
+        "total vesting accounts must be equal 342138."
     );
     assert_eq!(
-        vesting_liquid, 943318423258727000000000,
-        "total vesting liquid must be equal 943_318.423258727 KSX"
+        vesting_liquid,
+        894769078020746000000000u128,
+        "total vesting liquid must be equal 894769078020746000000000"
     );
 
     (balances, vestings)
