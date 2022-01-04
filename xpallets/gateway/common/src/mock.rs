@@ -249,6 +249,7 @@ impl xpallet_gateway_bitcoin::Config for Test {
     type UnixTime = Timestamp;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeOrigin = EnsureSignedBy<BtcTrusteeMultisig<Test>, AccountId>;
+    type RelayerInfo = ();
     type TrusteeSessionProvider = ();
     type TrusteeInfoUpdate = ();
     type ReferralBinding = ();

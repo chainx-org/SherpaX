@@ -222,9 +222,7 @@ pub mod pallet {
         /// Note: for general users
         #[pallet::weight(100_000_000u64)]
         #[transactional]
-        pub fn dissolve(
-            origin: OriginFor<T>,
-        ) -> DispatchResult {
+        pub fn dissolve(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
             let evm_account = Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?;
@@ -338,25 +336,22 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
 
             let (from, to) = match action {
-                ActionType::Direct(unchecked) => {
-                    (who.clone(), AddressMappingOf::<T>::into_account_id(unchecked))
-                },
-                ActionType::FromSubToEth => {
-                    (
-                        who.clone(),
-                        Self::evm_accounts(&who)
-                            .map(AddressMappingOf::<T>::into_account_id)
-                            .ok_or(Error::<T>::EthAddressHasNotMapped)?
-                    )
-                },
-                ActionType::FromEthToSub => {
-                    (
-                        Self::evm_accounts(&who)
-                            .map(AddressMappingOf::<T>::into_account_id)
-                            .ok_or(Error::<T>::EthAddressHasNotMapped)?,
-                        who.clone()
-                    )
-                }
+                ActionType::Direct(unchecked) => (
+                    who.clone(),
+                    AddressMappingOf::<T>::into_account_id(unchecked),
+                ),
+                ActionType::FromSubToEth => (
+                    who.clone(),
+                    Self::evm_accounts(&who)
+                        .map(AddressMappingOf::<T>::into_account_id)
+                        .ok_or(Error::<T>::EthAddressHasNotMapped)?,
+                ),
+                ActionType::FromEthToSub => (
+                    Self::evm_accounts(&who)
+                        .map(AddressMappingOf::<T>::into_account_id)
+                        .ok_or(Error::<T>::EthAddressHasNotMapped)?,
+                    who.clone(),
+                ),
             };
 
             <T as pallet_evm::Config>::Currency::transfer(
@@ -366,11 +361,7 @@ pub mod pallet {
                 ExistenceRequirement::AllowDeath,
             )?;
 
-            Self::deposit_event(Event::Teleport(
-                who,
-                amount,
-                action,
-            ));
+            Self::deposit_event(Event::Teleport(who, amount, action));
 
             Ok(Pays::No.into())
         }
@@ -381,11 +372,7 @@ pub mod pallet {
         /// - `asset_id`: The asset id
         /// - `erc20`: The erc20 contract address
         #[pallet::weight(10_000_000u64)]
-        pub fn register(
-            origin: OriginFor<T>,
-            asset_id: T::AssetId,
-            erc20: H160
-        ) -> DispatchResult {
+        pub fn register(origin: OriginFor<T>, asset_id: T::AssetId, erc20: H160) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(Some(who) == Self::admin_key(), Error::<T>::RequireAdmin);
 

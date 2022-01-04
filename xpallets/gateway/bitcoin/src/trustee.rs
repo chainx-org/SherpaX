@@ -25,6 +25,7 @@ use light_bitcoin::{
 
 use xp_assets_registrar::Chain;
 use xp_gateway_bitcoin::extract_output_addr;
+use xpallet_gateway_common::traits::RelayerInfo;
 use xpallet_gateway_common::{
     traits::{TrusteeForChain, TrusteeSession},
     trustees::bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeType},
@@ -299,6 +300,10 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, Bt
 }
 
 impl<T: Config> Pallet<T> {
+    pub fn ensure_relayer(who: &T::AccountId) -> bool {
+        &T::RelayerInfo::current_relayer() == who
+    }
+
     pub fn ensure_trustee(who: &T::AccountId) -> DispatchResult {
         if current_proxy_account::<T>()?.iter().any(|n| n == who) {
             return Ok(());
