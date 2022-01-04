@@ -4554,6 +4554,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-ethereum-chain-id"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
 source = "git+https://github.com/chainx-org/frontier?branch=new-polkadot-v0.9.11#2d38987724e70dd4d7d1ffc3fdd141804b8b4a5e"
@@ -7052,6 +7063,7 @@ dependencies = [
  "pallet-collective",
  "pallet-elections-phragmen",
  "pallet-ethereum",
+ "pallet-ethereum-chain-id",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",

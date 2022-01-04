@@ -11,7 +11,7 @@ pub use sherpax_runtime::{
     constants::currency::UNITS, opaque::SessionKeys, AccountId, AssetsBridgeConfig, AssetsConfig,
     AuraConfig, Balance, BalancesConfig, BlockNumber, EthereumConfig, EvmConfig, GenesisAccount,
     GenesisConfig, GrandpaConfig, SessionConfig, Signature, SudoConfig, SystemConfig,
-    VestingConfig, DAYS, WASM_BINARY,
+    VestingConfig, DAYS, WASM_BINARY, EthereumChainIdConfig
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::crypto::UncheckedInto;
@@ -381,10 +381,11 @@ pub fn sherpax_genesis(
             key: root_key.clone(),
         },
         vesting: VestingConfig { vesting },
+        ethereum_chain_id: EthereumChainIdConfig { chain_id: 1506u64 },
         evm: Default::default(),
         ethereum: Default::default(),
         assets: sherpax_runtime::AssetsConfig {
-            assets: vec![(sbtc_info.1, root_key.clone(), sbtc_info.5, sbtc_info.6)],
+            assets: vec![(sbtc_info.1, root_key, sbtc_info.5, sbtc_info.6)],
             metadata: vec![(sbtc_info.1, sbtc_info.2, sbtc_info.3, sbtc_info.4)],
             accounts: vec![],
         },

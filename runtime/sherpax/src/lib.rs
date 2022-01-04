@@ -35,7 +35,7 @@ use static_assertions::const_assert;
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
     construct_runtime, parameter_types,
-    traits::{KeyOwnerProofSystem, LockIdentifier, Randomness},
+    traits::{Get, KeyOwnerProofSystem, LockIdentifier, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         RuntimeDbWeight, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
@@ -363,6 +363,8 @@ impl pallet_utility::Config for Runtime {
     type WeightInfo = ();
 }
 
+impl pallet_ethereum_chain_id::Config for Runtime {}
+
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
 /// Given the 500ms Weight, from which 75% only are used for transactions,
@@ -380,7 +382,6 @@ parameter_types! {
     pub BlockGasLimit: U256
         = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT / WEIGHT_PER_GAS);
     pub PrecompilesValue: SherpaXPrecompiles<Runtime> = SherpaXPrecompiles::<_>::new();
-    pub const ChainId: u64 = 1505;
 }
 
 pub struct SherpaXGasWeightMapping;
@@ -412,7 +413,7 @@ impl pallet_evm::Config for Runtime {
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = SherpaXPrecompiles<Runtime>;
     type PrecompilesValue = PrecompilesValue;
-    type ChainId = ChainId;
+    type ChainId = EthereumChainId;
     type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, impls::DealWithFees>;
     type BlockGasLimit = BlockGasLimit;
     type FindAuthor = ();
@@ -619,14 +620,15 @@ construct_runtime!(
         Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 31,
 
         // Ethereum compatibility
-        Evm: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 40,
-        Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin} = 41,
-        AssetsBridge: pallet_assets_bridge::{Pallet, Call, Storage, Config<T>, Event<T>} = 42,
+        EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config} = 40,
+        Evm: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 41,
+        Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin} = 42,
+        AssetsBridge: pallet_assets_bridge::{Pallet, Call, Storage, Config<T>, Event<T>} = 43,
 
         // Crypto gateway stuff.
-        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 43,
-        XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 44,
-        XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 45,
+        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 50,
+        XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 51,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 52,
     }
 );
 

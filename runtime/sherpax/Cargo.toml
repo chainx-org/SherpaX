@@ -52,12 +52,13 @@ pallet-utility = { git = 'https://github.com/paritytech/substrate', branch = "po
 pallet-vesting = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.11", default-features = false }
 
 # SherpaX
-pallet-assets = { default-features = false, path = "../../xpallets/assets" }
-pallet-assets-bridge = { default-features = false, path = "../../xpallets/assets-bridge" }
+pallet-assets = { path = "../../xpallets/assets", default-features = false }
+pallet-assets-bridge = { path = "../../xpallets/assets-bridge", default-features = false }
 
 # Evm
 pallet-evm = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11", default-features = false }
 pallet-ethereum = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11", default-features = false }
+pallet-ethereum-chain-id = { path = "../../xpallets/ethereum-chain-id", default-features = false }
 
 # EVM precompile
 fp-evm = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "new-polkadot-v0.9.11" }
@@ -126,6 +127,7 @@ std = [
     "pallet-multisig/std",
     "pallet-evm/std",
     "pallet-ethereum/std",
+    "pallet-ethereum-chain-id/std",
     "fp-evm/std",
     "fp-rpc/std",
     "fp-self-contained/std",

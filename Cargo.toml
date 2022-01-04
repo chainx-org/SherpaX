@@ -15,6 +15,7 @@ members = [
 
     "xpallets/assets",
     "xpallets/assets-bridge",
+    "xpallets/ethereum-chain-id",
     "xpallets/gateway/bitcoin",
     "xpallets/gateway/common",
     "xpallets/gateway/common/rpc",
