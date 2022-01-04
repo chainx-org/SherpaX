@@ -60,7 +60,7 @@ It should at least work until the following commits
     --ws-external \
     --ws-port 9977 \
     --ws-max-connections 10000 \
-    --port 30333
+    --port 30333 \
     -levm=trace
 ```
 
@@ -71,7 +71,7 @@ It should at least work until the following commits
 ```txt
 Network Name: sherpax
 New RPC URL: http://127.0.0.1:8546
-Chain ID: 1505
+Chain ID: 1506
 Currency Symbol: KSX
 Block Explorer URL:
 ```
