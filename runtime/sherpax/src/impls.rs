@@ -34,6 +34,12 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
             Author::on_unbalanced(fees);
         }
     }
+
+    // this is called from pallet_evm for Ethereum-based transactions
+    // (technically, it calls on_unbalanced, which calls this when non-zero)
+    fn on_nonzero_unbalanced(amount: NegativeImbalance) {
+        Author::on_unbalanced(amount);
+    }
 }
 
 /// A convertor from aura id. Since this pallet does not have stash/controller, this is
