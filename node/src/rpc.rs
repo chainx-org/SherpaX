@@ -19,7 +19,7 @@ use fc_rpc::{
     EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
     SchemaV2Override, StorageOverride,
 };
-use fc_rpc_core::types::FilterPool;
+use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
 use sc_client_api::{
@@ -56,12 +56,44 @@ pub struct FullDeps<C, P, A: ChainApi> {
     pub backend: Arc<fc_db::Backend<Block>>,
     /// Maximum number of logs in a query.
     pub max_past_logs: u32,
+    /// Maximum fee history cache size.
+    pub fee_history_limit: u64,
+    /// Fee history cache.
+    pub fee_history_cache: FeeHistoryCache,
+}
+
+pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
+    where
+        C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+        C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
+        C: Send + Sync + 'static,
+        C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+        BE: Backend<Block> + 'static,
+        BE::State: StateBackend<BlakeTwo256>,
+{
+    let mut overrides_map = BTreeMap::new();
+    overrides_map.insert(
+        EthereumStorageSchema::V1,
+        Box::new(SchemaV1Override::new(client.clone()))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+    overrides_map.insert(
+        EthereumStorageSchema::V2,
+        Box::new(SchemaV2Override::new(client.clone()))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+
+    Arc::new(OverrideHandle {
+        schemas: overrides_map,
+        fallback: Box::new(RuntimeApiStorageOverride::new(client.clone())),
+    })
 }
 
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, BE, A>(
     deps: FullDeps<C, P, A>,
     subscription_task_executor: SubscriptionTaskExecutor,
+    overrides: Arc<OverrideHandle<Block>>,
 ) -> RpcExtension
 where
     BE: Backend<Block> + 'static,
@@ -109,6 +141,8 @@ where
         filter_pool,
         backend,
         max_past_logs,
+        fee_history_limit,
+        fee_history_cache,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -122,23 +156,6 @@ where
     )));
 
     {
-        let mut overrides_map = BTreeMap::new();
-        overrides_map.insert(
-            EthereumStorageSchema::V1,
-            Box::new(SchemaV1Override::new(client.clone()))
-                as Box<dyn StorageOverride<_> + Send + Sync>,
-        );
-        overrides_map.insert(
-            EthereumStorageSchema::V2,
-            Box::new(SchemaV2Override::new(client.clone()))
-                as Box<dyn StorageOverride<_> + Send + Sync>,
-        );
-
-        let overrides = Arc::new(OverrideHandle {
-            schemas: overrides_map,
-            fallback: Box::new(RuntimeApiStorageOverride::new(client.clone())),
-        });
-
         let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
 
         io.extend_with(EthApiServer::to_delegate(EthApi::new(
@@ -154,6 +171,8 @@ where
             max_past_logs,
             block_data_cache.clone(),
             fc_rpc::format::Legacy,
+            fee_history_limit,
+            fee_history_cache,
         )));
 
         if let Some(filter_pool) = filter_pool {

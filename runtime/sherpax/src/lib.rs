@@ -1206,6 +1206,10 @@ impl_runtime_apis! {
                 _ => None
             }).collect::<Vec<EthereumTransaction>>()
         }
+
+        fn elasticity() -> Option<Permill> {
+            None
+        }
     }
 
     impl xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<Block, AccountId, Balance, BlockNumber> for Runtime {
