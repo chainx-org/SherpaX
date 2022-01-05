@@ -17,7 +17,7 @@ use std::{sync::Arc, time::Duration};
 use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy::Normal};
 use fc_rpc::EthTask;
-use fc_rpc_core::types::FilterPool;
+use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
 use sc_cli::SubstrateCli;
 use sc_client_api::BlockchainEvents;
@@ -85,6 +85,7 @@ pub fn new_partial(
             Option<FilterPool>,
             Arc<fc_db::Backend<Block>>,
             Option<Telemetry>,
+            FeeHistoryCache,
         ),
     >,
     ServiceError,
@@ -136,6 +137,7 @@ pub fn new_partial(
     );
 
     let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
+    let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
     let frontier_backend = open_frontier_backend(config)?;
 
     let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
@@ -191,6 +193,7 @@ pub fn new_partial(
             filter_pool,
             frontier_backend,
             telemetry,
+            fee_history_cache,
         ),
     })
 }
@@ -212,7 +215,7 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
         mut keystore_container,
         select_chain,
         transaction_pool,
-        other: (consensus_result, filter_pool, frontier_backend, mut telemetry),
+        other: (consensus_result, filter_pool, frontier_backend, mut telemetry, fee_history_cache),
     } = new_partial(&config)?;
 
     if let Some(url) = &config.keystore_remote {
@@ -257,6 +260,8 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
 
     let subscription_task_executor =
         sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
+    let overrides = crate::rpc::overrides_handle(client.clone());
+    let fee_history_limit = 2048;
 
     let rpc_extensions_builder = {
         let client = client.clone();
@@ -266,6 +271,8 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
         let frontier_backend = frontier_backend.clone();
         let is_authority = false;
         let max_past_logs = 10000;
+        let overrides = overrides.clone();
+        let fee_history_cache = fee_history_cache.clone();
 
         Box::new(move |deny_unsafe, _| {
             let deps = crate::rpc::FullDeps {
@@ -278,11 +285,14 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
                 filter_pool: filter_pool.clone(),
                 backend: frontier_backend.clone(),
                 max_past_logs,
+                fee_history_limit,
+                fee_history_cache: fee_history_cache.clone(),
             };
 
             Ok(crate::rpc::create_full(
                 deps,
                 subscription_task_executor.clone(),
+                overrides.clone(),
             ))
         })
     };
@@ -324,6 +334,17 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
             EthTask::filter_pool_task(Arc::clone(&client), filter_pool, FILTER_RETAIN_THRESHOLD),
         );
     }
+
+    // Spawn Frontier FeeHistory cache maintenance task.
+    task_manager.spawn_essential_handle().spawn(
+        "frontier-fee-history",
+        EthTask::fee_history_task(
+            Arc::clone(&client),
+            Arc::clone(&overrides),
+            fee_history_cache,
+            fee_history_limit,
+        ),
+    );
 
     task_manager.spawn_essential_handle().spawn(
         "frontier-schema-cache-task",

@@ -18,7 +18,8 @@ clippy: pre-clippy
 		-A clippy::implicit_hasher -A clippy::large_enum_variant \
 		-A clippy::new_without_default -A clippy::blacklisted_name \
 		-A clippy::neg_cmp_op_on_partial_ord -A clippy::too_many_arguments \
-		-A clippy::excessive_precision -A clippy::collapsible_if
+		-A clippy::excessive_precision -A clippy::collapsible_if \
+		-D warnings
 
 build:
 	cargo build --release #--features "${ENABLE_FEATURES}"

@@ -1,6 +1,12 @@
 name: ci
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - singleton
+  pull_request:
+    branches:
+      - singleton
 
 env:
   CARGO_INCREMENTAL: 0
@@ -29,8 +35,8 @@ jobs:
           override: true
 
     - name: 1-Format
-      run: make format
+      run: cargo fmt --all -- --check
     - name: 2-Clippy
       run: make clippy
     - name: 3-Test
-      run: make test  
+      run: make test

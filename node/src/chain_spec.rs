@@ -12,7 +12,7 @@ pub use sherpax_runtime::{
     constants::currency::UNITS, opaque::SessionKeys, AccountId, AssetsBridgeConfig, AssetsConfig,
     AuraConfig, Balance, BalancesConfig, BlockNumber, EthereumChainIdConfig, EthereumConfig,
     EvmConfig, GenesisAccount, GenesisConfig, GrandpaConfig, SessionConfig, Signature, SudoConfig,
-    SystemConfig, VestingConfig, DAYS, WASM_BINARY, TechnicalMembershipConfig
+    SystemConfig, TechnicalMembershipConfig, VestingConfig, DAYS, WASM_BINARY,
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::crypto::UncheckedInto;
@@ -73,19 +73,16 @@ type AssetSufficient = bool;
 type AssetMinBalance = Balance;
 
 /// Asset registration
-fn sbtc() -> (
-    Chain,
-    AssetId,
-) {
-    (
-        Chain::Bitcoin,
-        1,
-    )
+fn sbtc() -> (Chain, AssetId) {
+    (Chain::Bitcoin, 1)
 }
 
-fn reserved_assets(root_key: &AccountId) -> (
+#[allow(clippy::type_complexity)]
+fn reserved_assets(
+    root_key: &AccountId,
+) -> (
     Vec<(AssetId, AccountId, AssetSufficient, AssetMinBalance)>,
-    Vec<(AssetId, AssetName, AssetSymbol, AssetDecimals)>
+    Vec<(AssetId, AssetName, AssetSymbol, AssetDecimals)>,
 ) {
     (
         vec![
@@ -101,17 +98,67 @@ fn reserved_assets(root_key: &AccountId) -> (
             (9, root_key.clone(), true, 10_000_000_000u128),
         ],
         vec![
-            (0, "Reserved0".to_string().into_bytes(), "RSV0".to_string().into_bytes(), 18),
-            (1, "SBTC".to_string().into_bytes(),      "SBTC".to_string().into_bytes(), 8),
-            (2, "Reserved2".to_string().into_bytes(), "RSV2".to_string().into_bytes(), 18),
-            (3, "Reserved3".to_string().into_bytes(), "RSV3".to_string().into_bytes(), 18),
-            (4, "Reserved4".to_string().into_bytes(), "RSV4".to_string().into_bytes(), 18),
-            (5, "Reserved5".to_string().into_bytes(), "RSV5".to_string().into_bytes(), 18),
-            (6, "Reserved6".to_string().into_bytes(), "RSV6".to_string().into_bytes(), 18),
-            (7, "Reserved7".to_string().into_bytes(), "RSV7".to_string().into_bytes(), 18),
-            (8, "Reserved8".to_string().into_bytes(), "RSV8".to_string().into_bytes(), 18),
-            (9, "Reserved9".to_string().into_bytes(), "RSV9".to_string().into_bytes(), 18),
-        ]
+            (
+                0,
+                "Reserved0".to_string().into_bytes(),
+                "RSV0".to_string().into_bytes(),
+                18,
+            ),
+            (
+                1,
+                "SBTC".to_string().into_bytes(),
+                "SBTC".to_string().into_bytes(),
+                8,
+            ),
+            (
+                2,
+                "Reserved2".to_string().into_bytes(),
+                "RSV2".to_string().into_bytes(),
+                18,
+            ),
+            (
+                3,
+                "Reserved3".to_string().into_bytes(),
+                "RSV3".to_string().into_bytes(),
+                18,
+            ),
+            (
+                4,
+                "Reserved4".to_string().into_bytes(),
+                "RSV4".to_string().into_bytes(),
+                18,
+            ),
+            (
+                5,
+                "Reserved5".to_string().into_bytes(),
+                "RSV5".to_string().into_bytes(),
+                18,
+            ),
+            (
+                6,
+                "Reserved6".to_string().into_bytes(),
+                "RSV6".to_string().into_bytes(),
+                18,
+            ),
+            (
+                7,
+                "Reserved7".to_string().into_bytes(),
+                "RSV7".to_string().into_bytes(),
+                18,
+            ),
+            (
+                8,
+                "Reserved8".to_string().into_bytes(),
+                "RSV8".to_string().into_bytes(),
+                18,
+            ),
+            (
+                9,
+                "Reserved9".to_string().into_bytes(),
+                "RSV9".to_string().into_bytes(),
+                18,
+            ),
+        ],
     )
 }
 
@@ -185,9 +232,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 // Sudo account
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 // Pre-funded accounts
-                vec![
-                    get_account_id_from_seed::<sr25519::Public>("Alice"),
-                ],
+                vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
                 true,
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
@@ -408,7 +453,7 @@ pub fn sherpax_genesis(
         },
         sudo: SudoConfig {
             // Assign network admin rights.
-            key: root_key.clone(),
+            key: root_key,
         },
         vesting: VestingConfig { vesting },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1506u64 },
@@ -454,9 +499,7 @@ pub fn sherpax_genesis(
             verifier: BtcTxVerifier::Recover,
         },
         x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
-            initial_asset_chain: vec![
-                (sbtc_info.1, sbtc_info.0)
-            ],
+            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
         },
     }
 }

@@ -81,3 +81,12 @@ Refer [Connect MetaMask to Moonbase Alpha](https://docs.moonbeam.network/getting
 ### 3.2 Remix (for contract)
 
 Refer [Interacting with Moonbeam Using Remix](https://docs.moonbeam.network/getting-started/local-node/using-remix/)
+
+### 3.3  Ethereum apis
+- [Ethereum JSON-RPC.postman_collection](./develop_docs/Ethereum JSON-RPC.postman_collection.json)
+- [rpc-support说明](https://github.com/PureStake/moonbeam-docs-cn/blob/master/builders/get-started/eth-compare/rpc-support.md)
+- [QuickNode Ethereum RPC](https://www.quicknode.com/docs)
+- [Ethereum JSON-RPC Wiki](https://eth.wiki/json-rpc/API#)
+
+### 3.4 frointier账户体系
+[frontier是如何管理substrate账户和ethereum账户的](https://github.com/chainx-org/chainx-technical-archive/blob/main/ZhaoJianBing/substrate_account_and_ethereum_account_zh.md)

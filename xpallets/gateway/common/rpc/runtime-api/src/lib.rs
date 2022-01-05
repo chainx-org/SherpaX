@@ -33,6 +33,7 @@ sp_api::decl_runtime_apis! {
 
         fn withdrawal_limit(asset_id: AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError>;
 
+        #[allow(clippy::type_complexity)]
         fn withdrawal_list_with_fee_info(asset_id: AssetId) -> Result<
         BTreeMap<
             WithdrawalRecordId,
