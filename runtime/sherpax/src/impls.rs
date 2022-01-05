@@ -1,6 +1,6 @@
 use frame_support::{
     parameter_types,
-    traits::{Currency, OnUnbalanced},
+    traits::{Currency, Imbalance, OnUnbalanced},
 };
 use pallet_transaction_payment::{Multiplier, TargetedFeeAdjustment};
 use sp_runtime::{FixedPointNumber, Perquintill};
@@ -30,7 +30,11 @@ impl OnUnbalanced<NegativeImbalance> for Author {
 pub struct DealWithFees;
 impl OnUnbalanced<NegativeImbalance> for DealWithFees {
     fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
-        if let Some(fees) = fees_then_tips.next() {
+        if let Some(mut fees) = fees_then_tips.next() {
+            if let Some(tips) = fees_then_tips.next() {
+                // for tips, if any, 100% to author
+                tips.merge_into(&mut fees);
+            }
             Author::on_unbalanced(fees);
         }
     }
