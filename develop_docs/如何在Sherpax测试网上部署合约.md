@@ -7,10 +7,11 @@ RPC URL:https://sherpax-testnet.chainx.org/rpc
 链ID:1510
 Currency Symbol:KSX
 ```
-![image-20220105101440615](./images/image-20220105100735314.png)
+<img src="./images/image-20220105100735314.png" alt="image-20220105101440615" style="zoom: 33%;" />
+
 ## 2.转移资产
 从substrate充值到以太坊
-![image-20220105101012156](/Users/wangningbo/Project/SherpaX/develop_docs/images/image-20220105101012156.png)
+![image-20220105101012156](./images/image-20220105101012156.png)
 
 ## 3.部署合约
 这里以WKSX合约为例，源码地址：https://github.com/chainx-org/SherpaX/blob/evm_contracts/contracts/wksx_istanbul.sol
