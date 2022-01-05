@@ -85,7 +85,7 @@ pub fn new_partial(
             Option<FilterPool>,
             Arc<fc_db::Backend<Block>>,
             Option<Telemetry>,
-            FeeHistoryCache
+            FeeHistoryCache,
         ),
     >,
     ServiceError,
@@ -193,7 +193,7 @@ pub fn new_partial(
             filter_pool,
             frontier_backend,
             telemetry,
-            fee_history_cache
+            fee_history_cache,
         ),
     })
 }

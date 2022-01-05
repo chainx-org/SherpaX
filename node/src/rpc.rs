@@ -63,13 +63,13 @@ pub struct FullDeps<C, P, A: ChainApi> {
 }
 
 pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
-    where
-        C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
-        C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
-        C: Send + Sync + 'static,
-        C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
-        BE: Backend<Block> + 'static,
-        BE::State: StateBackend<BlakeTwo256>,
+where
+    C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+    C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
+    C: Send + Sync + 'static,
+    C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    BE: Backend<Block> + 'static,
+    BE::State: StateBackend<BlakeTwo256>,
 {
     let mut overrides_map = BTreeMap::new();
     overrides_map.insert(
@@ -85,7 +85,7 @@ pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
 
     Arc::new(OverrideHandle {
         schemas: overrides_map,
-        fallback: Box::new(RuntimeApiStorageOverride::new(client.clone())),
+        fallback: Box::new(RuntimeApiStorageOverride::new(client)),
     })
 }
 
