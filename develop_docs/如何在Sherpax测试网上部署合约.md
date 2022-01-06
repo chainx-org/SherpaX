@@ -1,10 +1,13 @@
 # 如何在sherpax测试网上部署合约
-## 1.链接metamask
+- react从0到1部署合约开发dapp: https://dev.to/dabit3/the-complete-guide-to-full-stack-ethereum-development-3j13
+- web3 学习资源汇总: https://www.useweb3.xyz/
+
+## 1.链接metamask(chainid=1506)
 首先使用metamask链接Sherpax Testnet
 ```txt
 网络名称: ShapaX-Testnet
 RPC URL:https://sherpax-testnet.chainx.org/rpc
-链ID:1510
+链ID:1506
 Currency Symbol:KSX
 ```
 <img src="./images/image-20220105100735314.png" alt="image-20220105101440615" style="zoom: 33%;" />
