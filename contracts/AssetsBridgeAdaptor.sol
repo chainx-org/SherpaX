@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.0;
 
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/utils/Context.sol";
+
 /**
  * @dev Interface of the SherpaX AssetsBridge
  */
@@ -21,10 +23,12 @@ interface IAssetsBridge {
     function burn_from(address account, uint256 amount) external returns (bool);
 }
 
-library AssetsBridgeLibrary {
+abstract contract AssetsBridgeModifier is Context {
     address public constant admin = 0x1111111111111111111111111111111111111111;
 
-    function get_admin() public pure returns(address){
-        return admin;
+    modifier AssetsBridgeRequire() {
+        require(_msgSender() == admin, "AssetsBridge: require called by the assets bridge admin address");
+
+        _;
     }
 }
