@@ -420,3 +420,40 @@ fn more_pause_and_unpause_should_work() {
         );
     })
 }
+
+#[test]
+fn force_unregister_should_work() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            AssetsBridge::force_unregister(Origin::root(), 1),
+            Error::<Test>::AssetIdHasNotMapped
+        );
+
+        assert_eq!(AssetsBridge::erc20s(1), None);
+        assert_eq!(AssetsBridge::asset_ids(H160::from_slice(&ERC20_1)), None);
+
+        assert_ok!(AssetsBridge::register(
+            Origin::signed(ALICE.into()),
+            1,
+            H160::from_slice(&ERC20_1)
+        ));
+        expect_event(AssetsBridgeEvent::Register(1, H160::from_slice(&ERC20_1)));
+
+        assert_eq!(AssetsBridge::erc20s(1), Some(H160::from_slice(&ERC20_1)));
+        assert_eq!(AssetsBridge::asset_ids(H160::from_slice(&ERC20_1)), Some(1));
+
+        assert_ok!(AssetsBridge::pause(Origin::signed(ALICE.into()), None));
+        expect_event(AssetsBridgeEvent::PausedAll);
+        assert_eq!(AssetsBridge::emergencies(), vec![1]);
+
+        assert_ok!(AssetsBridge::force_unregister(Origin::root(), 1));
+        expect_event(AssetsBridgeEvent::ForceUnRegister(
+            1,
+            H160::from_slice(&ERC20_1),
+        ));
+
+        assert_eq!(AssetsBridge::erc20s(1), None);
+        assert_eq!(AssetsBridge::asset_ids(H160::from_slice(&ERC20_1)), None);
+        assert!(AssetsBridge::emergencies().is_empty());
+    })
+}
