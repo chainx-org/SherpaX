@@ -7,6 +7,8 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Context.sol";
 
+import "./AssetsBridgeAdaptor.sol";
+
 /**
  * @dev Implementation of the {IERC20} interface.
  *
@@ -32,9 +34,7 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20 is Context, IERC20, IERC20Metadata {
-    address admin = 0x1111111111111111111111111111111111111111;
-
+contract ERC20 is Context, IERC20, IERC20Metadata, IAssetsBridge {
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -160,9 +160,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 
         uint256 currentAllowance = _allowances[sender][_msgSender()];
         require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
-    unchecked {
-        _approve(sender, _msgSender(), currentAllowance - amount);
-    }
+        unchecked {
+            _approve(sender, _msgSender(), currentAllowance - amount);
+        }
 
         return true;
     }
@@ -201,9 +201,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
         uint256 currentAllowance = _allowances[_msgSender()][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
-    unchecked {
-        _approve(_msgSender(), spender, currentAllowance - subtractedValue);
-    }
+        unchecked {
+            _approve(_msgSender(), spender, currentAllowance - subtractedValue);
+        }
 
         return true;
     }
@@ -234,9 +234,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 
         uint256 senderBalance = _balances[sender];
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
-    unchecked {
-        _balances[sender] = senderBalance - amount;
-    }
+        unchecked {
+            _balances[sender] = senderBalance - amount;
+        }
         _balances[recipient] += amount;
 
         emit Transfer(sender, recipient, amount);
@@ -244,15 +244,19 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         _afterTokenTransfer(sender, recipient, amount);
     }
 
-    function mint_into(address account, uint256 amount) public {
-        require(_msgSender() == admin, "ERC20: require called by the admin address");
+    function mint_into(address account, uint256 amount) external virtual override returns (bool)  {
+        require(_msgSender() == AssetsBridgeLibrary.get_admin(), "ERC20: require called by the assets bridge admin address");
         _mint(account, amount);
+
+        return true;
     }
 
-    function burn_from(address account, uint256 amount) public {
-        require(_msgSender() == admin, "ERC20: require called by the admin address");
+    function burn_from(address account, uint256 amount) external virtual override returns (bool) {
+        require(_msgSender() == AssetsBridgeLibrary.get_admin(), "ERC20: require called by the assets bridge admin address");
 
         _burn(account, amount);
+
+        return true;
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
@@ -294,9 +298,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 
         uint256 accountBalance = _balances[account];
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
-    unchecked {
-        _balances[account] = accountBalance - amount;
-    }
+        unchecked {
+            _balances[account] = accountBalance - amount;
+        }
         _totalSupply -= amount;
 
         emit Transfer(account, address(0), amount);
