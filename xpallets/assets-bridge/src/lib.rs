@@ -145,6 +145,8 @@ pub mod pallet {
         SetAdmin(T::AccountId),
         /// (asset_id, erc20_contract)
         Register(T::AssetId, H160),
+        /// (asset_id, erc20_contract)
+        ForceUnRegister(T::AssetId, H160),
         /// (asset_id)
         Paused(T::AssetId),
         // (asset_id)
@@ -500,6 +502,37 @@ pub mod pallet {
             Admin::<T>::mutate(|admin| *admin = Some(new_admin.clone()));
 
             Self::deposit_event(Event::SetAdmin(new_admin));
+
+            Ok(Pays::No.into())
+        }
+
+        /// Force unregister substrate assets and erc20 contracts
+        /// Note: for super admin
+        #[pallet::weight(1_000_000u64)]
+        pub fn force_unregister(
+            origin: OriginFor<T>,
+            asset_id: T::AssetId,
+        ) -> DispatchResultWithPostInfo {
+            ensure_root(origin)?;
+
+            let erc20 = Self::erc20s(&asset_id).ok_or(Error::<T>::AssetIdHasNotMapped)?;
+
+            ensure!(
+                AssetIds::<T>::contains_key(&erc20),
+                Error::<T>::ContractAddressHasMapped
+            );
+
+            Erc20s::<T>::remove(&asset_id);
+            AssetIds::<T>::remove(&erc20);
+
+            // clear emergency
+            if Self::is_in_emergency(asset_id) {
+                Emergencies::<T>::mutate(|emergencies| {
+                    emergencies.retain(|&emergency| emergency != asset_id);
+                })
+            }
+
+            Self::deposit_event(Event::ForceUnRegister(asset_id, erc20));
 
             Ok(Pays::No.into())
         }
