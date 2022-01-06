@@ -6,6 +6,8 @@ pragma solidity ^0.8.0;
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/token/ERC20/IERC20.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/utils/Context.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/security/Pausable.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/access/Ownable.sol";
 
 import "./AssetsBridgeAdaptor.sol";
 
@@ -34,7 +36,7 @@ import "./AssetsBridgeAdaptor.sol";
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20 is Context, IERC20, IERC20Metadata, IAssetsBridge {
+contract ERC20 is Context, IERC20, IERC20Metadata, IAssetsBridge, AssetsBridgeModifier, Pausable, Ownable {
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -245,18 +247,25 @@ contract ERC20 is Context, IERC20, IERC20Metadata, IAssetsBridge {
     }
 
     function mint_into(address account, uint256 amount) external virtual override returns (bool)  {
-        require(_msgSender() == AssetsBridgeLibrary.get_admin(), "ERC20: require called by the assets bridge admin address");
         _mint(account, amount);
 
         return true;
     }
 
     function burn_from(address account, uint256 amount) external virtual override returns (bool) {
-        require(_msgSender() == AssetsBridgeLibrary.get_admin(), "ERC20: require called by the assets bridge admin address");
-
         _burn(account, amount);
 
         return true;
+    }
+
+    function pause() external whenNotPaused {
+        require(_msgSender() == owner(), "ERC20: require called by the contract owner");
+        _pause();
+    }
+
+    function unpause() external whenPaused {
+        require(_msgSender() == owner(), "ERC20: require called by the contract owner");
+        _unpause();
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
@@ -348,10 +357,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata, IAssetsBridge {
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
     function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual {}
+        address,
+        address,
+        uint256
+    ) internal virtual {
+        require(!paused(), "ERC20Pausable: token transfer while paused");
+    }
 
     /**
      * @dev Hook that is called after any transfer of tokens. This includes
