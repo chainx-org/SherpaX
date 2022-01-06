@@ -150,7 +150,7 @@ pub mod pallet {
         // (asset_id)
         UnPaused(T::AssetId),
         PausedAll,
-        UnPausedAll
+        UnPausedAll,
     }
 
     /// Error for evm accounts module.
@@ -181,7 +181,7 @@ pub mod pallet {
         /// Require admin authority
         RequireAdmin,
         /// Ban deposit and withdraw when in emergency
-        InEmergency
+        InEmergency,
     }
 
     #[pallet::pallet]
@@ -392,7 +392,7 @@ pub mod pallet {
         pub fn register(
             origin: OriginFor<T>,
             asset_id: T::AssetId,
-            erc20: H160
+            erc20: H160,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
             ensure!(Some(who) == Self::admin_key(), Error::<T>::RequireAdmin);
@@ -533,6 +533,6 @@ where
     fn is_in_emergency(asset_id: T::AssetId) -> bool {
         Self::emergencies()
             .iter()
-            .any(|& emergency| emergency == asset_id)
+            .any(|&emergency| emergency == asset_id)
     }
 }

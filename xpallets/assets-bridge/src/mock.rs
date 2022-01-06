@@ -1,9 +1,7 @@
 pub use crate as assets_bridge;
 pub use assets_bridge::{Config, Error, Event as AssetsBridgeEvent};
 
-use frame_support::{
-    parameter_types, traits::GenesisBuild
-};
+use frame_support::{parameter_types, traits::GenesisBuild};
 use frame_system as system;
 use sp_core::{H160, H256};
 pub use sp_runtime::{
@@ -138,8 +136,8 @@ impl assets_bridge::Config for Test {
     type ClaimBond = ClaimBond;
 }
 
-pub const ALICE: [u8;32] = [1u8;32];
-pub const BOB: [u8;32] = [2u8;32];
+pub const ALICE: [u8; 32] = [1u8; 32];
+pub const BOB: [u8; 32] = [2u8; 32];
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
     let mut t = frame_system::GenesisConfig::default()
@@ -147,25 +145,16 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
         .unwrap();
 
     pallet_balances::GenesisConfig::<Test> {
-        balances: vec![
-            (
-                ALICE.into(),
-                1000
-            ),
-            (
-                BOB.into(),
-                1000
-            ),
-        ],
+        balances: vec![(ALICE.into(), 1000), (BOB.into(), 1000)],
     }
-        .assimilate_storage(&mut t)
-        .unwrap();
+    .assimilate_storage(&mut t)
+    .unwrap();
 
     assets_bridge::GenesisConfig::<Test> {
         admin_key: Some(ALICE.into()),
     }
-        .assimilate_storage(&mut t)
-        .unwrap();
+    .assimilate_storage(&mut t)
+    .unwrap();
 
     let mut ext = sp_io::TestExternalities::new(t);
     ext.execute_with(|| System::set_block_number(1));
