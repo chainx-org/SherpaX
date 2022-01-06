@@ -99,6 +99,11 @@ pub mod pallet {
     #[pallet::getter(fn admin_key)]
     pub(super) type Admin<T: Config> = StorageValue<_, T::AccountId>;
 
+    /// The Assets in emergency
+    #[pallet::storage]
+    #[pallet::getter(fn emergencies)]
+    pub(super) type Emergencies<T: Config> = StorageValue<_, Vec<T::AssetId>, ValueQuery>;
+
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         /// The `AccountId` of the admin key.
@@ -140,6 +145,12 @@ pub mod pallet {
         SetAdmin(T::AccountId),
         /// (asset_id, erc20_contract)
         Register(T::AssetId, H160),
+        /// (asset_id)
+        Paused(T::AssetId),
+        // (asset_id)
+        UnPaused(T::AssetId),
+        PausedAll,
+        UnPausedAll
     }
 
     /// Error for evm accounts module.
@@ -159,6 +170,8 @@ pub mod pallet {
         EthAddressHasNotMapped,
         /// AssetId has mapped
         AssetIdHasMapped,
+        /// AssetId has not mapped
+        AssetIdHasNotMapped,
         /// Erc20 contract address has mapped
         ContractAddressHasMapped,
         /// Erc20 contract address has not mapped
@@ -167,6 +180,8 @@ pub mod pallet {
         ExecutedFailed,
         /// Require admin authority
         RequireAdmin,
+        /// Ban deposit and withdraw when in emergency
+        InEmergency
     }
 
     #[pallet::pallet]
@@ -255,6 +270,7 @@ pub mod pallet {
             amount: T::Balance,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
 
             // 1. check evm account
             let evm_account = Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?;
@@ -293,6 +309,7 @@ pub mod pallet {
             amount: T::Balance,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
 
             // 1. check evm account
             let evm_account = Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?;
@@ -372,7 +389,11 @@ pub mod pallet {
         /// - `asset_id`: The asset id
         /// - `erc20`: The erc20 contract address
         #[pallet::weight(10_000_000u64)]
-        pub fn register(origin: OriginFor<T>, asset_id: T::AssetId, erc20: H160) -> DispatchResult {
+        pub fn register(
+            origin: OriginFor<T>,
+            asset_id: T::AssetId,
+            erc20: H160
+        ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
             ensure!(Some(who) == Self::admin_key(), Error::<T>::RequireAdmin);
 
@@ -391,7 +412,79 @@ pub mod pallet {
 
             Self::deposit_event(Event::Register(asset_id, erc20));
 
-            Ok(())
+            Ok(Pays::No.into())
+        }
+
+        /// Pause assets bridge deposit and withdraw
+        /// Note: for admin
+        ///
+        /// - `asset_id`: None will pause all, Some(id) will pause the specified asset
+        #[pallet::weight(10_000_000u64)]
+        pub fn pause(
+            origin: OriginFor<T>,
+            asset_id: Option<T::AssetId>,
+        ) -> DispatchResultWithPostInfo {
+            let who = ensure_signed(origin)?;
+            ensure!(Some(who) == Self::admin_key(), Error::<T>::RequireAdmin);
+
+            Emergencies::<T>::try_mutate(|emergencies| {
+                if let Some(id) = asset_id {
+                    // ensure asset_id and erc20 address has not been mapped
+                    ensure!(
+                        Erc20s::<T>::contains_key(&id),
+                        Error::<T>::AssetIdHasNotMapped
+                    );
+                    if !Self::is_in_emergency(id) {
+                        emergencies.push(id);
+
+                        Self::deposit_event(Event::Paused(id));
+                    }
+                } else {
+                    emergencies.truncate(0);
+                    for id in AssetIds::<T>::iter_values() {
+                        emergencies.push(id);
+                    }
+
+                    Self::deposit_event(Event::PausedAll);
+                }
+
+                Ok(Pays::No.into())
+            })
+        }
+
+        /// Unpause assets bridge deposit and withdraw
+        /// Note: for admin
+        ///
+        /// - `asset_id`: None will unpause all, Some(id) will unpause the specified asset
+        #[pallet::weight(10_000_000u64)]
+        pub fn unpause(
+            origin: OriginFor<T>,
+            asset_id: Option<T::AssetId>,
+        ) -> DispatchResultWithPostInfo {
+            let who = ensure_signed(origin)?;
+            ensure!(Some(who) == Self::admin_key(), Error::<T>::RequireAdmin);
+
+            Emergencies::<T>::try_mutate(|emergencies| {
+                if let Some(id) = asset_id {
+                    // ensure asset_id and erc20 address has not been mapped
+                    ensure!(
+                        Erc20s::<T>::contains_key(&id),
+                        Error::<T>::AssetIdHasNotMapped
+                    );
+
+                    if Self::is_in_emergency(id) {
+                        emergencies.retain(|&emergency| emergency != id);
+
+                        Self::deposit_event(Event::UnPaused(id));
+                    }
+                } else {
+                    emergencies.truncate(0);
+
+                    Self::deposit_event(Event::UnPausedAll);
+                }
+
+                Ok(Pays::No.into())
+            })
         }
 
         /// Set this pallet admin key
@@ -435,5 +528,11 @@ where
             ExitReason::Succeed(_) => Ok(()),
             _ => Err(Error::<T>::ExecutedFailed.into()),
         }
+    }
+
+    fn is_in_emergency(asset_id: T::AssetId) -> bool {
+        Self::emergencies()
+            .iter()
+            .any(|& emergency| emergency == asset_id)
     }
 }

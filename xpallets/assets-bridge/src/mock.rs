@@ -1,7 +1,9 @@
 pub use crate as assets_bridge;
-pub use assets_bridge::Config;
+pub use assets_bridge::{Config, Error, Event as AssetsBridgeEvent};
 
-use frame_support::parameter_types;
+use frame_support::{
+    parameter_types, traits::GenesisBuild
+};
 use frame_system as system;
 use sp_core::{H160, H256};
 pub use sp_runtime::{
@@ -25,7 +27,7 @@ frame_support::construct_runtime!(
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         Evm: pallet_evm::{Pallet, Call, Storage, Config, Event<T>},
         Assets: pallet_assets::{Pallet, Call, Storage, Event<T>},
-        AssetsBridge: assets_bridge::{Pallet, Call, Storage, Event<T>},
+        AssetsBridge: assets_bridge::{Pallet, Call, Storage, Config<T>, Event<T>},
     }
 );
 
@@ -136,13 +138,48 @@ impl assets_bridge::Config for Test {
     type ClaimBond = ClaimBond;
 }
 
+pub const ALICE: [u8;32] = [1u8;32];
+pub const BOB: [u8;32] = [2u8;32];
+
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    let t = frame_system::GenesisConfig::default()
+    let mut t = frame_system::GenesisConfig::default()
         .build_storage::<Test>()
+        .unwrap();
+
+    pallet_balances::GenesisConfig::<Test> {
+        balances: vec![
+            (
+                ALICE.into(),
+                1000
+            ),
+            (
+                BOB.into(),
+                1000
+            ),
+        ],
+    }
+        .assimilate_storage(&mut t)
+        .unwrap();
+
+    assets_bridge::GenesisConfig::<Test> {
+        admin_key: Some(ALICE.into()),
+    }
+        .assimilate_storage(&mut t)
         .unwrap();
 
     let mut ext = sp_io::TestExternalities::new(t);
     ext.execute_with(|| System::set_block_number(1));
 
     ext
+}
+
+pub(crate) fn last_event() -> Event {
+    system::Pallet::<Test>::events()
+        .pop()
+        .expect("Event expected")
+        .event
+}
+
+pub(crate) fn expect_event<E: Into<Event>>(e: E) {
+    assert_eq!(last_event(), e.into());
 }
