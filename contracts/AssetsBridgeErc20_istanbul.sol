@@ -246,13 +246,13 @@ contract ERC20 is Context, IERC20, IERC20Metadata, IAssetsBridge, AssetsBridgeMo
         _afterTokenTransfer(sender, recipient, amount);
     }
 
-    function mint_into(address account, uint256 amount) external virtual override returns (bool)  {
+    function mint_into(address account, uint256 amount) external virtual AssetsBridgeModifier override returns (bool)  {
         _mint(account, amount);
 
         return true;
     }
 
-    function burn_from(address account, uint256 amount) external virtual override returns (bool) {
+    function burn_from(address account, uint256 amount) external virtual AssetsBridgeModifier override returns (bool) {
         _burn(account, amount);
 
         return true;
