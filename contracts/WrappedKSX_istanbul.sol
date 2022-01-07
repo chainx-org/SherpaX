@@ -19,7 +19,7 @@
 
 pragma solidity =0.6.6;
 
-contract WKSX {
+contract WETH {
     string public name     = "Wrapped KSX";
     string public symbol   = "WKSX";
     uint8  public decimals = 18;
