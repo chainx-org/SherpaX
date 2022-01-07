@@ -36,7 +36,7 @@ import "./AssetsBridgeAdaptor.sol";
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20 is Context, IERC20, IERC20Metadata, IAssetsBridge, AssetsBridgeModifier, Pausable, Ownable {
+contract ERC20 is Context, IERC20, IERC20Metadata, Pausable, Ownable, IAssetsBridge, AssetsBridgeAdmin {
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -246,13 +246,13 @@ contract ERC20 is Context, IERC20, IERC20Metadata, IAssetsBridge, AssetsBridgeMo
         _afterTokenTransfer(sender, recipient, amount);
     }
 
-    function mint_into(address account, uint256 amount) external virtual AssetsBridgeModifier override returns (bool)  {
+    function mint_into(address account, uint256 amount) external virtual AssetsBridgeRequire override returns (bool)  {
         _mint(account, amount);
 
         return true;
     }
 
-    function burn_from(address account, uint256 amount) external virtual AssetsBridgeModifier override returns (bool) {
+    function burn_from(address account, uint256 amount) external virtual AssetsBridgeRequire override returns (bool) {
         _burn(account, amount);
 
         return true;
