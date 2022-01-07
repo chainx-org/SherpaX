@@ -83,7 +83,7 @@ Refer [Connect MetaMask to Moonbase Alpha](https://docs.moonbeam.network/getting
 Refer [Interacting with Moonbeam Using Remix](https://docs.moonbeam.network/getting-started/local-node/using-remix/)
 
 ### 3.3  Ethereum apis
-- [Ethereum JSON-RPC.postman_collection](https://github.com/chainx-org/SherpaX/blob/singleton/develop_docs/Ethereum-JSON-RPC.postman_collection.json)
+- [Ethereum JSON-RPC.postman_collection](./develop_docs/Ethereum-JSON-RPC.postman_collection.json)
 - [Ethereum RPC Support](https://github.com/PureStake/moonbeam-docs-cn/blob/master/builders/get-started/eth-compare/rpc-support.md)
 - [QuickNode Ethereum RPC](https://www.quicknode.com/docs)
 - [Ethereum JSON-RPC Wiki](https://eth.wiki/json-rpc/API#)
