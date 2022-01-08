@@ -67,7 +67,7 @@ fp-consensus = { git = "https://github.com/chainx-org/frontier", branch = "new-p
 fp-rpc = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
 fc-consensus  = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
 fc-rpc-core = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
-fc-rpc = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
+fc-rpc = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11", features = ["rpc_binary_search_estimate"] }
 fc-mapping-sync = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
 fc-db = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
 pallet-ethereum = { git="https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
