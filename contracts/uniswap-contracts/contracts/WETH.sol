@@ -61,8 +61,8 @@ contract WETH {
     }
 
     function transferFrom(address src, address dst, uint wad)
-    public
-    returns (bool)
+        public
+        returns (bool)
     {
         require(balanceOf[src] >= wad);
 
