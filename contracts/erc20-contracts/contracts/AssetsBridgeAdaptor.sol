@@ -2,9 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/utils/Context.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/access/Ownable.sol";
-
+import "@openzeppelin/contracts/access/Ownable.sol";
+import '@openzeppelin/contracts/utils/Context.sol';
 /**
  * @dev Interface of the SherpaX AssetsBridge
  */
@@ -29,14 +28,6 @@ abstract contract AssetsBridgeAdmin is Context {
 
     modifier AssetsBridgeRequire() {
         require(_msgSender() == admin, "AssetsBridge: require called by the assets bridge admin address");
-
-        _;
-    }
-}
-
-abstract contract AssetsBridgeOwner is Context, Ownable {
-    modifier AssetsBridgeRequire() {
-        require(_msgSender() == owner(), "AssetsBridge: require called by owner");
 
         _;
     }
