@@ -5,8 +5,8 @@ use crate::bitcoin::{
 use frame_benchmarking::frame_support::PalletId;
 use hex_literal::hex;
 use sc_chain_spec::ChainSpecExtension;
-use sc_service::{ChainType, Properties};
 use sc_service::config::TelemetryEndpoints;
+use sc_service::{ChainType, Properties};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 pub use sherpax_runtime::{
@@ -387,7 +387,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                 (CHAINX_TELEMETRY_URL.to_string(), 0),
                 (POLKADOT_TELEMETRY_URL.to_string(), 0),
             ])
-                .expect("SherpaX telemetry url is valid; qed"),
+            .expect("SherpaX telemetry url is valid; qed"),
         ),
         // Protocol ID
         Some(DEFAULT_PROTOCOL_ID),
