@@ -6,6 +6,7 @@ use frame_benchmarking::frame_support::PalletId;
 use hex_literal::hex;
 use sc_chain_spec::ChainSpecExtension;
 use sc_service::{ChainType, Properties};
+use sc_service::config::TelemetryEndpoints;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 pub use sherpax_runtime::{
@@ -19,11 +20,21 @@ use sp_core::crypto::UncheckedInto;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{AccountIdConversion, IdentifyAccount, Verify};
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, convert::TryInto};
 
-// The URL for the telemetry server.
-// const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
+// Note this is the URL for the telemetry server
+const POLKADOT_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
+const CHAINX_TELEMETRY_URL: &str = "wss://telemetry.chainx.org/submit/";
 
+const DEFAULT_PROTOCOL_ID: &str = "sherpax";
+
+macro_rules! bootnodes {
+    ( $( $bootnode:expr, )* ) => {
+        vec![
+            $($bootnode.to_string().try_into().expect("The bootnode is invalid"),)*
+        ]
+    }
+}
 /// Node `ChainSpec` extensions.
 ///
 /// Additional parameters for some Substrate core modules,
@@ -309,7 +320,13 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 }
 
 #[allow(unused)]
-pub fn testnet_config() -> Result<ChainSpec, String> {
+pub fn mainnet_config() -> Result<ChainSpec, String> {
+    let bootnodes = bootnodes![
+        "/ip4/52.77.243.26/tcp/10025/ws/p2p/12D3KooWK6zL4BFCFgcfCLn8xMmZcAp1wX6nTGfJx3gRzbq6qE3Y",
+        "/ip4/47.114.74.52/tcp/40041/ws/p2p/12D3KooWJws7aM9euRhEM2CAvNTvKboiVi9wFRdHeWjtLUEiAJWo",
+        "/ip4/116.62.46.8/tcp/40042/ws/p2p/12D3KooWSAeap3NaSihLuz85tX8uKn8f8Wfgo8iY9WFM1MRAvQiX",
+    ];
+
     let mut properties = Properties::new();
     properties.insert("tokenSymbol".into(), "KSX".into());
     properties.insert("tokenDecimals".into(), 18i32.into());
@@ -320,9 +337,9 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
 
     Ok(ChainSpec::from_genesis(
         // Name
-        "SherpaX Testnet",
+        "SherpaX",
         // ID
-        "sherpax_testnet",
+        "sherpax_singleton",
         ChainType::Live,
         move || {
             sherpax_genesis(
@@ -363,11 +380,17 @@ pub fn testnet_config() -> Result<ChainSpec, String> {
             )
         },
         // Bootnodes
-        vec![],
+        bootnodes,
         // Telemetry
-        None,
+        Some(
+            TelemetryEndpoints::new(vec![
+                (CHAINX_TELEMETRY_URL.to_string(), 0),
+                (POLKADOT_TELEMETRY_URL.to_string(), 0),
+            ])
+                .expect("SherpaX telemetry url is valid; qed"),
+        ),
         // Protocol ID
-        None,
+        Some(DEFAULT_PROTOCOL_ID),
         // Properties
         Some(properties),
         // Extensions
