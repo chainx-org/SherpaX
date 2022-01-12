@@ -549,8 +549,8 @@ fn load_genesis_config(
 
     // total transfer vesting balances
     let transfer_balances = 2631584779144690000000000u128;
-    // 10000 ksx
-    let root_balance = 10000000000000000000000u128.saturating_add(transfer_balances);
+    // 30000 ksx + transfer vesting balances
+    let root_balance = 30000000000000000000000u128.saturating_add(transfer_balances);
 
     let back_to_treasury = 21000000000000000000000000u128
         .saturating_sub(root_balance)
