@@ -93,3 +93,9 @@ Refer [Interacting with Moonbeam Using Remix](https://docs.moonbeam.network/gett
 
 ## 4. Assets Bridge
 Refer [AssetsBridge](./xpallets/assets-bridge/README.md)
+
+## 5. SherpaX Mainnet
+[shrepax mainnet chainspec(272MB)](./node/res/sherpax-raw.json)
+```bash
+./target/release/sherpax --chain=./node/res/sherpax-raw.json --tmp
+```
