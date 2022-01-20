@@ -162,7 +162,7 @@ pub mod pallet {
         PausedAll,
         UnPausedAll,
         // (asset_id, remove)
-        BackForeign(T::AssetId, bool)
+        BackForeign(T::AssetId, bool),
     }
 
     /// Error for evm accounts module.
@@ -195,7 +195,7 @@ pub mod pallet {
         /// Ban deposit and withdraw when in emergency
         InEmergency,
         /// Ban back to foreign
-        BanBackForeign
+        BanBackForeign,
     }
 
     #[pallet::pallet]
@@ -370,21 +370,21 @@ pub mod pallet {
                 ActionType::Direct(unchecked) => (
                     who.clone(),
                     AddressMappingOf::<T>::into_account_id(unchecked),
-                    false
+                    false,
                 ),
                 ActionType::FromSubToEth => (
                     who.clone(),
                     Self::evm_accounts(&who)
                         .map(AddressMappingOf::<T>::into_account_id)
                         .ok_or(Error::<T>::EthAddressHasNotMapped)?,
-                    false
+                    false,
                 ),
                 ActionType::FromEthToSub => (
                     Self::evm_accounts(&who)
                         .map(AddressMappingOf::<T>::into_account_id)
                         .ok_or(Error::<T>::EthAddressHasNotMapped)?,
                     who.clone(),
-                    false
+                    false,
                 ),
                 ActionType::BackForeign(asset_id) => {
                     // ensure asset_id and erc20 address has been mapped
@@ -395,14 +395,14 @@ pub mod pallet {
 
                     let amount: u128 = amount.unique_saturated_into();
                     // burn asset first, then relay will transfer back `who`.
-                    let _ = pallet_assets::Pallet::<T>::burn_from(asset_id, &who, amount.unique_saturated_into())?;
+                    let _ = pallet_assets::Pallet::<T>::burn_from(
+                        asset_id,
+                        &who,
+                        amount.unique_saturated_into(),
+                    )?;
 
-                    (
-                        who.clone(),
-                        who.clone(),
-                        true
-                    )
-                },
+                    (who.clone(), who.clone(), true)
+                }
             };
 
             if !back_foreign {
@@ -531,7 +531,7 @@ pub mod pallet {
         pub fn back_foreign(
             origin: OriginFor<T>,
             asset_id: T::AssetId,
-            remove: bool
+            remove: bool,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
             ensure!(Some(who) == Self::admin_key(), Error::<T>::RequireAdmin);
@@ -542,7 +542,7 @@ pub mod pallet {
                 } else if !Self::is_in_back_foreign(asset_id) {
                     foreigns.push(asset_id);
                 } else {
-                    return Ok(Pays::No.into())
+                    return Ok(Pays::No.into());
                 }
 
                 Self::deposit_event(Event::BackForeign(asset_id, remove));
@@ -632,8 +632,6 @@ where
     }
 
     fn is_in_back_foreign(asset_id: T::AssetId) -> bool {
-        Self::back_foreign_assets()
-            .iter()
-            .any(|&id| id == asset_id)
+        Self::back_foreign_assets().iter().any(|&id| id == asset_id)
     }
 }
