@@ -2,6 +2,7 @@
 
 #![allow(non_upper_case_globals)]
 
+use codec::Encode;
 use frame_support::{assert_noop, assert_ok};
 use sp_core::crypto::{set_default_ss58_version, Ss58AddressFormat};
 
@@ -264,7 +265,8 @@ fn test_push_tx_call() {
         let info = BtcRelayedTxInfo {
             block_hash,
             merkle_proof: proof,
-        };
+        }
+        .encode();
 
         assert_ok!(XGatewayBitcoin::push_transaction(
             frame_system::RawOrigin::Signed(Default::default()).into(),
