@@ -368,7 +368,6 @@ pub mod pallet {
             action: ActionType<T::AssetId>,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
-            ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
 
             let (from, to, back_foreign) = match action {
                 ActionType::Direct(unchecked) => (
@@ -396,6 +395,7 @@ pub mod pallet {
                         Self::is_in_back_foreign(asset_id),
                         Error::<T>::BanBackForeign
                     );
+                    ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
 
                     let amount: u128 = amount.unique_saturated_into();
                     // burn asset first, then relay will transfer back `who`.
