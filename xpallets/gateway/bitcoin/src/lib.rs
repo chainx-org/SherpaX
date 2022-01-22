@@ -121,11 +121,13 @@ pub mod pallet {
         pub fn push_transaction(
             origin: OriginFor<T>,
             raw_tx: Vec<u8>,
-            relayed_info: BtcRelayedTxInfo,
+            relayed_info: Vec<u8>,
             prev_tx: Option<Vec<u8>>,
         ) -> DispatchResultWithPostInfo {
             let _from = ensure_signed(origin)?;
             let raw_tx = Self::deserialize_tx(raw_tx.as_slice())?;
+            let relayed_info: BtcRelayedTxInfo =
+                Decode::decode(&mut &relayed_info[..]).map_err(|_| Error::<T>::DeserializeErr)?;
             let prev_tx = if let Some(prev_tx) = prev_tx {
                 Some(Self::deserialize_tx(prev_tx.as_slice())?)
             } else {
