@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   push:
@@ -16,27 +16,44 @@ env:
   RUSTUP_MAX_RETRIES: 3
 
 jobs:
-  checks:
-    name: Fmt-Clippy-Test
+  Format:
+    name: Rustfmt
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+            profile: minimal
+            toolchain: nightly-2021-11-07
+            components: rustfmt, rust-src, clippy
+            target: wasm32-unknown-unknown
+            override: true
+      - uses: Swatinem/rust-cache@v1.3.0
+      - run: cargo fmt --all -- --check
 
-    - uses: actions-rs/toolchain@v1
-      with:
+  Clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
           profile: minimal
           toolchain: nightly-2021-11-07
           components: rustfmt, rust-src, clippy
           target: wasm32-unknown-unknown
           override: true
+      - uses: Swatinem/rust-cache@v1.3.0
+      - run: make clippy
 
-    - name: 1-Format
-      run: cargo fmt --all -- --check
-    - name: 2-Clippy
-      run: make clippy
-    - name: 3-Test
-      run: make test
+  Test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2021-11-07
+          components: rustfmt, rust-src, clippy
+          target: wasm32-unknown-unknown
+          override: true
+      - uses: Swatinem/rust-cache@v1.3.0
+      - run: make test
