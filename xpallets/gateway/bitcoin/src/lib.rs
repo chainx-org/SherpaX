@@ -195,6 +195,14 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Dangerous! Be careful to set ConfirmedIndex
+        #[pallet::weight(1_000_000u64)]
+        pub fn set_confirmed_number(origin: OriginFor<T>, number: u32) -> DispatchResult {
+            ensure_root(origin)?;
+            ConfirmationNumber::<T>::put(number);
+            Ok(())
+        }
+
         /// Allow root or trustees could remove pending deposits for an address and decide whether
         /// deposit to an account id. if pass `None` to `who`, would just remove pendings, if pass
         /// Some, would deposit to this account id.
