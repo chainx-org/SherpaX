@@ -55,7 +55,7 @@ fn alice<T: Config>() -> T::AccountId {
 //     account::<T>("8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")
 // }
 
-fn withdraw_tx() -> (Transaction, BtcRelayedTxInfo, Transaction) {
+fn withdraw_tx() -> (Transaction, Vec<u8>, Transaction) {
     // block height: 63299
     // https://signet.bitcoinexplorer.org/tx/0f592933b493bedab209851cb2cf07871558ff57d86d645877b16651479b51a2
     const RAW_TX: &str = "020000000001015fea22ec1a3e3e7e1167fa220cc8376225f07bd20aa194e7f3c4ac68c7375d8e0000000000000000000250c3000000000000225120c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565f409c0000000000002251209a9ea267884f5549c206b2aec2bd56d98730f90532ea7f7154d4d4f923b7e3bb03402639d4d9882f6e7e42db38dbd2845c87b131737bf557643ef575c49f8fc6928869d9edf5fd61606fb07cced365fdc2c7b637e6ecc85b29906c16d314e7543e94222086a60c7d5dd3f4931cc8ad77a614402bdb591c042347c89281c48c7e9439be9dac61c0e56a1792f348690cdeebe60e3db6c4e94d94e742c619f7278e52f6cbadf5efe96a528ba3f61a5b0d4fbceea425a9028381458b32492bccc3f1faa473a649e23605554f5ea4b4044229173719228a35635eeffbd8a8fe526270b737ad523b99f600000000";
@@ -74,7 +74,7 @@ fn withdraw_tx() -> (Transaction, BtcRelayedTxInfo, Transaction) {
         block_hash: header.hash(),
         merkle_proof,
     };
-    (tx, info, prev_tx)
+    (tx, info.encode(), prev_tx)
 }
 
 // push header 63290 - 63310
