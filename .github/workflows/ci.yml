@@ -30,8 +30,8 @@ jobs:
             override: true
       - uses: Swatinem/rust-cache@v1.3.0
       - name: 1-Format
-      - run: cargo fmt --all -- --check
+        run: cargo fmt --all -- --check
       - name: 2-Clippy
-      - run: make clippy
+        run: make clippy
       - name: 3-Test
-      - run: make test
+        run: make test
