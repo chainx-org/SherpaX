@@ -16,8 +16,8 @@ env:
   RUSTUP_MAX_RETRIES: 3
 
 jobs:
-  Format:
-    name: Rustfmt
+  Checks:
+    name: Fmt-Clippy-Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,33 +30,5 @@ jobs:
             override: true
       - uses: Swatinem/rust-cache@v1.3.0
       - run: cargo fmt --all -- --check
-
-  Clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2021-11-07
-          components: rustfmt, rust-src, clippy
-          target: wasm32-unknown-unknown
-          override: true
-      - uses: Swatinem/rust-cache@v1.3.0
       - run: make clippy
-
-  Test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2021-11-07
-          components: rustfmt, rust-src, clippy
-          target: wasm32-unknown-unknown
-          override: true
-      - uses: Swatinem/rust-cache@v1.3.0
       - run: make test
