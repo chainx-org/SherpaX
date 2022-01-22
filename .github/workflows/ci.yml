@@ -28,10 +28,15 @@ jobs:
             components: rustfmt, rust-src, clippy
             target: wasm32-unknown-unknown
             override: true
+
       - uses: Swatinem/rust-cache@v1.3.0
       - name: 1-Format
         run: cargo fmt --all -- --check
+
+      - uses: Swatinem/rust-cache@v1.3.0
       - name: 2-Clippy
         run: make clippy
+
+      - uses: Swatinem/rust-cache@v1.3.0
       - name: 3-Test
         run: make test
