@@ -350,14 +350,16 @@ pub mod pallet {
         }
 
         /// Teleport native currency between substrate account and evm address
-        /// Ensure eth_address has not been mapped
+        /// Ensure eth_address has been mapped
         /// Note: for general users
         ///
         /// - `amount`: Teleport amount
         /// - `action`:
         ///    (1) Direct(H160): direct transfer into unchecked evm address
         ///    (2) FromSubToEth: transfer from substrate account to mapped evm address
-        //     (3) FromEthToSub: transfer from mapped evm address to substrate account
+        ///    (3) FromEthToSub: transfer from mapped evm address to substrate account
+        /// - companion with `relay`:
+        ///    (4) BackForeign(asset_id): transfer assets back foreign chain
         #[pallet::weight(100_000_000u64)]
         pub fn teleport(
             origin: OriginFor<T>,
@@ -387,7 +389,7 @@ pub mod pallet {
                     false,
                 ),
                 ActionType::BackForeign(asset_id) => {
-                    // ensure asset_id and erc20 address has been mapped
+                    // ensure asset_id registered in back_foreign list
                     ensure!(
                         Self::is_in_back_foreign(asset_id),
                         Error::<T>::BanBackForeign
