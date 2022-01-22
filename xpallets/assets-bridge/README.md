@@ -19,7 +19,7 @@ In AssetsBridge
   - `teleport`: transfer native currency between substrate account and evm address.
 - for admin:
   - `register`: bond substrate assets and erc20 contract address.
-  - `pause`: pause `deposit` and `withdraw` when in emergency.
+  - `pause`: pause `deposit`, `withdraw` and `teleport(BackForeign)` when in emergency.
   - `unpause`: unpause the `paused` state.
 - for sudo:
   - `set_admin`: set new the admin of `AssetsBridge`.
@@ -51,6 +51,16 @@ it's pubkey(hex): 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56d
 the sign data: "evm:d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
 ```
 
+## companion with `relay`
+- `Foreign assets`(on other chain) -> `SherpaX assets` flow:
+  - (1) `user` need `transfer` to the account which under the control of `assets-bridge admin` on `foreign chain`
+  - (2) `mint` to `user` by `assets-bridge admin` on `sherpax chain`
+
+- `SherpaX assets` -> `Foreign assets`(on other chain) flow:
+  - (1) `user` need `teleport` with `BackForeign(asset_id)` on `sherpax chain`. 
+  - (2) the account which under the control of `assets-bridge admin` on `foreign chain` `transfer` to `user`
+
+- `maintenance` by `admin`: `back_foreign` add or remove `asset_id` which can back foreign chain.
 ## Note
 
 For safety, AssetsBridge now only allows dependent 

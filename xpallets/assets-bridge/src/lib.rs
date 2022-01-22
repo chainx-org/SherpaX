@@ -39,10 +39,11 @@ pub type ReserveBalanceOf<T> = <<T as pallet_assets::Config>::Currency as Curren
 >>::Balance;
 
 #[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, scale_info::TypeInfo)]
-pub enum ActionType {
+pub enum ActionType<AssetId> {
     Direct(H160),
     FromSubToEth,
     FromEthToSub,
+    BackForeign(AssetId),
 }
 
 pub use pallet::*;
@@ -94,6 +95,13 @@ pub mod pallet {
     #[pallet::getter(fn asset_ids)]
     pub type AssetIds<T: Config> = StorageMap<_, Twox64Concat, H160, T::AssetId, OptionQuery>;
 
+    /// The Assets can back foreign chain
+    ///
+    /// AssetIds: Vec<AssetId>
+    #[pallet::storage]
+    #[pallet::getter(fn back_foreign_assets)]
+    pub type BackForeign<T: Config> = StorageValue<_, Vec<T::AssetId>, ValueQuery>;
+
     /// The pallet admin key.
     #[pallet::storage]
     #[pallet::getter(fn admin_key)]
@@ -140,7 +148,7 @@ pub mod pallet {
         /// (asset_id, account_id, evm_address, amount, erc20_contract)
         WithdrawExecuted(T::AssetId, T::AccountId, H160, T::Balance, H160),
         /// (account_id, amount, action)
-        Teleport(T::AccountId, BalanceOf<T>, ActionType),
+        Teleport(T::AccountId, BalanceOf<T>, ActionType<T::AssetId>),
         /// (account_id)
         SetAdmin(T::AccountId),
         /// (asset_id, erc20_contract)
@@ -153,6 +161,8 @@ pub mod pallet {
         UnPaused(T::AssetId),
         PausedAll,
         UnPausedAll,
+        // (asset_id, remove)
+        BackForeign(T::AssetId, bool),
     }
 
     /// Error for evm accounts module.
@@ -184,6 +194,8 @@ pub mod pallet {
         RequireAdmin,
         /// Ban deposit and withdraw when in emergency
         InEmergency,
+        /// Ban back to foreign
+        BanBackForeign,
     }
 
     #[pallet::pallet]
@@ -338,47 +350,73 @@ pub mod pallet {
         }
 
         /// Teleport native currency between substrate account and evm address
-        /// Ensure eth_address has not been mapped
+        /// Ensure eth_address has been mapped
         /// Note: for general users
         ///
         /// - `amount`: Teleport amount
         /// - `action`:
         ///    (1) Direct(H160): direct transfer into unchecked evm address
         ///    (2) FromSubToEth: transfer from substrate account to mapped evm address
-        //     (3) FromEthToSub: transfer from mapped evm address to substrate account
+        ///    (3) FromEthToSub: transfer from mapped evm address to substrate account
+        /// - companion with `relay`:
+        ///    (4) BackForeign(asset_id): transfer assets back foreign chain
         #[pallet::weight(100_000_000u64)]
+        #[transactional]
         pub fn teleport(
             origin: OriginFor<T>,
             amount: BalanceOf<T>,
-            action: ActionType,
+            action: ActionType<T::AssetId>,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
 
-            let (from, to) = match action {
+            let (from, to, back_foreign) = match action {
                 ActionType::Direct(unchecked) => (
                     who.clone(),
                     AddressMappingOf::<T>::into_account_id(unchecked),
+                    false,
                 ),
                 ActionType::FromSubToEth => (
                     who.clone(),
                     Self::evm_accounts(&who)
                         .map(AddressMappingOf::<T>::into_account_id)
                         .ok_or(Error::<T>::EthAddressHasNotMapped)?,
+                    false,
                 ),
                 ActionType::FromEthToSub => (
                     Self::evm_accounts(&who)
                         .map(AddressMappingOf::<T>::into_account_id)
                         .ok_or(Error::<T>::EthAddressHasNotMapped)?,
                     who.clone(),
+                    false,
                 ),
+                ActionType::BackForeign(asset_id) => {
+                    // ensure asset_id registered in back_foreign list
+                    ensure!(
+                        Self::is_in_back_foreign(asset_id),
+                        Error::<T>::BanBackForeign
+                    );
+                    ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
+
+                    let amount: u128 = amount.unique_saturated_into();
+                    // burn asset first, then relay will transfer back `who`.
+                    let _ = pallet_assets::Pallet::<T>::burn_from(
+                        asset_id,
+                        &who,
+                        amount.unique_saturated_into(),
+                    )?;
+
+                    (who.clone(), who.clone(), true)
+                }
             };
 
-            <T as pallet_evm::Config>::Currency::transfer(
-                &from,
-                &to,
-                amount,
-                ExistenceRequirement::AllowDeath,
-            )?;
+            if !back_foreign {
+                <T as pallet_evm::Config>::Currency::transfer(
+                    &from,
+                    &to,
+                    amount,
+                    ExistenceRequirement::AllowDeath,
+                )?;
+            }
 
             Self::deposit_event(Event::Teleport(who, amount, action));
 
@@ -468,7 +506,7 @@ pub mod pallet {
 
             Emergencies::<T>::try_mutate(|emergencies| {
                 if let Some(id) = asset_id {
-                    // ensure asset_id and erc20 address has not been mapped
+                    // ensure asset_id and erc20 address has been mapped
                     ensure!(
                         Erc20s::<T>::contains_key(&id),
                         Error::<T>::AssetIdHasNotMapped
@@ -484,6 +522,34 @@ pub mod pallet {
 
                     Self::deposit_event(Event::UnPausedAll);
                 }
+
+                Ok(Pays::No.into())
+            })
+        }
+
+        /// Add assets which can back add_back_foreign chain
+        /// Note: for admin
+        ///
+        /// - `asset_id`:
+        #[pallet::weight(10_000_000u64)]
+        pub fn back_foreign(
+            origin: OriginFor<T>,
+            asset_id: T::AssetId,
+            remove: bool,
+        ) -> DispatchResultWithPostInfo {
+            let who = ensure_signed(origin)?;
+            ensure!(Some(who) == Self::admin_key(), Error::<T>::RequireAdmin);
+
+            BackForeign::<T>::try_mutate(|foreigns| {
+                if remove {
+                    foreigns.retain(|id| *id != asset_id);
+                } else if !Self::is_in_back_foreign(asset_id) {
+                    foreigns.push(asset_id);
+                } else {
+                    return Ok(Pays::No.into());
+                }
+
+                Self::deposit_event(Event::BackForeign(asset_id, remove));
 
                 Ok(Pays::No.into())
             })
@@ -567,5 +633,9 @@ where
         Self::emergencies()
             .iter()
             .any(|&emergency| emergency == asset_id)
+    }
+
+    fn is_in_back_foreign(asset_id: T::AssetId) -> bool {
+        Self::back_foreign_assets().iter().any(|&id| id == asset_id)
     }
 }
