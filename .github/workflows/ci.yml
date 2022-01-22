@@ -21,6 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - uses: Swatinem/rust-cache@v1.3.0
+
       - uses: actions-rs/toolchain@v1
         with:
             profile: minimal
@@ -28,8 +31,6 @@ jobs:
             components: rustfmt, rust-src, clippy
             target: wasm32-unknown-unknown
             override: true
-
-      - uses: Swatinem/rust-cache@v1.3.0
 
       - name: 1-Format
         run: cargo fmt --all -- --check
