@@ -361,12 +361,14 @@ pub mod pallet {
         /// - companion with `relay`:
         ///    (4) BackForeign(asset_id): transfer assets back foreign chain
         #[pallet::weight(100_000_000u64)]
+        #[transactional]
         pub fn teleport(
             origin: OriginFor<T>,
             amount: BalanceOf<T>,
             action: ActionType<T::AssetId>,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
+            ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
 
             let (from, to, back_foreign) = match action {
                 ActionType::Direct(unchecked) => (

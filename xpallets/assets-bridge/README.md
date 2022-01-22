@@ -19,7 +19,7 @@ In AssetsBridge
   - `teleport`: transfer native currency between substrate account and evm address.
 - for admin:
   - `register`: bond substrate assets and erc20 contract address.
-  - `pause`: pause `deposit` and `withdraw` when in emergency.
+  - `pause`: pause `deposit`, `withdraw` and `teleport` when in emergency.
   - `unpause`: unpause the `paused` state.
 - for sudo:
   - `set_admin`: set new the admin of `AssetsBridge`.
