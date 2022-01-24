@@ -88,8 +88,8 @@ Refer [Interacting with Moonbeam Using Remix](https://docs.moonbeam.network/gett
 - [QuickNode Ethereum RPC](https://www.quicknode.com/docs)
 - [Ethereum JSON-RPC Wiki](https://eth.wiki/json-rpc/API#)
 
-### 3.4 frointier账户体系
-[frontier是如何管理substrate账户和ethereum账户的](https://github.com/chainx-org/chainx-technical-archive/blob/main/ZhaoJianBing/substrate_account_and_ethereum_account_zh.md)
+### 3.4 frontier account 
+[How does frontier manage the substrate account and ethereum account](https://github.com/chainx-org/chainx-technical-archive/blob/main/ZhaoJianBing/substrate_account_and_ethereum_account.md)
 
 ## 4. Assets Bridge
 Refer [AssetsBridge](./xpallets/assets-bridge/README.md)
