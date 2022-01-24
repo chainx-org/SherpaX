@@ -36,7 +36,7 @@ First link Sherpax Testnet using metamask
 ```txt
 network name: ShapaX-Testnet
 RPC URL:https://sherpax-testnet.chainx.org/rpc
-chain ID:1510
+chain ID:1506
 Currency Symbol:KSX
 ```
 Then we can deploy the corresponding erc20 contract on the EVM: name=WBTC Token, symbol=WBTC, decimals=18
