@@ -108,7 +108,7 @@ fn deposit<T: Config>(txid: H256, deposit_info: BtcDepositInfo<T::AccountId>) ->
     match account_info {
         AccountInfo::<_>::Account((account, referral)) => {
             T::ReferralBinding::update_binding(&T::BtcAssetId::get(), &account, referral);
-            match deposit_token::<T>(txid, &account, (deposit_info.deposit_value as u32).into()) {
+            match deposit_token::<T>(txid, &account, deposit_info.deposit_value.saturated_into()) {
                 Ok(_) => {
                     info!(
                         target: "runtime::bitcoin",
@@ -160,7 +160,7 @@ pub fn remove_pending_deposit<T: Config>(input_address: &BtcAddress, who: &T::Ac
     let records = PendingDeposits::<T>::take(input_address);
     for record in records {
         // ignore error
-        let _ = deposit_token::<T>(record.txid, who, (record.balance as u32).into());
+        let _ = deposit_token::<T>(record.txid, who, record.balance.saturated_into());
         info!(
             target: "runtime::bitcoin",
             "[remove_pending_deposit] Use pending info to re-deposit, who:{:?}, balance:{}, cached_tx:{:?}",
