@@ -9397,6 +9397,7 @@ dependencies = [
  "xp-gateway-bitcoin",
  "xp-gateway-common",
  "xp-protocol",
+ "xp-runtime",
  "xpallet-gateway-common",
  "xpallet-gateway-records",
  "xpallet-support",

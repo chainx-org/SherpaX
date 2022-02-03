@@ -479,7 +479,7 @@ fn check_withdraw_tx<T: Config>(tx: &Transaction, withdrawal_id_list: &[u32]) ->
     }
 }
 
-fn check_withdraw_tx_impl<T: Config>(
+pub fn check_withdraw_tx_impl<T: Config>(
     tx: &Transaction,
     withdrawal_id_list: &[u32],
 ) -> DispatchResult {
@@ -495,7 +495,10 @@ fn check_withdraw_tx_impl<T: Config>(
         appl_withdrawal_list.push((addr, record.balance().saturated_into::<u64>()));
     }
     // not allow deposit directly to cold address, only hot address allow
-    let hot_trustee_address: Address = get_hot_trustee_address::<T>()?;
+    let hot_trustee_address: Address =
+        "tb1pede2ejhenafy8wj88v2tl6mnwteqgv2u5zuae46824jlcknrn46s2svzr6"
+            .parse()
+            .unwrap();
     // withdrawal addr list for tx outputs
     let btc_withdrawal_fee = Pallet::<T>::btc_withdrawal_fee();
     let btc_network = Pallet::<T>::network_id();
@@ -510,7 +513,8 @@ fn check_withdraw_tx_impl<T: Config>(
 
     tx_withdraw_list.sort();
     appl_withdrawal_list.sort();
-
+    println!("{}", tx_withdraw_list.len());
+    println!("{}", appl_withdrawal_list.len());
     // appl_withdrawal_list must match to tx_withdraw_list
     if appl_withdrawal_list.len() != tx_withdraw_list.len() {
         log!(
@@ -532,7 +536,8 @@ fn check_withdraw_tx_impl<T: Config>(
         .iter()
         .zip(tx_withdraw_list)
         .filter(|(a, b)| {
-            if a.0 == b.0 && a.1 == b.1 {
+            println!("a: {}, b: {}", a.0, b.0);
+            if a.0.hash == b.0.hash && a.1 == b.1 {
                 true
             } else {
                 log!(
@@ -546,7 +551,7 @@ fn check_withdraw_tx_impl<T: Config>(
             }
         })
         .count();
-
+    println!("count: {}", count);
     if count != appl_withdrawal_list.len() {
         return Err(Error::<T>::InvalidProposal.into());
     }

@@ -219,7 +219,7 @@ pub mod pallet {
     /// The state of withdraw record corresponding to an id.
     #[pallet::storage]
     #[pallet::getter(fn state_of)]
-    pub(crate) type WithdrawalStateOf<T: Config> =
+    pub type WithdrawalStateOf<T: Config> =
         StorageMap<_, Twox64Concat, WithdrawalRecordId, WithdrawalState>;
 
     /// Asset info of each asset.
