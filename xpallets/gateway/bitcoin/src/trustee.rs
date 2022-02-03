@@ -532,7 +532,7 @@ fn check_withdraw_tx_impl<T: Config>(
         .iter()
         .zip(tx_withdraw_list)
         .filter(|(a, b)| {
-            if a.0 == b.0 && a.1 == b.1 {
+            if a.0.hash == b.0.hash && a.1 == b.1 {
                 true
             } else {
                 log!(
