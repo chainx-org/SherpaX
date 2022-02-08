@@ -223,7 +223,7 @@ pub mod pallet {
         /// Since this is a root call and will go into trustee election, we assume full block for now.
         /// # </weight>
         #[pallet::weight(100_000_000u64)]
-        pub fn move_trust_to_black_room(
+        pub fn move_trust_into_black_room(
             origin: OriginFor<T>,
             trustees: Option<Vec<T::AccountId>>,
         ) -> DispatchResult {
@@ -240,7 +240,7 @@ pub mod pallet {
 
             info!(
                 target: "runtime::gateway::common",
-                "[move_trust_to_black_room] Try to move a trustee to black room, trustee:{:?}",
+                "[move_trust_into_black_room] Try to move a trustee into black room, trustee:{:?}",
                 trustees
             );
 
@@ -250,9 +250,50 @@ pub mod pallet {
                         l.push(trustee.clone());
                     }
                 });
+                trustees.into_iter().for_each(|trustee| {
+                    if TrusteeSigRecord::<T>::contains_key(&trustee) {
+                        TrusteeSigRecord::<T>::mutate(&trustee, |record| *record = 0);
+                    }
+                });
             }
 
             Self::do_trustee_election()?;
+            Ok(())
+        }
+
+        /// Move member out small black room.
+        ///
+        /// This is called by the trustee admin and root.
+        /// # <weight>
+        /// Since this is a root call and will go into trustee election, we assume full block for now.
+        /// # </weight>
+        #[pallet::weight(100_000_000u64)]
+        pub fn move_trust_out_black_room(
+            origin: OriginFor<T>,
+            members: Vec<T::AccountId>,
+        ) -> DispatchResult {
+            match ensure_signed(origin.clone()) {
+                Ok(who) => {
+                    if who != Self::trustee_admin() {
+                        return Err(Error::<T>::NotTrusteeAdmin.into());
+                    }
+                }
+                Err(_) => {
+                    ensure_root(origin)?;
+                }
+            };
+
+            info!(
+                target: "runtime::gateway::common",
+                "[move_trust_into_black_room] Try to move a member out black room, member:{:?}",
+                members
+            );
+            members.into_iter().for_each(|member| {
+                if Self::little_black_house().contains(&member) {
+                    LittleBlackHouse::<T>::mutate(|house| house.retain(|a| *a != member));
+                }
+            });
+
             Ok(())
         }
 
@@ -941,9 +982,6 @@ impl<T: Config> Pallet<T> {
         });
 
         if TrusteeIntentionPropertiesOf::<T>::contains_key(&who, chain) {
-            if Self::little_black_house().contains(&who) {
-                LittleBlackHouse::<T>::mutate(|house| house.retain(|a| *a != who));
-            }
             TrusteeIntentionPropertiesOf::<T>::mutate(&who, chain, |t| *t = Some(props.clone()));
         } else {
             TrusteeIntentionPropertiesOf::<T>::insert(&who, chain, props.clone());
