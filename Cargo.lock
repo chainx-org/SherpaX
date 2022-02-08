@@ -7158,6 +7158,8 @@ dependencies = [
  "structopt",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
+ "xpallet-gateway-bitcoin-rpc",
+ "xpallet-gateway-bitcoin-rpc-runtime-api",
  "xpallet-gateway-common-rpc",
  "xpallet-gateway-common-rpc-runtime-api",
  "xpallet-gateway-records-rpc",
@@ -7246,6 +7248,7 @@ dependencies = [
  "xp-gateway-bitcoin",
  "xp-runtime",
  "xpallet-gateway-bitcoin",
+ "xpallet-gateway-bitcoin-rpc-runtime-api",
  "xpallet-gateway-common",
  "xpallet-gateway-common-rpc-runtime-api",
  "xpallet-gateway-records",
@@ -9400,6 +9403,37 @@ dependencies = [
  "xpallet-gateway-common",
  "xpallet-gateway-records",
  "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-bitcoin-rpc"
+version = "3.0.0"
+dependencies = [
+ "hex",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+ "xp-rpc",
+ "xpallet-gateway-bitcoin-rpc-runtime-api",
+]
+
+[[package]]
+name = "xpallet-gateway-bitcoin-rpc-runtime-api"
+version = "3.0.0"
+dependencies = [
+ "parity-scale-codec",
+ "sherpax-primitives",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-runtime",
+ "xpallet-gateway-bitcoin",
 ]
 
 [[package]]
