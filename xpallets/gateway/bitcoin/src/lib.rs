@@ -340,6 +340,10 @@ pub mod pallet {
         DuplicateVote,
         /// Trustee transition period
         TrusteeTransitionPeriod,
+        /// Withdrawals are prohibited during the trust transition period
+        NoWithdrawInTrans,
+        /// The total amount of the trust must be transferred out in full
+        InvalidAmoutInTrans,
     }
 
     #[pallet::event]
@@ -600,7 +604,7 @@ pub mod pallet {
         ) -> Result<bool, DispatchError> {
             let tx = Self::deserialize_tx(raw_tx.as_slice())?;
             // check trustee transition status
-            if T::TrusteeSessionProvider::trustee_transition_state() && full_amount {
+            if T::TrusteeSessionProvider::trustee_transition_state() {
                 // check trustee transition tx
                 // tx output address = new hot address
                 let current_trustee_pair = get_current_trustee_address_pair::<T>()?;
@@ -612,7 +616,13 @@ pub mod pallet {
                             .unwrap_or_default()
                     })
                     .all(|addr| xp_gateway_bitcoin::is_trustee_addr(addr, current_trustee_pair));
-                Ok(all_outputs_is_trustee)
+                if !all_outputs_is_trustee {
+                    Err(Error::<T>::NoWithdrawInTrans.into())
+                } else if !full_amount {
+                    Err(Error::<T>::InvalidAmoutInTrans.into())
+                } else {
+                    Ok(true)
+                }
             } else {
                 // check normal withdrawal tx
                 trustee::check_withdraw_tx::<T>(&tx, &withdrawal_id_list)?;
