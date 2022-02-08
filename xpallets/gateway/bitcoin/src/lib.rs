@@ -596,10 +596,11 @@ pub mod pallet {
         pub fn verify_tx_valid(
             raw_tx: Vec<u8>,
             withdrawal_id_list: Vec<u32>,
+            full_amount: bool,
         ) -> Result<bool, DispatchError> {
             let tx = Self::deserialize_tx(raw_tx.as_slice())?;
             // check trustee transition status
-            if T::TrusteeSessionProvider::trustee_transition_state() {
+            if T::TrusteeSessionProvider::trustee_transition_state() && full_amount {
                 // check trustee transition tx
                 // tx output address = new hot address
                 let current_trustee_pair = get_current_trustee_address_pair::<T>()?;

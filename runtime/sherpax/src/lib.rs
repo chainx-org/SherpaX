@@ -1226,8 +1226,9 @@ impl_runtime_apis! {
         fn verify_tx_valid(
             raw_tx: Vec<u8>,
             withdrawal_id_list: Vec<u32>,
+            full_amount: bool,
         ) -> Result<bool, DispatchError> {
-            XGatewayBitcoin::verify_tx_valid(raw_tx, withdrawal_id_list)
+            XGatewayBitcoin::verify_tx_valid(raw_tx, withdrawal_id_list, full_amount)
         }
     }
 
