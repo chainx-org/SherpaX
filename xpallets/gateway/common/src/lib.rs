@@ -1274,27 +1274,35 @@ impl<T: Config> Pallet<T> {
             Some(n) => n,
         };
 
-        ensure!(
-            !<T as xpallet_gateway_records::Config>::Currency::free_balance(&multi_account)
-                .is_zero(),
-            Error::<T>::MultiAccountRewardZero
-        );
-        let total_native_reward = Self::alloc_native_reward(&multi_account, trustee_info)?;
-        Self::deposit_event(Event::<T>::AllocNativeReward(
-            who.clone(),
-            multi_account.clone(),
-            session_num,
-            total_native_reward,
-        ));
-        let total_btc_reward =
-            Self::alloc_not_native_reward(&multi_account, T::BtcAssetId::get(), trustee_info)?;
-        Self::deposit_event(Event::<T>::AllocNotNativeReward(
-            who.clone(),
-            multi_account,
-            session_num,
-            T::BtcAssetId::get(),
-            total_btc_reward,
-        ));
+        match Self::alloc_native_reward(&multi_account, trustee_info) {
+            Ok(total_native_reward) => {
+                if !total_native_reward.is_zero() {
+                    Self::deposit_event(Event::<T>::AllocNativeReward(
+                        who.clone(),
+                        multi_account.clone(),
+                        session_num,
+                        total_native_reward,
+                    ));
+                }
+            }
+            Err(e) => return Err(e),
+        }
+
+        match Self::alloc_not_native_reward(&multi_account, T::BtcAssetId::get(), trustee_info) {
+            Ok(total_btc_reward) => {
+                if !total_btc_reward.is_zero() {
+                    Self::deposit_event(Event::<T>::AllocNotNativeReward(
+                        who.clone(),
+                        multi_account,
+                        session_num,
+                        T::BtcAssetId::get(),
+                        total_btc_reward,
+                    ));
+                }
+            }
+            Err(e) => return Err(e),
+        }
+
         Ok(())
     }
 }
