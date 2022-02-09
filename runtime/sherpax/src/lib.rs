@@ -1222,6 +1222,16 @@ impl_runtime_apis! {
         }
     }
 
+    impl xpallet_gateway_bitcoin_rpc_runtime_api::XGatewayBitcoinApi<Block> for Runtime {
+        fn verify_tx_valid(
+            raw_tx: Vec<u8>,
+            withdrawal_id_list: Vec<u32>,
+            full_amount: bool,
+        ) -> Result<bool, DispatchError> {
+            XGatewayBitcoin::verify_tx_valid(raw_tx, withdrawal_id_list, full_amount)
+        }
+    }
+
     impl xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance, BlockNumber> for Runtime {
         fn bound_addrs(who: AccountId) -> BTreeMap<Chain, Vec<ChainAddress>> {
             XGatewayCommon::bound_addrs(&who)

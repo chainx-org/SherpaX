@@ -88,6 +88,7 @@ xp-assets-registrar = { path = "../../primitives/assets-registrar", default-feat
 xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false }
 xp-runtime = { path = "../../primitives/runtime", default-features = false }
 xpallet-gateway-bitcoin = { path = "../../xpallets/gateway/bitcoin", default-features = false }
+xpallet-gateway-bitcoin-rpc-runtime-api = { path = "../../xpallets/gateway/bitcoin/rpc/runtime-api", default-features = false }
 xpallet-gateway-common = { path = "../../xpallets/gateway/common", default-features = false }
 xpallet-gateway-common-rpc-runtime-api = { path = "../../xpallets/gateway/common/rpc/runtime-api", default-features = false }
 xpallet-gateway-records = { path = "../../xpallets/gateway/records", default-features = false }
@@ -160,6 +161,7 @@ std = [
     "xp-gateway-bitcoin/std",
     "xp-runtime/std",
     "xpallet-gateway-bitcoin/std",
+    "xpallet-gateway-bitcoin-rpc-runtime-api/std",
     "xpallet-gateway-common/std",
     "xpallet-gateway-common-rpc-runtime-api/std",
     "xpallet-gateway-records/std",
