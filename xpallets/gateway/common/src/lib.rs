@@ -927,9 +927,9 @@ impl<T: Config> Pallet<T> {
         Self::transition_trustee_session_impl(Chain::Bitcoin, new_trustee_candidate)?;
         if Self::trustee_session_info_len(Chain::Bitcoin) != 1 {
             TrusteeTransitionStatus::<T>::put(true);
+            let total_supply = T::BitcoinTotalSupply::total_supply();
+            PreTotalSupply::<T>::insert(T::BtcAssetId::get(), total_supply);
         }
-        let total_supply = T::BitcoinTotalSupply::total_supply();
-        PreTotalSupply::<T>::insert(T::BtcAssetId::get(), total_supply);
         Ok(())
     }
 }
