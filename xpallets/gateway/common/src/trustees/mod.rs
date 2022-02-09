@@ -152,7 +152,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                             .max(0u64.saturated_into())
                             .saturating_mul(6u64.saturated_into())
                             .checked_div(&10u64.saturated_into::<T::Balance>())
-                            .unwrap_or(0u64.saturated_into());
+                            .unwrap_or_else(|| 0u64.saturated_into());
 
                         if let Some(multi_account) = trustee.0.multi_account.clone() {
                             if !reward_amount.is_zero() {
