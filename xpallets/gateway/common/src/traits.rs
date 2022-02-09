@@ -14,6 +14,10 @@ pub trait ChainProvider {
     fn chain() -> Chain;
 }
 
+pub trait TotalSupply<Balance> {
+    fn total_supply() -> Balance;
+}
+
 pub trait TrusteeForChain<
     AccountId,
     BlockNumber,

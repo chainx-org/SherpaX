@@ -61,6 +61,7 @@ pub mod pallet {
     use frame_support::pallet_prelude::*;
     use frame_support::traits::fungibles::Inspect;
     use frame_system::pallet_prelude::*;
+    use traits::TotalSupply;
 
     #[pallet::config]
     pub trait Config:
@@ -76,6 +77,8 @@ pub mod pallet {
         type DetermineMultisigAddress: MultisigAddressFor<Self::AccountId>;
 
         type CouncilOrigin: EnsureOrigin<Self::Origin>;
+
+        type TotalSupply: TotalSupply<Self::Balance>;
 
         // for bitcoin
         type Bitcoin: ChainT<Self::AssetId, Self::Balance>;

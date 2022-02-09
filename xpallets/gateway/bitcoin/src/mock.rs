@@ -189,6 +189,7 @@ impl xpallet_gateway_common::Config for Test {
     type BitcoinTrustee = XGatewayBitcoin;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type CouncilOrigin = EnsureSigned<AccountId>;
+    type TotalSupply = XGatewayBitcoin;
     type WeightInfo = ();
 }
 
