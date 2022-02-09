@@ -17,8 +17,8 @@ use xpallet_support::traits::MultiSig;
 use crate::{
     traits::{BytesLike, ChainProvider, TrusteeInfoUpdate, TrusteeSession},
     types::TrusteeSessionInfo,
-    CheckedDiv, Config, Error, Pallet, SaturatedConversion, Saturating, TrusteeSessionInfoOf,
-    TrusteeSigRecord, TrusteeTransitionStatus,
+    CheckedDiv, Config, Error, Event, Pallet, SaturatedConversion, Saturating,
+    TrusteeSessionInfoOf, TrusteeSigRecord, TrusteeTransitionStatus,
 };
 
 pub struct TrusteeSessionManager<T: Config, TrusteeAddress>(
@@ -143,7 +143,8 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                             trustee.0.trustee_list[i].1 =
                                 Self::trustee_sig_record(&trustee.0.trustee_list[i].0);
                         }
-                        let total_apply: T::Balance = 0u64.saturated_into();
+                        let total_apply: T::Balance =
+                            xpallet_gateway_records::Pallet::<T>::pre_total_supply();
                         let reward_amount: T::Balance = trans_amount
                             .unwrap_or(0u64)
                             .saturated_into::<T::Balance>()
@@ -155,11 +156,28 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
 
                         if let Some(multi_account) = trustee.0.multi_account.clone() {
                             if !reward_amount.is_zero() {
-                                pallet_assets::Pallet::<T>::mint_into(
+                                match pallet_assets::Pallet::<T>::mint_into(
                                     T::BtcAssetId::get(),
                                     &multi_account,
                                     reward_amount,
-                                );
+                                ) {
+                                    Ok(()) => {
+                                        Pallet::<T>::deposit_event(
+                                            Event::<T>::TransferAssetReward(
+                                                multi_account,
+                                                T::BtcAssetId::get(),
+                                                reward_amount,
+                                            ),
+                                        );
+                                    }
+                                    Err(err) => {
+                                        error!(
+                                            target: "runtime::bitcoin",
+                                            "[deposit_token] Deposit error:{:?}, must use root to fix it",
+                                            err
+                                        );
+                                    }
+                                };
                             }
                         }
                         let end_height = frame_system::Pallet::<T>::block_number();

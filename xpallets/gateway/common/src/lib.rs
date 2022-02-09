@@ -33,7 +33,7 @@ use sp_runtime::traits::{CheckedDiv, Saturating, Zero};
 use sp_runtime::SaturatedConversion;
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
-use self::traits::{TrusteeForChain, TrusteeInfoUpdate, TrusteeSession};
+use self::traits::{TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession};
 use self::types::{
     GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, TrusteeInfoConfig,
     TrusteeIntentionProps,
@@ -539,6 +539,8 @@ pub mod pallet {
         ),
         /// Treasury transfer to trustee. [source, target, chain, session_number, reward_total]
         TransferTrusteeReward(T::AccountId, T::AccountId, Chain, u32, Balanceof<T>),
+        /// Asset reward to trustee. [target, asset_id, reward_total]
+        TransferAssetReward(T::AccountId, T::AssetId, T::Balance),
         /// The reward of trustee is assigned. [who, chain, session_number, reward_info]
         TrusteeRewardComplete(
             T::AccountId,
@@ -926,6 +928,8 @@ impl<T: Config> Pallet<T> {
         if Self::trustee_session_info_len(Chain::Bitcoin) != 1 {
             TrusteeTransitionStatus::<T>::put(true);
         }
+        let total_supply = T::TotalSupply::total_supply();
+        xpallet_gateway_records::PreTotalSupply::<T>::put(total_supply);
         Ok(())
     }
 }

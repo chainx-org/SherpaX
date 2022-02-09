@@ -294,9 +294,7 @@ impl<T: xpallet_gateway_bitcoin::Config> ChainT<T::AssetId, T::Balance> for Mock
 
 impl<T: xpallet_gateway_bitcoin::Config> TotalSupply<T::Balance> for MockBitcoin<T> {
     fn total_supply() -> T::Balance {
-        let asset_id = T::BtcAssetId::get();
-        let asset_supply = pallet_assets::Pallet::<T>::total_supply(asset_id);
-        asset_supply
+        Default::default()
     }
 }
 
