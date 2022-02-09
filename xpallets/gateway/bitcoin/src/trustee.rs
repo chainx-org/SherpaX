@@ -472,7 +472,10 @@ pub(crate) fn create_multi_address<T: Config>(
 }
 
 /// Check that the cash withdrawal transaction is correct
-fn check_withdraw_tx<T: Config>(tx: &Transaction, withdrawal_id_list: &[u32]) -> DispatchResult {
+pub fn check_withdraw_tx<T: Config>(
+    tx: &Transaction,
+    withdrawal_id_list: &[u32],
+) -> DispatchResult {
     match Pallet::<T>::withdrawal_proposal() {
         Some(_) => Err(Error::<T>::NotFinishProposal.into()),
         None => check_withdraw_tx_impl::<T>(tx, withdrawal_id_list),
@@ -532,7 +535,7 @@ fn check_withdraw_tx_impl<T: Config>(
         .iter()
         .zip(tx_withdraw_list)
         .filter(|(a, b)| {
-            if a.0 == b.0 && a.1 == b.1 {
+            if a.0.hash == b.0.hash && a.1 == b.1 {
                 true
             } else {
                 log!(
