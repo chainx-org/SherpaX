@@ -7,7 +7,7 @@ async function deploy() {
    console.log(`Deploying contracts using ${deployerAddress}`);
     //Deploy SBTC (needed for Interface)
     const SBTC = await ethers.getContractFactory('contracts/AssetsBridgeErc20_OnlyOwner.sol:AssetsBridgeErc20');
-    const SBTCInstance = await SBTC.deploy("SBTC","SBTC",18);
+    const SBTCInstance = await SBTC.deploy("sBTC","sBTC",18);
     await SBTCInstance.deployed();
     console.log(`SBTC deployed to : ${SBTCInstance.address}`);
 
