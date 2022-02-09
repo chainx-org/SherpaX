@@ -210,10 +210,6 @@ pub mod pallet {
     pub(crate) type NextWithdrawalRecordId<T: Config> =
         StorageValue<_, WithdrawalRecordId, ValueQuery, DefaultForWithdrawalRecordId<T>>;
 
-    #[pallet::storage]
-    #[pallet::getter(fn pre_total_supply)]
-    pub type PreTotalSupply<T: Config> = StorageValue<_, T::Balance, ValueQuery>;
-
     /// Withdraw applications collection, use serial numbers to mark them.
     #[pallet::storage]
     #[pallet::getter(fn pending_withdrawals)]

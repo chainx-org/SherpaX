@@ -707,6 +707,12 @@ pub mod pallet {
     #[pallet::getter(fn little_black_house)]
     pub type LittleBlackHouse<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
+    /// When the trust exchange begins, the total cross-chain assets of a certain AssetId
+    #[pallet::storage]
+    #[pallet::getter(fn pre_total_supply)]
+    pub type PreTotalSupply<T: Config> =
+        StorageMap<_, Twox64Concat, T::AssetId, T::Balance, ValueQuery>;
+
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         pub trustees: Vec<(
@@ -923,7 +929,7 @@ impl<T: Config> Pallet<T> {
             TrusteeTransitionStatus::<T>::put(true);
         }
         let total_supply = T::BitcoinTotalSupply::total_supply();
-        xpallet_gateway_records::PreTotalSupply::<T>::put(total_supply);
+        PreTotalSupply::<T>::insert(T::BtcAssetId::get(), total_supply);
         Ok(())
     }
 }
@@ -1302,7 +1308,6 @@ impl<T: Config> Pallet<T> {
             }
             Err(e) => return Err(e),
         }
-
         Ok(())
     }
 }

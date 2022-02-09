@@ -17,7 +17,7 @@ use xpallet_support::traits::MultiSig;
 use crate::{
     traits::{BytesLike, ChainProvider, TrusteeInfoUpdate, TrusteeSession},
     types::TrusteeSessionInfo,
-    CheckedDiv, Config, Error, Event, Pallet, SaturatedConversion, Saturating,
+    CheckedDiv, Config, Error, Event, Pallet, PreTotalSupply, SaturatedConversion, Saturating,
     TrusteeSessionInfoOf, TrusteeSigRecord, TrusteeTransitionStatus,
 };
 
@@ -143,8 +143,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                             trustee.0.trustee_list[i].1 =
                                 Self::trustee_sig_record(&trustee.0.trustee_list[i].0);
                         }
-                        let total_apply: T::Balance =
-                            xpallet_gateway_records::Pallet::<T>::pre_total_supply();
+                        let total_apply: T::Balance = Self::pre_total_supply(T::BtcAssetId::get());
                         let reward_amount: T::Balance = trans_amount
                             .unwrap_or(0u64)
                             .saturated_into::<T::Balance>()
@@ -162,6 +161,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                                     reward_amount,
                                 ) {
                                     Ok(()) => {
+                                        PreTotalSupply::<T>::remove(T::BtcAssetId::get());
                                         Pallet::<T>::deposit_event(
                                             Event::<T>::TransferAssetReward(
                                                 multi_account,
