@@ -12,6 +12,18 @@ git clone https://github.com/chainx-org/SherpaX.git
 cd deploy/uniswap-contracts
 ```
 
+Set PRIVKEY env:
+```
+export PRIVKEY=0x.....
+```
+
+Update hardhat.config.js:
+default url
+```
+url: 'http://127.0.0.1:8546'
+```
+
+
 Install packages:
 
 ```

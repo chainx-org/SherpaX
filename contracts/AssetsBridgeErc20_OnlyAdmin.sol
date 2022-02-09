@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts v4.4.0 (token/ERC20/ERC20.sol)
+// OpenZeppelin Contracts v4.4.1 (token/ERC20/ERC20.sol)
 
 pragma solidity ^0.8.0;
 
@@ -36,7 +36,7 @@ import "./AssetsBridgeAdaptor.sol";
  * functions have been added to mitigate the well-known issues around setting
  * allowances. See {IERC20-approve}.
  */
-contract ERC20 is Context, IERC20, IERC20Metadata, Pausable, Ownable, IAssetsBridge, AssetsBridgeAdmin {
+contract AssetsBridgeErc20 is Context, IERC20, IERC20Metadata, Pausable, Ownable, IAssetsBridge, AssetsBridgeAdmin {
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;

@@ -8,8 +8,6 @@ require('@nomiclabs/hardhat-ethers');
 // Export your private key as
 //       export PRIVKEY=0x.....
 const privateKey = process.env.PRIVKEY;
-const privateKeyDev =
-   '0x99b3c12287537e38c90a9219d4cb074a89a16e9cdb20bf85728ebd97c343e342';
 
 module.exports = {
    defaultNetwork: 'hardhat',
@@ -18,8 +16,8 @@ module.exports = {
       hardhat: {},
 
       dev: {
-         url: 'http://8.136.153.42:8546',
-         accounts: [privateKeyDev],
+         url: 'http://127.0.0.1:8546',
+         accounts: [privateKey],
          network_id: '1506',
          chainId: 1506,
       },
