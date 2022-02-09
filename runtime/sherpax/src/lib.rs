@@ -154,7 +154,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 22,
+    spec_version: 23,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -774,6 +774,7 @@ impl xpallet_gateway_common::Config for Runtime {
     type Bitcoin = XGatewayBitcoin;
     type BitcoinTrustee = XGatewayBitcoin;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
+    type BitcoinTotalSupply = XGatewayBitcoin;
     type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
 }
 

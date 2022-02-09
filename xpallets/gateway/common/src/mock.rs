@@ -29,6 +29,7 @@ use xpallet_gateway_bitcoin::trustee::check_keys;
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
 use xpallet_support::traits::{MultisigAddressFor, Validator};
 
+use crate::traits::TotalSupply;
 use crate::utils::{two_thirds_unsafe, MAX_TAPROOT_NODES};
 use crate::{
     self as xpallet_gateway_common,
@@ -291,6 +292,12 @@ impl<T: xpallet_gateway_bitcoin::Config> ChainT<T::AssetId, T::Balance> for Mock
     }
 }
 
+impl<T: xpallet_gateway_bitcoin::Config> TotalSupply<T::Balance> for MockBitcoin<T> {
+    fn total_supply() -> T::Balance {
+        Default::default()
+    }
+}
+
 const EC_P: [u8; 32] = [
     255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     255, 255, 255, 255, 255, 255, 255, 255, 254, 255, 255, 252, 47,
@@ -458,6 +465,7 @@ impl crate::Config for Test {
     type BitcoinTrustee = MockBitcoin<Test>;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type CouncilOrigin = EnsureSigned<AccountId>;
+    type BitcoinTotalSupply = MockBitcoin<Test>;
     type WeightInfo = ();
 }
 

@@ -72,7 +72,7 @@ pub mod pallet {
 
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::UnixTime};
     use frame_system::pallet_prelude::*;
-    use xpallet_gateway_common::traits::RelayerInfo;
+    use xpallet_gateway_common::traits::{RelayerInfo, TotalSupply};
 
     use super::*;
 
@@ -572,6 +572,24 @@ pub mod pallet {
                 fee,
             };
             Ok(limit)
+        }
+    }
+
+    impl<T: Config> TotalSupply<T::Balance> for Pallet<T> {
+        fn total_supply() -> T::Balance {
+            let pending_deposits: T::Balance = PendingDeposits::<T>::iter_values()
+                .map(|deposits| {
+                    deposits
+                        .into_iter()
+                        .map(|deposit| deposit.balance)
+                        .sum::<u64>()
+                })
+                .sum::<u64>()
+                .saturated_into();
+
+            let asset_id = T::BtcAssetId::get();
+            let asset_supply = pallet_assets::Pallet::<T>::total_supply(asset_id);
+            asset_supply + pending_deposits
         }
     }
 

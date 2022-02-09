@@ -2,21 +2,24 @@
 
 pub mod bitcoin;
 
+use frame_support::traits::fungibles::Mutate;
 use frame_support::{
     dispatch::DispatchError,
     log::{error, warn},
+    pallet_prelude::Get,
     traits::SortedMembers,
 };
+use sp_runtime::traits::Zero;
 use sp_std::{convert::TryFrom, marker::PhantomData, prelude::*};
 use xp_assets_registrar::Chain;
 use xpallet_support::traits::MultiSig;
 
-use crate::types::TrusteeSessionInfo;
 use crate::{
     traits::{BytesLike, ChainProvider, TrusteeInfoUpdate, TrusteeSession},
+    types::TrusteeSessionInfo,
+    CheckedDiv, Config, Error, Event, Pallet, PreTotalSupply, SaturatedConversion, Saturating,
     TrusteeSessionInfoOf, TrusteeSigRecord, TrusteeTransitionStatus,
 };
-use crate::{Config, Error, Pallet};
 
 pub struct TrusteeSessionManager<T: Config, TrusteeAddress>(
     PhantomData<T>,
@@ -119,7 +122,7 @@ impl<T: Config, C: ChainProvider> SortedMembers<T::AccountId> for TrusteeMultisi
 }
 
 impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
-    fn update_transition_status(status: bool) {
+    fn update_transition_status(status: bool, trans_amount: Option<u64>) {
         // The renewal of the trustee is completed, the current trustee information is replaced
         // and the number of multiple signings is archived.
         if Self::trustee_transition_status() && !status {
@@ -139,6 +142,43 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                         for i in 0..trustee.0.trustee_list.len() {
                             trustee.0.trustee_list[i].1 =
                                 Self::trustee_sig_record(&trustee.0.trustee_list[i].0);
+                        }
+                        let total_apply: T::Balance = Self::pre_total_supply(T::BtcAssetId::get());
+                        let reward_amount: T::Balance = trans_amount
+                            .unwrap_or(0u64)
+                            .saturated_into::<T::Balance>()
+                            .saturating_sub(total_apply)
+                            .max(0u64.saturated_into())
+                            .saturating_mul(6u64.saturated_into())
+                            .checked_div(&10u64.saturated_into::<T::Balance>())
+                            .unwrap_or_else(|| 0u64.saturated_into());
+
+                        if let Some(multi_account) = trustee.0.multi_account.clone() {
+                            if !reward_amount.is_zero() {
+                                match pallet_assets::Pallet::<T>::mint_into(
+                                    T::BtcAssetId::get(),
+                                    &multi_account,
+                                    reward_amount,
+                                ) {
+                                    Ok(()) => {
+                                        PreTotalSupply::<T>::remove(T::BtcAssetId::get());
+                                        Pallet::<T>::deposit_event(
+                                            Event::<T>::TransferAssetReward(
+                                                multi_account,
+                                                T::BtcAssetId::get(),
+                                                reward_amount,
+                                            ),
+                                        );
+                                    }
+                                    Err(err) => {
+                                        error!(
+                                            target: "runtime::bitcoin",
+                                            "[deposit_token] Deposit error:{:?}, must use root to fix it",
+                                            err
+                                        );
+                                    }
+                                };
+                            }
                         }
                         let end_height = frame_system::Pallet::<T>::block_number();
                         trustee.0.end_height = Some(end_height);

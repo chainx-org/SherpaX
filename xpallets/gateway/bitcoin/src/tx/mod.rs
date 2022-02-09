@@ -53,7 +53,7 @@ pub fn process_tx<T: Config>(
     let result = match meta_type {
         BtcTxMetaType::<_>::Deposit(deposit_info) => deposit::<T>(tx.hash(), deposit_info),
         BtcTxMetaType::<_>::Withdrawal => withdraw::<T>(tx),
-        BtcTxMetaType::TrusteeTransition => trustee_transition::<T>(),
+        BtcTxMetaType::TrusteeTransition => trustee_transition::<T>(tx),
         BtcTxMetaType::HotAndCold => BtcTxResult::Success,
         // mark `Irrelevance` be `Failure` so that it could be replayed in the future
         BtcTxMetaType::<_>::Irrelevance => BtcTxResult::Failure,
@@ -62,8 +62,11 @@ pub fn process_tx<T: Config>(
     BtcTxState { tx_type, result }
 }
 
-fn trustee_transition<T: Config>() -> BtcTxResult {
-    T::TrusteeInfoUpdate::update_transition_status(false);
+fn trustee_transition<T: Config>(tx: Transaction) -> BtcTxResult {
+    let amount = tx.outputs().iter().map(|output| output.value).sum::<u64>();
+
+    T::TrusteeInfoUpdate::update_transition_status(false, Some(amount));
+
     BtcTxResult::Success
 }
 
