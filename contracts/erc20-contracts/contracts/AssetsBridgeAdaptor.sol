@@ -33,6 +33,14 @@ abstract contract AssetsBridgeAdmin is Context {
     }
 }
 
+abstract contract AssetsBridgeOwner is Context, Ownable {
+    modifier AssetsBridgeRequire() {
+        require(_msgSender() == owner(), "AssetsBridge: require called by owner");
+
+        _;
+    }
+}
+
 abstract contract AssetsBridgeAdminOrOwner is Context, Ownable {
     address public constant admin = 0x1111111111111111111111111111111111111111;
 
