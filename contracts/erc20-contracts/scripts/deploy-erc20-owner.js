@@ -6,13 +6,13 @@ async function deploy() {
    deployerAddress = account.address;
    console.log(`Deploying contracts using ${deployerAddress}`);
     //Deploy SBTC (needed for Interface)
-    const SBTC = await ethers.getContractFactory('AssetsBridgeErc20');
+    const SBTC = await ethers.getContractFactory('contracts/AssetsBridgeErc20_OnlyOwner.sol:AssetsBridgeErc20');
     const SBTCInstance = await SBTC.deploy("sBTC","sBTC",18);
     await SBTCInstance.deployed();
     console.log(`SBTC deployed to : ${SBTCInstance.address}`);
 
     //Deploy KSM (needed for Interface)
-    const KSM = await ethers.getContractFactory('AssetsBridgeErc20');
+    const KSM = await ethers.getContractFactory('contracts/AssetsBridgeErc20_OnlyOwner.sol:AssetsBridgeErc20');
     const KSMInstance = await SBTC.deploy("KSM","KSM",18);
     await KSMInstance.deployed();
     console.log(`KSM deployed to : ${SBTCInstance.address}`);
