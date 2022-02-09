@@ -465,7 +465,7 @@ impl crate::Config for Test {
     type BitcoinTrustee = MockBitcoin<Test>;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type CouncilOrigin = EnsureSigned<AccountId>;
-    type TotalSupply = MockBitcoin<Test>;
+    type BitcoinTotalSupply = MockBitcoin<Test>;
     type WeightInfo = ();
 }
 

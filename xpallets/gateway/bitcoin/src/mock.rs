@@ -102,15 +102,15 @@ parameter_types! {
     pub const MaxReserves: u32 = 50;
 }
 impl pallet_balances::Config for Test {
-    type MaxLocks = ();
     type Balance = Balance;
     type DustRemoval = ();
     type Event = ();
     type ExistentialDeposit = ExistentialDeposit;
     type AccountStore = System;
     type WeightInfo = ();
-    type ReserveIdentifier = [u8; 8];
+    type MaxLocks = ();
     type MaxReserves = MaxReserves;
+    type ReserveIdentifier = [u8; 8];
 }
 
 parameter_types! {
@@ -129,20 +129,20 @@ frame_support::parameter_types! {
 }
 
 impl pallet_elections_phragmen::Config for Test {
-    type PalletId = ElectionsPhragmenPalletId;
     type Event = ();
+    type PalletId = ElectionsPhragmenPalletId;
     type Currency = Balances;
-    type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
     type ChangeMembers = ();
     type InitializeMembers = ();
+    type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
     type CandidacyBond = CandidacyBond;
     type VotingBondBase = VotingBondBase;
     type VotingBondFactor = VotingBondFactor;
-    type TermDuration = TermDuration;
-    type DesiredMembers = DesiredMembers;
-    type DesiredRunnersUp = DesiredRunnersUp;
     type LoserCandidate = ();
     type KickedMember = ();
+    type DesiredMembers = DesiredMembers;
+    type DesiredRunnersUp = DesiredRunnersUp;
+    type TermDuration = TermDuration;
     type WeightInfo = ();
 }
 parameter_types! {
@@ -176,8 +176,8 @@ parameter_types! {
 
 impl xpallet_gateway_records::Config for Test {
     type Event = ();
-    type BtcAssetId = BtcAssetId;
     type Currency = Balances;
+    type BtcAssetId = BtcAssetId;
     type WeightInfo = ();
 }
 
@@ -185,11 +185,11 @@ impl xpallet_gateway_common::Config for Test {
     type Event = ();
     type Validator = ();
     type DetermineMultisigAddress = ();
+    type CouncilOrigin = EnsureSigned<AccountId>;
     type Bitcoin = XGatewayBitcoin;
     type BitcoinTrustee = XGatewayBitcoin;
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
-    type CouncilOrigin = EnsureSigned<AccountId>;
-    type TotalSupply = XGatewayBitcoin;
+    type BitcoinTotalSupply = XGatewayBitcoin;
     type WeightInfo = ();
 }
 
@@ -218,12 +218,12 @@ impl Config for Test {
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeSessionProvider =
         xpallet_gateway_common::trustees::bitcoin::BtcTrusteeSessionManager<Test>;
+    type TrusteeInfoUpdate = XGatewayCommon;
     type TrusteeOrigin = EnsureSignedBy<
         xpallet_gateway_common::trustees::bitcoin::BtcTrusteeMultisig<Test>,
         AccountId,
     >;
     type RelayerInfo = XGatewayCommon;
-    type TrusteeInfoUpdate = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
     type WeightInfo = ();

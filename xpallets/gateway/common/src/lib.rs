@@ -28,18 +28,19 @@ use frame_support::{
     traits::{fungibles, ChangeMembers, Currency, ExistenceRequirement, Get},
 };
 use frame_system::{ensure_root, ensure_signed};
-use sp_runtime::traits::{CheckedDiv, Saturating, UniqueSaturatedInto, Zero};
-use sp_runtime::SaturatedConversion;
+use sp_runtime::{
+    traits::{CheckedDiv, Saturating, UniqueSaturatedInto, Zero},
+    SaturatedConversion,
+};
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
 use self::traits::{TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession};
 use self::types::{
-    GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, TrusteeInfoConfig,
-    TrusteeIntentionProps,
+    GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, RewardInfo, ScriptInfo,
+    TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo,
 };
 pub use self::weights::WeightInfo;
 use crate::trustees::bitcoin::BtcTrusteeAddrInfo;
-use crate::types::{RewardInfo, ScriptInfo, TrusteeSessionInfo};
 pub use pallet::*;
 use sherpax_primitives::{AddrStr, ChainAddress, Text};
 use xp_assets_registrar::Chain;
@@ -57,10 +58,8 @@ type Balanceof<T> =
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    use frame_support::pallet_prelude::*;
-    use frame_support::traits::fungibles::Inspect;
+    use frame_support::{pallet_prelude::*, traits::fungibles::Inspect};
     use frame_system::pallet_prelude::*;
-    use traits::TotalSupply;
 
     #[pallet::config]
     pub trait Config:
@@ -77,8 +76,6 @@ pub mod pallet {
 
         type CouncilOrigin: EnsureOrigin<Self::Origin>;
 
-        type TotalSupply: TotalSupply<Self::Balance>;
-
         // for bitcoin
         type Bitcoin: ChainT<Self::AssetId, Self::Balance>;
         type BitcoinTrustee: TrusteeForChain<
@@ -92,6 +89,7 @@ pub mod pallet {
             Self::BlockNumber,
             trustees::bitcoin::BtcTrusteeAddrInfo,
         >;
+        type BitcoinTotalSupply: TotalSupply<Self::Balance>;
 
         type WeightInfo: WeightInfo;
     }
@@ -924,7 +922,7 @@ impl<T: Config> Pallet<T> {
         if Self::trustee_session_info_len(Chain::Bitcoin) != 1 {
             TrusteeTransitionStatus::<T>::put(true);
         }
-        let total_supply = T::TotalSupply::total_supply();
+        let total_supply = T::BitcoinTotalSupply::total_supply();
         xpallet_gateway_records::PreTotalSupply::<T>::put(total_supply);
         Ok(())
     }
@@ -1218,7 +1216,7 @@ impl<T: Config> Pallet<T> {
         let reward_info = Self::compute_reward(total_reward, trustee_info)?;
         for (acc, amount) in reward_info.rewards.iter() {
             <T as xpallet_gateway_records::Config>::Currency::transfer(
-                &from,
+                from,
                 acc,
                 *amount,
                 ExistenceRequirement::AllowDeath,
@@ -1247,7 +1245,7 @@ impl<T: Config> Pallet<T> {
         let reward_info = Self::compute_reward(total_reward, trustee_info)?;
         for (acc, amount) in reward_info.rewards.iter() {
             <pallet_assets::Pallet<T> as fungibles::Transfer<T::AccountId>>::transfer(
-                asset_id, &from, acc, *amount, false,
+                asset_id, from, acc, *amount, false,
             )
             .map_err(|e| {
                 error!(
@@ -1292,7 +1290,7 @@ impl<T: Config> Pallet<T> {
             Self::alloc_not_native_reward(&multi_account, T::BtcAssetId::get(), trustee_info)?;
         Self::deposit_event(Event::<T>::AllocNotNativeReward(
             who.clone(),
-            multi_account.clone(),
+            multi_account,
             session_num,
             T::BtcAssetId::get(),
             total_btc_reward,
