@@ -63,7 +63,7 @@ pub fn process_tx<T: Config>(
 }
 
 fn trustee_transition<T: Config>() -> BtcTxResult {
-    T::TrusteeInfoUpdate::update_transition_status(false);
+    T::TrusteeInfoUpdate::update_transition_status(false, None);
     BtcTxResult::Success
 }
 

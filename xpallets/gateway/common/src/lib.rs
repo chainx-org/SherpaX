@@ -333,7 +333,7 @@ pub mod pallet {
         #[pallet::weight(100_000_000u64)]
         pub fn force_trustee_election(origin: OriginFor<T>) -> DispatchResult {
             ensure_root(origin)?;
-            Self::update_transition_status(false);
+            Self::update_transition_status(false, None);
 
             Ok(())
         }
