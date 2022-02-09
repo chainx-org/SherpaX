@@ -21,15 +21,14 @@ pub mod types;
 pub mod utils;
 pub mod weights;
 
-use frame_support::traits::ExistenceRequirement;
 use frame_support::{
     dispatch::{DispatchError, DispatchResult},
     ensure,
     log::{error, info},
-    traits::{ChangeMembers, Currency, Get},
+    traits::{fungibles, ChangeMembers, Currency, ExistenceRequirement, Get},
 };
 use frame_system::{ensure_root, ensure_signed};
-use sp_runtime::traits::{CheckedDiv, Saturating, Zero};
+use sp_runtime::traits::{CheckedDiv, Saturating, UniqueSaturatedInto, Zero};
 use sp_runtime::SaturatedConversion;
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
@@ -539,15 +538,12 @@ pub mod pallet {
         ),
         /// Treasury transfer to trustee. [source, target, chain, session_number, reward_total]
         TransferTrusteeReward(T::AccountId, T::AccountId, Chain, u32, Balanceof<T>),
-        /// Asset reward to trustee. [target, asset_id, reward_total]
+        /// Asset reward to trustee multi_account. [target, asset_id, reward_total]
         TransferAssetReward(T::AccountId, T::AssetId, T::Balance),
-        /// The reward of trustee is assigned. [who, chain, session_number, reward_info]
-        TrusteeRewardComplete(
-            T::AccountId,
-            Chain,
-            u32,
-            RewardInfo<T::AccountId, Balanceof<T>>,
-        ),
+        /// The native asset of trustee multi_account is assigned. [who, multi_account, session_number, total_reward]
+        AllocNativeReward(T::AccountId, T::AccountId, u32, Balanceof<T>),
+        /// The not native asset of trustee multi_account is assigned. [who, multi_account, session_number, asset_id, total_reward]
+        AllocNotNativeReward(T::AccountId, T::AccountId, u32, T::AssetId, T::Balance),
     }
 
     #[pallet::error]
@@ -1176,6 +1172,95 @@ impl<T: Config> Pallet<T> {
         Ok(())
     }
 
+    fn compute_reward<Balance>(
+        reward: Balance,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+    ) -> Result<RewardInfo<T::AccountId, Balance>, DispatchError>
+    where
+        Balance: Saturating + CheckedDiv + Zero + Copy,
+        u64: UniqueSaturatedInto<Balance>,
+    {
+        let sum_weight = trustee_info
+            .trustee_list
+            .iter()
+            .map(|n| n.1)
+            .sum::<u64>()
+            .saturated_into::<Balance>();
+        let trustee_len = trustee_info.trustee_list.len();
+        let mut reward_info = RewardInfo { rewards: vec![] };
+        let mut acc_balance = Balance::zero();
+        for i in 0..trustee_len - 1 {
+            let trustee_weight = trustee_info.trustee_list[i].1.saturated_into::<Balance>();
+            let amount = reward
+                .saturating_mul(trustee_weight)
+                .checked_div(&sum_weight)
+                .ok_or(Error::<T>::InvalidTrusteeWeight)?;
+            reward_info
+                .rewards
+                .push((trustee_info.trustee_list[i].0.clone(), amount));
+            acc_balance = acc_balance.saturating_add(amount);
+        }
+        let amount = reward.saturating_sub(acc_balance);
+        reward_info
+            .rewards
+            .push((trustee_info.trustee_list[trustee_len - 1].0.clone(), amount));
+        Ok(reward_info)
+    }
+
+    fn alloc_native_reward(
+        from: &T::AccountId,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+    ) -> Result<Balanceof<T>, DispatchError> {
+        let total_reward = <T as xpallet_gateway_records::Config>::Currency::free_balance(from);
+        if total_reward.is_zero() {
+            return Ok(Balanceof::<T>::zero());
+        }
+        let reward_info = Self::compute_reward(total_reward, trustee_info)?;
+        for (acc, amount) in reward_info.rewards.iter() {
+            <T as xpallet_gateway_records::Config>::Currency::transfer(
+                &from,
+                acc,
+                *amount,
+                ExistenceRequirement::AllowDeath,
+            )
+            .map_err(|e| {
+                error!(
+                    target: "runtime::gateway::common",
+                    "[apply_claim_trustee_reward] error {:?}, sum_balance:{:?}, reward_info:{:?}.",
+                    e, total_reward, reward_info.clone()
+                );
+                e
+            })?;
+        }
+        Ok(total_reward)
+    }
+
+    fn alloc_not_native_reward(
+        from: &T::AccountId,
+        asset_id: T::AssetId,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+    ) -> Result<T::Balance, DispatchError> {
+        let total_reward = pallet_assets::Pallet::<T>::balance(asset_id, from);
+        if total_reward.is_zero() {
+            return Ok(T::Balance::zero());
+        }
+        let reward_info = Self::compute_reward(total_reward, trustee_info)?;
+        for (acc, amount) in reward_info.rewards.iter() {
+            <pallet_assets::Pallet<T> as fungibles::Transfer<T::AccountId>>::transfer(
+                asset_id, &from, acc, *amount, false,
+            )
+            .map_err(|e| {
+                error!(
+                    target: "runtime::gateway::common",
+                    "[apply_claim_trustee_reward] error {:?}, sum_balance:{:?}, asset_id: {:?},reward_info:{:?}.",
+                    e, total_reward, asset_id, reward_info.clone()
+                );
+                e
+            })?;
+        }
+        Ok(total_reward)
+    }
+
     pub fn apply_claim_trustee_reward(
         who: &T::AccountId,
         session_num: u32,
@@ -1196,54 +1281,21 @@ impl<T: Config> Pallet<T> {
                 .is_zero(),
             Error::<T>::MultiAccountRewardZero
         );
-
-        let mut reward_info = RewardInfo { rewards: vec![] };
-        let trustee_len = trustee_info.trustee_list.len();
-        let sum_balance =
-            <T as xpallet_gateway_records::Config>::Currency::free_balance(&multi_account);
-        let sum_weight: Balanceof<T> = trustee_info
-            .trustee_list
-            .iter()
-            .map(|n| n.1)
-            .sum::<u64>()
-            .saturated_into();
-        let mut acc_balance = Balanceof::<T>::zero();
-        for i in 0..trustee_len - 1 {
-            let trustee_weight: Balanceof<T> = trustee_info.trustee_list[i].1.saturated_into();
-            let amount = sum_balance
-                .saturating_mul(trustee_weight)
-                .checked_div(&sum_weight)
-                .ok_or(Error::<T>::InvalidTrusteeWeight)?;
-            reward_info
-                .rewards
-                .push((trustee_info.trustee_list[i].0.clone(), amount));
-            acc_balance = acc_balance.saturating_add(amount);
-        }
-        let amount = sum_balance.saturating_sub(acc_balance);
-        reward_info
-            .rewards
-            .push((trustee_info.trustee_list[trustee_len - 1].0.clone(), amount));
-        for (acc, amount) in reward_info.rewards.iter() {
-            <T as xpallet_gateway_records::Config>::Currency::transfer(
-                &multi_account,
-                acc,
-                *amount,
-                ExistenceRequirement::AllowDeath,
-            )
-            .map_err(|e| {
-                error!(
-                    target: "runtime::gateway::common",
-                    "[apply_claim_trustee_reward] error {:?}, sum_balance:{:?}, reward_info:{:?}.",
-                    e, sum_balance, reward_info.clone()
-                );
-                e
-            })?;
-        }
-        Self::deposit_event(Event::<T>::TrusteeRewardComplete(
+        let total_native_reward = Self::alloc_native_reward(&multi_account, trustee_info)?;
+        Self::deposit_event(Event::<T>::AllocNativeReward(
             who.clone(),
-            Chain::Bitcoin,
+            multi_account.clone(),
             session_num,
-            reward_info,
+            total_native_reward,
+        ));
+        let total_btc_reward =
+            Self::alloc_not_native_reward(&multi_account, T::BtcAssetId::get(), trustee_info)?;
+        Self::deposit_event(Event::<T>::AllocNotNativeReward(
+            who.clone(),
+            multi_account.clone(),
+            session_num,
+            T::BtcAssetId::get(),
+            total_btc_reward,
         ));
         Ok(())
     }
