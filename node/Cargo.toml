@@ -1,6 +1,6 @@
 [package]
 name = "sherpax"
-version = "1.0.20"
+version = "1.1.0"
 authors = ['The ChainX Authors']
 edition = "2018"
 build = "build.rs"
