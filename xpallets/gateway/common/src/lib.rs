@@ -360,28 +360,9 @@ pub mod pallet {
         #[pallet::weight(100_000_000u64)]
         pub fn cancel_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             ensure_root(origin)?;
+
             TrusteeTransitionStatus::<T>::put(false);
             Self::cancel_trustee_transition_impl(chain)?;
-            Ok(())
-        }
-
-        /// Regenerate the trustee's aggregated public key information.
-        ///
-        /// There is some problem with generating the number of aggregated
-        /// public keys, regenerate the aggregated public key information
-        /// after the repair is completed, and then remove the call.
-        ///
-        /// This is called by the root.
-        #[pallet::weight(100_000_000u64)]
-        pub fn regenerate_aggpubkey(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
-            ensure_root(origin)?;
-
-            info!(
-                target: "runtime::gateway::common",
-                "[regenerate_aggpubkey] Try to regenerate the aggregated public key information"
-            );
-            let session_number = Self::trustee_session_info_len(chain);
-            Self::generate_aggpubkey_impl(chain, session_number)?;
             Ok(())
         }
 
