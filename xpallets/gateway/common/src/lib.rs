@@ -335,6 +335,25 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Force update trustee info
+        ///
+        /// This is called by the root.
+        #[pallet::weight(100_000_000u64)]
+        pub fn force_update_trustee(
+            origin: OriginFor<T>,
+            who: T::AccountId,
+            proxy_account: Option<T::AccountId>,
+            chain: Chain,
+            about: Text,
+            hot_entity: Vec<u8>,
+            cold_entity: Vec<u8>,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            Self::setup_trustee_impl(who, proxy_account, chain, about, hot_entity, cold_entity)?;
+            Ok(())
+        }
+
         /// Force cancel trustee transition
         ///
         /// This is called by the root.
@@ -1075,16 +1094,14 @@ impl<T: Config> Pallet<T> {
     }
 
     fn cancel_trustee_transition_impl(chain: Chain) -> DispatchResult {
-        let session_number = Self::trustee_session_info_len(chain)
-            .checked_sub(1)
-            .unwrap_or(0u32);
+        let session_number = Self::trustee_session_info_len(chain).saturating_sub(1);
         let trustee_info = Self::trustee_session_info_of(chain, session_number)
-            .ok_or_else(|| Error::<T>::InvalidTrusteeSession)?;
+            .ok_or(Error::<T>::InvalidTrusteeSession)?;
         let multi_account = trustee_info
             .0
             .multi_account
             .clone()
-            .ok_or_else(|| Error::<T>::InvalidTrusteeSession)?;
+            .ok_or(Error::<T>::InvalidTrusteeSession)?;
         TrusteeSessionInfoLen::<T>::insert(chain, session_number);
         TrusteeSessionInfoOf::<T>::insert(chain, session_number, trustee_info);
         TrusteeMultiSigAddr::<T>::insert(chain, multi_account);
@@ -1111,7 +1128,7 @@ impl<T: Config> Pallet<T> {
         // There is no multi-signature address inserted in info so
         // the event will not display the multi-signature address.
         Self::deposit_event(Event::<T>::TrusteeSetChanged(
-            Chain::Bitcoin,
+            chain,
             session_number,
             info.0,
             info.1.agg_pubkeys.len() as u32,
