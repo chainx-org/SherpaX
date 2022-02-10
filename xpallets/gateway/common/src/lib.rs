@@ -360,7 +360,7 @@ pub mod pallet {
         #[pallet::weight(100_000_000u64)]
         pub fn cancel_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             ensure_root(origin)?;
-            Self::update_transition_status(false, None);
+            TrusteeTransitionStatus::<T>::put(false);
             Self::cancel_trustee_transition_impl(chain)?;
             Ok(())
         }
@@ -1103,7 +1103,6 @@ impl<T: Config> Pallet<T> {
             .clone()
             .ok_or(Error::<T>::InvalidTrusteeSession)?;
         TrusteeSessionInfoLen::<T>::insert(chain, session_number);
-        TrusteeSessionInfoOf::<T>::insert(chain, session_number, trustee_info);
         TrusteeMultiSigAddr::<T>::insert(chain, multi_account);
         Self::generate_aggpubkey_impl(chain, session_number)?;
         Ok(())
