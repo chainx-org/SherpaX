@@ -1086,6 +1086,7 @@ impl<T: Config> Pallet<T> {
         TrusteeSessionInfoLen::<T>::insert(chain, session_number);
         TrusteeMultiSigAddr::<T>::insert(chain, multi_account);
         Self::generate_aggpubkey_impl(chain, session_number)?;
+        TrusteeAdmin::<T>::kill();
         Ok(())
     }
 
