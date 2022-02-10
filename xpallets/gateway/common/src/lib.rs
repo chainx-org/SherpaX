@@ -1081,7 +1081,6 @@ impl<T: Config> Pallet<T> {
         let multi_account = trustee_info
             .0
             .multi_account
-            .clone()
             .ok_or(Error::<T>::InvalidTrusteeSession)?;
         TrusteeSessionInfoLen::<T>::insert(chain, session_number);
         TrusteeMultiSigAddr::<T>::insert(chain, multi_account);
