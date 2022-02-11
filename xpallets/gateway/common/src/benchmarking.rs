@@ -253,6 +253,13 @@ benchmarks! {
         assert_eq!(Pallet::<T>::trustee_admin(), who);
     }
 
+    set_trustee_admin_multiply {
+        let multiply = 12;
+    }: _(RawOrigin::Root, multiply)
+    verify{
+        assert_eq!(Pallet::<T>::trustee_admin_multiply(), multiply);
+    }
+
     tranfer_trustee_reward {
         let caller: T::AccountId = alice::<T>();
         clean::<T>();
@@ -350,6 +357,7 @@ mod tests {
             assert_ok!(Pallet::<Test>::test_benchmark_change_trustee_transition_duration());
             assert_ok!(Pallet::<Test>::test_benchmark_set_relayer());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_admin());
+            assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_admin_multiply());
             assert_ok!(Pallet::<Test>::test_benchmark_tranfer_trustee_reward());
             assert_ok!(Pallet::<Test>::test_benchmark_claim_trustee_reward());
         });
