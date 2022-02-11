@@ -14,7 +14,6 @@ use sp_std::{convert::TryFrom, marker::PhantomData, prelude::*};
 use xp_assets_registrar::Chain;
 use xpallet_support::traits::MultiSig;
 
-use crate::TrusteeAdminMultiply;
 use crate::{
     traits::{BytesLike, ChainProvider, TrusteeInfoUpdate, TrusteeSession},
     types::TrusteeSessionInfo,
