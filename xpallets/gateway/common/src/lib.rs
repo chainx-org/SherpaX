@@ -1236,19 +1236,10 @@ impl<T: Config> Pallet<T> {
         Balance: Saturating + CheckedDiv + Zero + Copy,
         u64: UniqueSaturatedInto<Balance>,
     {
-        let admin_weight_multiply = TrusteeAdminMultiply::<T>::get();
         let sum_weight = trustee_info
             .trustee_list
             .iter()
-            .map(|n| {
-                if n.0 == TrusteeAdmin::<T>::get() {
-                    n.1.saturating_mul(admin_weight_multiply)
-                        .checked_div(10)
-                        .unwrap_or(n.1)
-                } else {
-                    n.1
-                }
-            })
+            .map(|n| n.1)
             .sum::<u64>()
             .saturated_into::<Balance>();
 
@@ -1256,17 +1247,7 @@ impl<T: Config> Pallet<T> {
         let mut reward_info = RewardInfo { rewards: vec![] };
         let mut acc_balance = Balance::zero();
         for i in 0..trustee_len - 1 {
-            let trustee_weight = if trustee_info.trustee_list[i].0 == TrusteeAdmin::<T>::get() {
-                trustee_info.trustee_list[i]
-                    .1
-                    .saturating_mul(admin_weight_multiply)
-                    .checked_div(10)
-                    .unwrap_or(trustee_info.trustee_list[i].1)
-                    .saturated_into::<Balance>()
-            } else {
-                trustee_info.trustee_list[i].1.saturated_into::<Balance>()
-            };
-
+            let trustee_weight = trustee_info.trustee_list[i].1.saturated_into::<Balance>();
             let amount = reward
                 .saturating_mul(trustee_weight)
                 .checked_div(&sum_weight)

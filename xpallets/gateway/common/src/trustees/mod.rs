@@ -14,6 +14,7 @@ use sp_std::{convert::TryFrom, marker::PhantomData, prelude::*};
 use xp_assets_registrar::Chain;
 use xpallet_support::traits::MultiSig;
 
+use crate::TrusteeAdminMultiply;
 use crate::{
     traits::{BytesLike, ChainProvider, TrusteeInfoUpdate, TrusteeSession},
     types::TrusteeSessionInfo,
@@ -191,13 +192,20 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
         TrusteeTransitionStatus::<T>::put(status);
     }
 
-    fn update_trustee_sig_record(script: &[u8], withdraw_amout: u64) {
+    fn update_trustee_sig_record(script: &[u8], withdraw_amount: u64) {
         let signed_trustees = Self::agg_pubkey_info(script);
         signed_trustees.into_iter().for_each(|trustee| {
-            if TrusteeSigRecord::<T>::contains_key(&trustee) {
-                TrusteeSigRecord::<T>::mutate(&trustee, |record| *record += withdraw_amout);
+            let amount = if trustee == Self::trustee_admin() {
+                withdraw_amount
+                    .saturating_mul(Self::trustee_admin_multiply())
+                    .saturating_div(10)
             } else {
-                TrusteeSigRecord::<T>::insert(trustee, withdraw_amout);
+                withdraw_amount
+            };
+            if TrusteeSigRecord::<T>::contains_key(&trustee) {
+                TrusteeSigRecord::<T>::mutate(&trustee, |record| *record += amount);
+            } else {
+                TrusteeSigRecord::<T>::insert(trustee, amount);
             }
         });
     }
