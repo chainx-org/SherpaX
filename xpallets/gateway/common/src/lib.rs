@@ -401,6 +401,17 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Set trustee admin multiply
+        #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin_multiply())]
+        pub fn set_trustee_admin_multiply(origin: OriginFor<T>, multiply: u64) -> DispatchResult {
+            if T::CouncilOrigin::ensure_origin(origin.clone()).is_err() {
+                ensure_root(origin)?;
+            };
+
+            TrusteeAdminMultiply::<T>::put(multiply);
+            Ok(())
+        }
+
         /// Dangerous! Be careful to set TrusteeTransitionDuration
         #[pallet::weight(< T as Config >::WeightInfo::change_trustee_transition_duration())]
         pub fn change_trustee_transition_duration(
@@ -595,6 +606,16 @@ pub mod pallet {
     pub type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
 
     #[pallet::storage]
+    #[pallet::getter(fn trustee_admin_multiply)]
+    pub type TrusteeAdminMultiply<T: Config> =
+        StorageValue<_, u64, ValueQuery, DefaultForTrusteeAdminMultiply>;
+
+    #[pallet::type_value]
+    pub fn DefaultForTrusteeAdminMultiply() -> u64 {
+        11
+    }
+
+    #[pallet::storage]
     #[pallet::getter(fn relayer)]
     pub type Relayer<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
 
@@ -614,11 +635,6 @@ pub mod pallet {
     pub type TrusteeInfoConfigOf<T: Config> =
         StorageMap<_, Twox64Concat, Chain, TrusteeInfoConfig, ValueQuery>;
 
-    #[pallet::type_value]
-    pub fn DefaultForTrusteeSessionInfoLen() -> u32 {
-        0
-    }
-
     /// Current Trustee session info number of the chain.
     ///
     /// Auto generate a new session number (0) when generate new trustee of a chain.
@@ -629,6 +645,11 @@ pub mod pallet {
     #[pallet::getter(fn trustee_session_info_len)]
     pub type TrusteeSessionInfoLen<T: Config> =
         StorageMap<_, Twox64Concat, Chain, u32, ValueQuery, DefaultForTrusteeSessionInfoLen>;
+
+    #[pallet::type_value]
+    pub fn DefaultForTrusteeSessionInfoLen() -> u32 {
+        0
+    }
 
     /// Trustee session info of the corresponding chain and number.
     #[pallet::storage]
@@ -1215,17 +1236,37 @@ impl<T: Config> Pallet<T> {
         Balance: Saturating + CheckedDiv + Zero + Copy,
         u64: UniqueSaturatedInto<Balance>,
     {
+        let admin_weight_multiply = TrusteeAdminMultiply::<T>::get();
         let sum_weight = trustee_info
             .trustee_list
             .iter()
-            .map(|n| n.1)
+            .map(|n| {
+                if n.0 == TrusteeAdmin::<T>::get() {
+                    n.1.saturating_mul(admin_weight_multiply)
+                        .checked_div(10)
+                        .unwrap_or(n.1)
+                } else {
+                    n.1
+                }
+            })
             .sum::<u64>()
             .saturated_into::<Balance>();
+
         let trustee_len = trustee_info.trustee_list.len();
         let mut reward_info = RewardInfo { rewards: vec![] };
         let mut acc_balance = Balance::zero();
         for i in 0..trustee_len - 1 {
-            let trustee_weight = trustee_info.trustee_list[i].1.saturated_into::<Balance>();
+            let trustee_weight = if trustee_info.trustee_list[i].0 == TrusteeAdmin::<T>::get() {
+                trustee_info.trustee_list[i]
+                    .1
+                    .saturating_mul(admin_weight_multiply)
+                    .checked_div(10)
+                    .unwrap_or(trustee_info.trustee_list[i].1)
+                    .saturated_into::<Balance>()
+            } else {
+                trustee_info.trustee_list[i].1.saturated_into::<Balance>()
+            };
+
             let amount = reward
                 .saturating_mul(trustee_weight)
                 .checked_div(&sum_weight)
