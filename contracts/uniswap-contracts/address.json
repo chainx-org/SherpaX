@@ -1,9 +1,9 @@
 {
-   "sherpax": {
-      "WETH": "0xC2Bf5F29a4384b1aB0C063e1c666f02121B6084a",
-      "Factory": "0x5c4242beB94dE30b922f57241f1D02f36e906915",
-      "Router": "0x42e2EE7Ba8975c473157634Ac2AF4098190fc741",
-      "multicall": "0xF8cef78E923919054037a1D03662bBD884fF4edf",
+   "sherpax-mainnet": {
+      "WETH": "0x900639Cc5A37c519C9E32Bfa7EAdf747c53D9B0A",
+      "Factory": "0x9770bb060437a6a78C0Dd05388C2163E1A73c95f",
+      "Router": "0x2bCb01fFc0f2C985d928eE74e486E0B690FB991B",
+      "multicall": "0xb2d6370F2a500dF8E694c7FCA32E69f71197F1c9",
       "init_code_hash": "0x01429e880a7972ebfbba904a5bbe32a816e78273e4b38ffa6bdeaebce8adba7c"
    }
 }

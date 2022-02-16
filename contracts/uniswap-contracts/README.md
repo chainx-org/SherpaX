@@ -24,6 +24,22 @@ Modify the private keys as you wish in the `hardhat.config.js` file.
 
 To deploy the contracts in a Standalone node you can run:
 
+#### Script
+
 ```
+export PRIVKEY= Your privateKey
 npx hardhat run --network dev scripts/deploy-factory.js 
 ```
+
+#### Remix
+
+To collect to localhost
+
+```
+bash ./script/remix.sh 
+```
+
+setting
+* evmVersion: istanbul
+* Enable optimization: true
+

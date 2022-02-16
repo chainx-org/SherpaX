@@ -17,8 +17,9 @@ async function deploy() {
    const factory = await ethers.getContractFactory('UniswapV2Factory');
    const factoryInstance = await factory.deploy(deployerAddress);
    await factoryInstance.deployed();
-
+   await factoryInstance.setFeeTo(deployerAddress);
    console.log(`Factory deployed to : ${factoryInstance.address}`);
+   console.log(`Factory setFee to : ${deployerAddress}`);
 
    //Deploy Router passing Factory Address and WETH Address
    const router = await ethers.getContractFactory('UniswapV2Router02');
