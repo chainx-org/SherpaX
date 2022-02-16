@@ -15,7 +15,7 @@ module.exports = {
    networks: {
       hardhat: {},
       mainnet: {
-         url: 'https://minichain-mainnet.coming.chat/rpc',
+         url: 'https://mainnet.sherpax.io/rpc',
          accounts: [privateKey],
          network_id: '1506',
          chainId: 1506,
