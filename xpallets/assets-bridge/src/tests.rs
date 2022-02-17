@@ -21,6 +21,7 @@ const SUB_ACCOUNT: &str = "5USGSZK3raH3LD4uxvNTa23HN5VULnYrkXonRktyizTJUYg9";
 const PUBKEY: &str = "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d";
 const ERC20_1: [u8; 20] = [1u8; 20];
 const ERC20_2: [u8; 20] = [2u8; 20];
+const MAPPING_ACCOUNT: &str = "5Fghzk1AJt88PeFEzuRfXzbPchiBbsVGTTXcdx599VdZzkTA";
 
 pub fn mint_into_abi() -> Function {
     #[allow(deprecated)]
@@ -64,6 +65,21 @@ pub fn burn_from_abi() -> Function {
         constant: false,
         state_mutability: Default::default(),
     }
+}
+
+#[test]
+fn evm_address_mapping_substrate_account() {
+    use sp_core::Hasher;
+    let address = H160::from_slice(&EVM_ADDR);
+
+    let mut data = [0u8; 24];
+    data[0..4].copy_from_slice(b"evm:");
+    data[4..24].copy_from_slice(&address[..]);
+
+    let mapping_account = AccountId32::new(BlakeTwo256::hash(&data).to_fixed_bytes());
+    let sub_account: AccountId32 = AccountId32::from_str(MAPPING_ACCOUNT).unwrap();
+
+    assert_eq!(mapping_account, sub_account)
 }
 
 #[test]
