@@ -433,7 +433,7 @@ pub mod pallet {
         ///
         /// - `asset_id`: The asset id
         /// - `erc20`: The erc20 contract address
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn register(
             origin: OriginFor<T>,
             asset_id: T::AssetId,
@@ -464,7 +464,7 @@ pub mod pallet {
         /// Note: for admin
         ///
         /// - `asset_id`: None will pause all, Some(id) will pause the specified asset
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn pause(
             origin: OriginFor<T>,
             asset_id: Option<T::AssetId>,
@@ -501,7 +501,7 @@ pub mod pallet {
         /// Note: for admin
         ///
         /// - `asset_id`: None will unpause all, Some(id) will unpause the specified asset
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn unpause(
             origin: OriginFor<T>,
             asset_id: Option<T::AssetId>,
@@ -536,7 +536,7 @@ pub mod pallet {
         /// Note: for admin
         ///
         /// - `asset_id`:
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn back_foreign(
             origin: OriginFor<T>,
             asset_id: T::AssetId,
@@ -562,7 +562,7 @@ pub mod pallet {
 
         /// Set this pallet admin key
         /// Note: for super admin
-        #[pallet::weight(1_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn set_admin(
             origin: OriginFor<T>,
             new_admin: <T::Lookup as StaticLookup>::Source,
@@ -579,7 +579,7 @@ pub mod pallet {
 
         /// Force unregister substrate assets and erc20 contracts
         /// Note: for super admin
-        #[pallet::weight(1_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn force_unregister(
             origin: OriginFor<T>,
             asset_id: T::AssetId,

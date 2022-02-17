@@ -833,7 +833,7 @@ construct_runtime!(
         Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>} = 41,
 
         // Ethereum compatibility
-        EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config} = 50,
+        EthereumChainId: pallet_ethereum_chain_id::{Pallet, Call, Storage, Config} = 50,
         Evm: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 51,
         Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin} = 52,
         AssetsBridge: pallet_assets_bridge::{Pallet, Call, Storage, Config<T>, Event<T>} = 53,
