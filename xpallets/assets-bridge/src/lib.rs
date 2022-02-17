@@ -24,7 +24,7 @@ use frame_support::{
 };
 use sp_core::{ecdsa, H160, U256};
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
-use sp_runtime::traits::{StaticLookup, UniqueSaturatedInto};
+use sp_runtime::traits::{StaticLookup, UniqueSaturatedInto, Zero};
 use sp_std::vec::Vec;
 
 use pallet_evm::{AddressMapping, ExitReason, Runner};
@@ -196,6 +196,8 @@ pub mod pallet {
         InEmergency,
         /// Ban back to foreign
         BanBackForeign,
+        /// Zero balance
+        ZeroBalance,
     }
 
     #[pallet::pallet]
@@ -285,6 +287,7 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
+            ensure!(!amount.is_zero(), Error::<T>::ZeroBalance);
 
             // 1. check evm account
             let evm_account = Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?;
@@ -324,6 +327,7 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
+            ensure!(!amount.is_zero(), Error::<T>::ZeroBalance);
 
             // 1. check evm account
             let evm_account = Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?;
@@ -368,6 +372,7 @@ pub mod pallet {
             action: ActionType<T::AssetId>,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
+            ensure!(!amount.is_zero(), Error::<T>::ZeroBalance);
 
             let (from, to, back_foreign) = match action {
                 ActionType::Direct(unchecked) => (
