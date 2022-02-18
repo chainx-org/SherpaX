@@ -98,5 +98,9 @@ Refer [AssetsBridge](./xpallets/assets-bridge/README.md)
 [shrepax mainnet chainspec(76MB, tar.gz)](./node/res/sherpax-raw.json.tar.gz)
 ```bash
 tar zxvf ./node/res/sherpax-raw.json.tar.gz -C ./node/res/
+```
+or
+[sherpax_mainnet_chainspec(276MB)](https://github.com/chainx-org/SherpaX/releases/download/v1.0.0/sherpax-raw.json)
+```bash
 ./target/release/sherpax --chain=./node/res/sherpax-raw.json --tmp
 ```
