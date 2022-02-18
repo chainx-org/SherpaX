@@ -154,7 +154,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 27,
+    spec_version: 28,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 2,
@@ -656,7 +656,7 @@ impl pallet_evm::GasWeightMapping for SherpaXGasWeightMapping {
 pub struct FixedGasPrice;
 impl FeeCalculator for FixedGasPrice {
     fn min_gas_price() -> U256 {
-        4_500_000_000_000u128.into()
+        450_000_000_000u128.into()
     }
 }
 

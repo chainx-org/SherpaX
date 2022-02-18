@@ -278,7 +278,7 @@ pub mod pallet {
         ///
         /// - `asset_id`: The asset id
         /// - `amount`: Deposit amount
-        #[pallet::weight(100_000_000u64)]
+        #[pallet::weight(1_000_000u64)]
         #[transactional]
         pub fn deposit(
             origin: OriginFor<T>,
@@ -318,7 +318,7 @@ pub mod pallet {
         ///
         /// - `asset_id`: The asset id
         /// - `amount`: Withdraw amount
-        #[pallet::weight(100_000_000u64)]
+        #[pallet::weight(1_000_000u64)]
         #[transactional]
         pub fn withdraw(
             origin: OriginFor<T>,
@@ -364,7 +364,7 @@ pub mod pallet {
         ///    (3) FromEthToSub: transfer from mapped evm address to substrate account
         /// - companion with `relay`:
         ///    (4) BackForeign(asset_id): transfer assets back foreign chain
-        #[pallet::weight(100_000_000u64)]
+        #[pallet::weight(1_000_000u64)]
         #[transactional]
         pub fn teleport(
             origin: OriginFor<T>,
