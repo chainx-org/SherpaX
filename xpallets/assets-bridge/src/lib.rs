@@ -284,7 +284,7 @@ pub mod pallet {
             origin: OriginFor<T>,
             asset_id: T::AssetId,
             amount: T::Balance,
-        ) -> DispatchResult {
+        ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
             ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
             ensure!(!amount.is_zero(), Error::<T>::ZeroBalance);
@@ -310,7 +310,7 @@ pub mod pallet {
                 erc20,
             ));
 
-            Ok(())
+            Ok(Pays::No.into())
         }
 
         /// Withdraw from evm erc20 contracts into substrate assets
@@ -324,7 +324,7 @@ pub mod pallet {
             origin: OriginFor<T>,
             asset_id: T::AssetId,
             amount: T::Balance,
-        ) -> DispatchResult {
+        ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
             ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
             ensure!(!amount.is_zero(), Error::<T>::ZeroBalance);
@@ -350,7 +350,7 @@ pub mod pallet {
                 erc20,
             ));
 
-            Ok(())
+            Ok(Pays::No.into())
         }
 
         /// Teleport native currency between substrate account and evm address
