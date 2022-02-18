@@ -8,8 +8,8 @@ pub use pallet::*;
 
 #[pallet]
 pub mod pallet {
-
     use frame_support::pallet_prelude::*;
+    use frame_system::pallet_prelude::*;
 
     /// The Ethereum Chain Id Pallet
     #[pallet::pallet]
@@ -45,6 +45,21 @@ pub mod pallet {
     impl<T: Config> GenesisBuild<T> for GenesisConfig {
         fn build(&self) {
             ChainId::<T>::put(self.chain_id);
+        }
+    }
+
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {
+        #[pallet::weight(100_000_000u64)]
+        pub fn set_chain_id(
+            origin: OriginFor<T>,
+            #[pallet::compact] new_chain_id: u64,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            ChainId::<T>::mutate(|chain_id| *chain_id = new_chain_id);
+
+            Ok(())
         }
     }
 }

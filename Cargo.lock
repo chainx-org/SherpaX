@@ -4609,7 +4609,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-ethereum-chain-id"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -7182,7 +7182,7 @@ dependencies = [
 
 [[package]]
 name = "sherpax-runtime"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "fp-evm",
  "fp-rpc",

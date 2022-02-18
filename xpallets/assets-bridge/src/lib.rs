@@ -24,7 +24,7 @@ use frame_support::{
 };
 use sp_core::{ecdsa, H160, U256};
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
-use sp_runtime::traits::{StaticLookup, UniqueSaturatedInto};
+use sp_runtime::traits::{StaticLookup, UniqueSaturatedInto, Zero};
 use sp_std::vec::Vec;
 
 use pallet_evm::{AddressMapping, ExitReason, Runner};
@@ -196,6 +196,8 @@ pub mod pallet {
         InEmergency,
         /// Ban back to foreign
         BanBackForeign,
+        /// Zero balance
+        ZeroBalance,
     }
 
     #[pallet::pallet]
@@ -285,6 +287,7 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
+            ensure!(!amount.is_zero(), Error::<T>::ZeroBalance);
 
             // 1. check evm account
             let evm_account = Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?;
@@ -324,6 +327,7 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(!Self::is_in_emergency(asset_id), Error::<T>::InEmergency);
+            ensure!(!amount.is_zero(), Error::<T>::ZeroBalance);
 
             // 1. check evm account
             let evm_account = Self::evm_accounts(&who).ok_or(Error::<T>::EthAddressHasNotMapped)?;
@@ -368,6 +372,7 @@ pub mod pallet {
             action: ActionType<T::AssetId>,
         ) -> DispatchResultWithPostInfo {
             let who = ensure_signed(origin)?;
+            ensure!(!amount.is_zero(), Error::<T>::ZeroBalance);
 
             let (from, to, back_foreign) = match action {
                 ActionType::Direct(unchecked) => (
@@ -428,7 +433,7 @@ pub mod pallet {
         ///
         /// - `asset_id`: The asset id
         /// - `erc20`: The erc20 contract address
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn register(
             origin: OriginFor<T>,
             asset_id: T::AssetId,
@@ -459,7 +464,7 @@ pub mod pallet {
         /// Note: for admin
         ///
         /// - `asset_id`: None will pause all, Some(id) will pause the specified asset
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn pause(
             origin: OriginFor<T>,
             asset_id: Option<T::AssetId>,
@@ -496,7 +501,7 @@ pub mod pallet {
         /// Note: for admin
         ///
         /// - `asset_id`: None will unpause all, Some(id) will unpause the specified asset
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn unpause(
             origin: OriginFor<T>,
             asset_id: Option<T::AssetId>,
@@ -531,7 +536,7 @@ pub mod pallet {
         /// Note: for admin
         ///
         /// - `asset_id`:
-        #[pallet::weight(10_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn back_foreign(
             origin: OriginFor<T>,
             asset_id: T::AssetId,
@@ -557,7 +562,7 @@ pub mod pallet {
 
         /// Set this pallet admin key
         /// Note: for super admin
-        #[pallet::weight(1_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn set_admin(
             origin: OriginFor<T>,
             new_admin: <T::Lookup as StaticLookup>::Source,
@@ -574,7 +579,7 @@ pub mod pallet {
 
         /// Force unregister substrate assets and erc20 contracts
         /// Note: for super admin
-        #[pallet::weight(1_000_000u64)]
+        #[pallet::weight(100_000_000u64)]
         pub fn force_unregister(
             origin: OriginFor<T>,
             asset_id: T::AssetId,
