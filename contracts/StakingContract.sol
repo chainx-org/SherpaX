@@ -64,6 +64,9 @@ contract StakingContract is Ownable{
         if(!is_claimed){
             MINI_Erc20.transfer(msg.sender,share);
             Staking_Erc20.transfer(msg.sender,staking_balance);
+            Pool storage pool = index_pool[_index];
+            pool.total_balance-=staking_balance;
+            pool.total_mini-=share;
             emit Claim(msg.sender,_index,share);
         }
     }
