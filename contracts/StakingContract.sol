@@ -1,19 +1,20 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./AssetsBridgeErc20_OnlyOwner.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/token/ERC20/IERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/access/Ownable.sol";
 
 contract StakingContract is Ownable{
 
-    AssetsBridgeErc20 private MINI_Erc20;
-    AssetsBridgeErc20 private Staking_Erc20;
+    IERC20 private MINI_Erc20;
+    IERC20 private Staking_Erc20;
     uint256 private index;
     // 7 days
     //uint256 constant ACTIVE_DURATION = 604800;
     //uint256 constant INACTIVE_DURATION = 604800;
     //3 mins
-    uint256 constant ACTIVE_DURATION = 1800;
-    uint256 constant INACTIVE_DURATION = 1800;
+    uint256 constant ACTIVE_DURATION = 600;
+    uint256 constant INACTIVE_DURATION = 600;
 
     struct Info{
         uint256 staking_balance;
@@ -27,13 +28,13 @@ contract StakingContract is Ownable{
     mapping(uint256 => mapping(address=> Info)) public pool_staking_info;
     mapping(uint256 => Pool) public index_pool;
 
-    event CreateMINIPool(address _caller, uint256 _total_mini);
-    event Staking(address _caller, uint256 _index,uint256 _amount);
-    event Claim(address _caller, uint256 _index,uint256 _share);
+    event CreateMINIPool(uint256 _index, uint256 _total_mini);
+    event IncreaseStaking(uint256 _index, address _caller, uint256 _amount);
+    event Claimed(uint256 _index, address _caller, uint256 _share);
 
     constructor(address _mini, address _erc20) {
-        MINI_Erc20 = AssetsBridgeErc20(_mini);
-        Staking_Erc20 = AssetsBridgeErc20(_erc20);
+        MINI_Erc20 = IERC20(_mini);
+        Staking_Erc20 = IERC20(_erc20);
     }
     modifier ActiveIndexRequire(uint256 _index) {
         require(index_pool[_index].create_timpstamp != 0,"Pool does not exist");
@@ -43,8 +44,13 @@ contract StakingContract is Ownable{
         bool result = MINI_Erc20.transferFrom(msg.sender,address(this),_total_mini);
         if (result) {
             index_pool[index++] = Pool(_total_mini,block.timestamp,0);
-            emit CreateMINIPool(msg.sender,_total_mini);
+            emit CreateMINIPool(index,_total_mini);
         }
+    }
+    function withdraw_mini(uint256 _index) public onlyOwner{
+        Pool memory pool = index_pool[_index];
+        require(pool.total_balance==0,"Someone is already stacking");
+        MINI_Erc20.transfer(msg.sender,pool.total_mini);
     }
     function staking(uint256 _index,uint256 _amount) public ActiveIndexRequire(_index){
         uint256 create_timpstamp = index_pool[_index].create_timpstamp;
@@ -54,7 +60,7 @@ contract StakingContract is Ownable{
             index_pool[_index].total_balance += _amount;
             Info storage info = pool_staking_info[_index][msg.sender];
             info.staking_balance+=_amount;
-            emit Staking(msg.sender,_index,_amount);
+            emit IncreaseStaking(_index,msg.sender,_amount);
         }
     }
     function claim(uint256 _index) public ActiveIndexRequire(_index){
@@ -66,7 +72,7 @@ contract StakingContract is Ownable{
         Staking_Erc20.transfer(msg.sender,staking_balance);
         pool_staking_info[_index][msg.sender].is_claimed=true;
         pool_staking_info[_index][msg.sender].staking_balance-=staking_balance;
-        emit Claim(msg.sender,_index,share);
+        emit Claimed(_index,msg.sender,share);
 
     }
     function get_share(uint256 _index) public view ActiveIndexRequire(_index) returns(uint256,uint256, bool) {
@@ -86,6 +92,13 @@ contract StakingContract is Ownable{
     }
     function get_pool_index() public view returns(uint256){
         return index;
+    }
+    function get_pool_timestamp(uint256 _index) public view ActiveIndexRequire(_index) returns(uint256,uint256,uint256){
+        Pool memory pool = index_pool[_index];
+        return(pool.create_timpstamp,
+        pool.create_timpstamp+ACTIVE_DURATION,
+        pool.create_timpstamp+ACTIVE_DURATION+INACTIVE_DURATION
+        );
     }
 
 }
