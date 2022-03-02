@@ -12,8 +12,8 @@ contract StakingContract is Ownable{
     //uint256 constant ACTIVE_DURATION = 604800;
     //uint256 constant INACTIVE_DURATION = 604800;
     //3 mins
-    uint256 constant ACTIVE_DURATION = 180;
-    uint256 constant INACTIVE_DURATION = 180;
+    uint256 constant ACTIVE_DURATION = 1800;
+    uint256 constant INACTIVE_DURATION = 1800;
 
     struct Info{
         uint256 staking_balance;
@@ -48,7 +48,7 @@ contract StakingContract is Ownable{
     }
     function staking(uint256 _index,uint256 _amount) public ActiveIndexRequire(_index){
         uint256 create_timpstamp = index_pool[_index].create_timpstamp;
-        require(block.timestamp - create_timpstamp <= ACTIVE_DURATION,"ACTIVE_DURATION timeout");
+        require(block.timestamp - create_timpstamp <= ACTIVE_DURATION,"Stacking period timeout");
         bool result = Staking_Erc20.transferFrom(msg.sender,address(this),_amount);
         if (result) {
             index_pool[_index].total_balance += _amount;
@@ -61,18 +61,20 @@ contract StakingContract is Ownable{
         uint256 create_timpstamp = index_pool[_index].create_timpstamp;
         require(block.timestamp - create_timpstamp >= ACTIVE_DURATION + INACTIVE_DURATION,"Claim didn't start");
         (uint256 staking_balance,uint256 share,bool is_claimed) = get_share(_index);
-        if(!is_claimed){
-            MINI_Erc20.transfer(msg.sender,share);
-            Staking_Erc20.transfer(msg.sender,staking_balance);
-            Pool storage pool = index_pool[_index];
-            pool.total_balance-=staking_balance;
-            pool.total_mini-=share;
-            emit Claim(msg.sender,_index,share);
-        }
+        require(!is_claimed,"Already claim");
+        MINI_Erc20.transfer(msg.sender,share);
+        Staking_Erc20.transfer(msg.sender,staking_balance);
+        pool_staking_info[_index][msg.sender].is_claimed=true;
+        pool_staking_info[_index][msg.sender].staking_balance-=staking_balance;
+        emit Claim(msg.sender,_index,share);
+
     }
     function get_share(uint256 _index) public view ActiveIndexRequire(_index) returns(uint256,uint256, bool) {
         Info memory info = pool_staking_info[_index][msg.sender];
         Pool memory pool = index_pool[_index];
+        if(pool.total_balance==0){
+            return (0,0,false);
+        }
         uint256 share = info.staking_balance * pool.total_mini / pool.total_balance;
         return (info.staking_balance,share,info.is_claimed);
     }
