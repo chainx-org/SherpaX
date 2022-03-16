@@ -52,6 +52,7 @@ pub mod pallet {
     use frame_support::{
         pallet_prelude::*,
         traits::{LockableCurrency, ReservableCurrency},
+        transactional,
     };
     use frame_system::pallet_prelude::*;
 
@@ -82,6 +83,7 @@ pub mod pallet {
         ///
         /// This is a root-only operation.
         #[pallet::weight(<T as Config>::WeightInfo::root_deposit())]
+        #[transactional]
         pub fn root_deposit(
             origin: OriginFor<T>,
             who: <T::Lookup as StaticLookup>::Source,
@@ -97,6 +99,7 @@ pub mod pallet {
         ///
         /// This is a root-only operation.
         #[pallet::weight(<T as Config>::WeightInfo::root_withdraw())]
+        #[transactional]
         pub fn root_withdraw(
             origin: OriginFor<T>,
             who: <T::Lookup as StaticLookup>::Source,
