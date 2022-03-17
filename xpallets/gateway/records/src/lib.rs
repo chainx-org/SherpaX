@@ -216,7 +216,7 @@ pub mod pallet {
     /// Withdraw applications collection, use serial numbers to mark them.
     #[pallet::storage]
     #[pallet::getter(fn pending_withdrawals)]
-    pub type PendingWithdrawals<T: Config> =
+    pub(crate) type PendingWithdrawals<T: Config> =
         StorageMap<_, Twox64Concat, WithdrawalRecordId, WithdrawalRecordOf<T>>;
 
     /// The state of withdraw record corresponding to an id.
@@ -228,13 +228,13 @@ pub mod pallet {
     /// Asset info of each asset.
     #[pallet::storage]
     #[pallet::getter(fn asset_chain_of)]
-    pub type AssetChainOf<T: Config> = StorageMap<_, Twox64Concat, T::AssetId, Chain>;
+    pub(crate) type AssetChainOf<T: Config> = StorageMap<_, Twox64Concat, T::AssetId, Chain>;
 
     /// Any liquidity locks of a token type under an account.
     /// NOTE: Should only be accessed when setting, changing and freeing a lock.
     #[pallet::storage]
     #[pallet::getter(fn locks)]
-    pub type Locks<T: Config> =
+    pub(crate) type Locks<T: Config> =
         StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Twox64Concat, T::AssetId, T::Balance>;
 
     #[pallet::genesis_config]
@@ -634,6 +634,12 @@ impl<T: Config> Pallet<T> {
         Self::unlock(who, asset_id, value)?;
         pallet_assets::Pallet::<T>::burn_from(asset_id, who, value)?;
         Ok(())
+    }
+
+    #[inline]
+    pub fn pending_withdrawal_set(
+    ) -> impl Iterator<Item = (WithdrawalRecordId, WithdrawalRecordOf<T>)> {
+        PendingWithdrawals::<T>::iter()
     }
 }
 
