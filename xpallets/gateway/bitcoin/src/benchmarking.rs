@@ -7,7 +7,6 @@ use frame_system::RawOrigin;
 use sp_runtime::{traits::StaticLookup, AccountId32};
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
-use xp_assets_registrar::Chain;
 use xp_gateway_bitcoin::BtcTxType;
 use xpallet_gateway_records::{Pallet as XGatewayRecords, WithdrawalState};
 
@@ -29,7 +28,6 @@ fn create_default_asset<T: Config>(who: T::AccountId) {
         true,
         1u32.into(),
     );
-    xpallet_gateway_records::AssetChainOf::<T>::insert(T::BtcAssetId::get(), Chain::Bitcoin);
 }
 
 fn generate_blocks_63290_63310() -> BTreeMap<u32, BlockHeader> {
