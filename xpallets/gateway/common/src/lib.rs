@@ -58,7 +58,7 @@ type Balanceof<T> =
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    use frame_support::{pallet_prelude::*, traits::fungibles::Inspect};
+    use frame_support::{pallet_prelude::*, traits::fungibles::Inspect, transactional};
     use frame_system::pallet_prelude::*;
 
     #[pallet::config]
@@ -107,6 +107,7 @@ pub mod pallet {
         ///
         /// NOTE: `ext` is for the compatibility purpose, e.g., EOS requires a memo when doing the transfer.
         #[pallet::weight(< T as Config >::WeightInfo::withdraw())]
+        #[transactional]
         pub fn withdraw(
             origin: OriginFor<T>,
             #[pallet::compact] asset_id: T::AssetId,
@@ -132,6 +133,7 @@ pub mod pallet {
         ///
         /// WithdrawalRecord State: `Applying` ==> `NormalCancel`
         #[pallet::weight(< T as Config >::WeightInfo::cancel_withdrawal())]
+        #[transactional]
         pub fn cancel_withdrawal(origin: OriginFor<T>, id: WithdrawalRecordId) -> DispatchResult {
             let from = ensure_signed(origin)?;
             xpallet_gateway_records::Pallet::<T>::cancel_withdrawal(id, &from)
@@ -223,6 +225,7 @@ pub mod pallet {
         /// Since this is a root call and will go into trustee election, we assume full block for now.
         /// # </weight>
         #[pallet::weight(100_000_000u64)]
+        #[transactional]
         pub fn move_trust_into_black_room(
             origin: OriginFor<T>,
             trustees: Option<Vec<T::AccountId>>,
@@ -249,6 +252,8 @@ pub mod pallet {
                     for trustee in trustees.iter() {
                         l.push(trustee.clone());
                     }
+                    l.sort_unstable();
+                    l.dedup();
                 });
                 trustees.into_iter().for_each(|trustee| {
                     if TrusteeSigRecord::<T>::contains_key(&trustee) {
@@ -361,8 +366,8 @@ pub mod pallet {
         pub fn cancel_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             ensure_root(origin)?;
 
-            TrusteeTransitionStatus::<T>::put(false);
             Self::cancel_trustee_transition_impl(chain)?;
+            TrusteeTransitionStatus::<T>::put(false);
             Ok(())
         }
 
@@ -469,6 +474,7 @@ pub mod pallet {
 
         /// A certain trustee member declares the reward
         #[pallet::weight(< T as Config >::WeightInfo::tranfer_trustee_reward())]
+        #[transactional]
         pub fn tranfer_trustee_reward(
             origin: OriginFor<T>,
             session_num: i32,
@@ -497,6 +503,7 @@ pub mod pallet {
 
         /// A certain trustee member declares the reward
         #[pallet::weight(< T as Config >::WeightInfo::claim_trustee_reward())]
+        #[transactional]
         pub fn claim_trustee_reward(origin: OriginFor<T>, session_num: i32) -> DispatchResult {
             let who = ensure_signed(origin)?;
             let session_num: u32 = if session_num < 0 {
@@ -598,16 +605,16 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn trustee_multisig_addr)]
-    pub type TrusteeMultiSigAddr<T: Config> =
+    pub(crate) type TrusteeMultiSigAddr<T: Config> =
         StorageMap<_, Twox64Concat, Chain, T::AccountId, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin)]
-    pub type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
+    pub(crate) type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin_multiply)]
-    pub type TrusteeAdminMultiply<T: Config> =
+    pub(crate) type TrusteeAdminMultiply<T: Config> =
         StorageValue<_, u64, ValueQuery, DefaultForTrusteeAdminMultiply>;
 
     #[pallet::type_value]
@@ -617,22 +624,22 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn relayer)]
-    pub type Relayer<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
+    pub(crate) type Relayer<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn agg_pubkey_info)]
-    pub type AggPubkeyInfo<T: Config> =
+    pub(crate) type AggPubkeyInfo<T: Config> =
         StorageMap<_, Twox64Concat, Vec<u8>, Vec<T::AccountId>, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn trustee_sig_record)]
-    pub type TrusteeSigRecord<T: Config> =
+    pub(crate) type TrusteeSigRecord<T: Config> =
         StorageMap<_, Twox64Concat, T::AccountId, u64, ValueQuery>;
 
     /// Trustee info config of the corresponding chain.
     #[pallet::storage]
     #[pallet::getter(fn trustee_info_config_of)]
-    pub type TrusteeInfoConfigOf<T: Config> =
+    pub(crate) type TrusteeInfoConfigOf<T: Config> =
         StorageMap<_, Twox64Concat, Chain, TrusteeInfoConfig, ValueQuery>;
 
     /// Current Trustee session info number of the chain.
@@ -643,7 +650,7 @@ pub mod pallet {
     /// NOTE: The number can't be modified by users.
     #[pallet::storage]
     #[pallet::getter(fn trustee_session_info_len)]
-    pub type TrusteeSessionInfoLen<T: Config> =
+    pub(crate) type TrusteeSessionInfoLen<T: Config> =
         StorageMap<_, Twox64Concat, Chain, u32, ValueQuery, DefaultForTrusteeSessionInfoLen>;
 
     #[pallet::type_value]
@@ -654,7 +661,7 @@ pub mod pallet {
     /// Trustee session info of the corresponding chain and number.
     #[pallet::storage]
     #[pallet::getter(fn trustee_session_info_of)]
-    pub type TrusteeSessionInfoOf<T: Config> = StorageDoubleMap<
+    pub(crate) type TrusteeSessionInfoOf<T: Config> = StorageDoubleMap<
         _,
         Twox64Concat,
         Chain,
@@ -666,7 +673,7 @@ pub mod pallet {
     /// Trustee intention properties of the corresponding account and chain.
     #[pallet::storage]
     #[pallet::getter(fn trustee_intention_props_of)]
-    pub type TrusteeIntentionPropertiesOf<T: Config> = StorageDoubleMap<
+    pub(crate) type TrusteeIntentionPropertiesOf<T: Config> = StorageDoubleMap<
         _,
         Blake2_128Concat,
         T::AccountId,
@@ -677,12 +684,12 @@ pub mod pallet {
 
     /// The account of the corresponding chain and chain address.
     #[pallet::storage]
-    pub type AddressBindingOf<T: Config> =
+    pub(crate) type AddressBindingOf<T: Config> =
         StorageDoubleMap<_, Twox64Concat, Chain, Blake2_128Concat, ChainAddress, T::AccountId>;
 
     /// The bound address of the corresponding account and chain.
     #[pallet::storage]
-    pub type BoundAddressOf<T: Config> = StorageDoubleMap<
+    pub(crate) type BoundAddressOf<T: Config> = StorageDoubleMap<
         _,
         Blake2_128Concat,
         T::AccountId,
@@ -695,19 +702,20 @@ pub mod pallet {
     /// The referral account of the corresponding account and chain.
     #[pallet::storage]
     #[pallet::getter(fn referral_binding_of)]
-    pub type ReferralBindingOf<T: Config> =
+    pub(crate) type ReferralBindingOf<T: Config> =
         StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Twox64Concat, Chain, T::AccountId>;
 
     /// How long each trustee is kept. This defines the next block number at which an
     /// trustee transition will happen. If set to zero, no trustee transition are ever triggered.
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_duration)]
-    pub type TrusteeTransitionDuration<T: Config> = StorageValue<_, T::BlockNumber, ValueQuery>;
+    pub(crate) type TrusteeTransitionDuration<T: Config> =
+        StorageValue<_, T::BlockNumber, ValueQuery>;
 
     /// The status of the of the trustee transition
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_status)]
-    pub type TrusteeTransitionStatus<T: Config> = StorageValue<_, bool, ValueQuery>;
+    pub(crate) type TrusteeTransitionStatus<T: Config> = StorageValue<_, bool, ValueQuery>;
 
     /// Members not participating in trustee elections.
     ///
@@ -715,12 +723,12 @@ pub mod pallet {
     /// little black room. Filter out the member in the next trustee election
     #[pallet::storage]
     #[pallet::getter(fn little_black_house)]
-    pub type LittleBlackHouse<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
+    pub(crate) type LittleBlackHouse<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
     /// When the trust exchange begins, the total cross-chain assets of a certain AssetId
     #[pallet::storage]
     #[pallet::getter(fn pre_total_supply)]
-    pub type PreTotalSupply<T: Config> =
+    pub(crate) type PreTotalSupply<T: Config> =
         StorageMap<_, Twox64Concat, T::AssetId, T::Balance, ValueQuery>;
 
     #[pallet::genesis_config]
@@ -807,7 +815,7 @@ impl<T: Config> Pallet<T> {
                 Withdrawal<T::AccountId, T::AssetId, T::Balance, T::BlockNumber>,
                 WithdrawalLimit<T::Balance>,
             ),
-        > = xpallet_gateway_records::PendingWithdrawals::<T>::iter()
+        > = xpallet_gateway_records::Pallet::<T>::pending_withdrawal_set()
             .map(|(id, record)| {
                 (
                     id,
@@ -911,8 +919,6 @@ impl<T: Config> Pallet<T> {
             })
             .collect::<Vec<_>>();
 
-        LittleBlackHouse::<T>::put(remain_filter_members);
-
         let desired_members =
             (<T as pallet_elections_phragmen::Config>::DesiredMembers::get() - 1) as usize;
 
@@ -935,6 +941,7 @@ impl<T: Config> Pallet<T> {
             return Err(Error::<T>::TrusteeMembersNotEnough.into());
         }
         Self::transition_trustee_session_impl(Chain::Bitcoin, new_trustee_candidate)?;
+        LittleBlackHouse::<T>::put(remain_filter_members);
         if Self::trustee_session_info_len(Chain::Bitcoin) != 1 {
             TrusteeTransitionStatus::<T>::put(true);
             let total_supply = T::BitcoinTotalSupply::total_supply();
@@ -1103,23 +1110,24 @@ impl<T: Config> Pallet<T> {
             .0
             .multi_account
             .ok_or(Error::<T>::InvalidTrusteeSession)?;
+        Self::generate_aggpubkey_impl(chain, session_number)?;
         TrusteeSessionInfoLen::<T>::insert(chain, session_number);
         TrusteeMultiSigAddr::<T>::insert(chain, multi_account);
-        Self::generate_aggpubkey_impl(chain, session_number)?;
         TrusteeAdmin::<T>::kill();
         Ok(())
     }
 
     fn generate_aggpubkey_impl(chain: Chain, session_number: u32) -> DispatchResult {
-        let trustee_session = T::BitcoinTrusteeSessionProvider::current_trustee_session()?;
+        let trustee_session = T::BitcoinTrusteeSessionProvider::trustee_session(session_number)?;
         let trustees = trustee_session
             .trustee_list
             .into_iter()
             .unzip::<_, _, _, Vec<u64>>()
             .0;
-        AggPubkeyInfo::<T>::remove_all(None);
+
         let info = Self::try_generate_session_info(chain, trustees)?;
 
+        AggPubkeyInfo::<T>::remove_all(None);
         for index in 0..info.1.agg_pubkeys.len() {
             AggPubkeyInfo::<T>::insert(
                 &info.1.agg_pubkeys[index],
