@@ -27,7 +27,6 @@ fn create_default_asset<T: Config>(who: T::AccountId) {
         true,
         1u32.into(),
     );
-    xpallet_gateway_records::AssetChainOf::<T>::insert(T::BtcAssetId::get(), Chain::Bitcoin);
 }
 #[cfg(feature = "runtime-benchmarks")]
 fn update_trustee_info<T: Config>(session_num: u32) {
