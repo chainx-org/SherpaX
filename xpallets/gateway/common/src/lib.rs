@@ -472,44 +472,27 @@ pub mod pallet {
             Ok(())
         }
 
-        /// A certain trustee member declares the reward
-        #[pallet::weight(< T as Config >::WeightInfo::tranfer_trustee_reward())]
-        #[transactional]
-        pub fn tranfer_trustee_reward(
-            origin: OriginFor<T>,
-            session_num: i32,
-            amount: Balanceof<T>,
-        ) -> DispatchResult {
-            let who = ensure_signed(origin)?;
-            let session_num: u32 = if session_num < 0 {
-                match session_num {
-                    -1i32 => Self::trustee_session_info_len(Chain::Bitcoin),
-                    -2i32 => Self::trustee_session_info_len(Chain::Bitcoin)
-                        .checked_sub(1)
-                        .ok_or(Error::<T>::InvalidSessionNum)?,
-                    _ => return Err(Error::<T>::InvalidSessionNum.into()),
-                }
-            } else {
-                session_num as u32
-            };
-            ensure!(
-                Self::trustee_session_info_len(Chain::Bitcoin) > session_num,
-                Error::<T>::InvalidSessionNum
-            );
-            let trustee_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
-            Self::apply_tranfer_trustee_reward(&who, session_num, &trustee_info, amount)?;
-            Self::apply_claim_trustee_reward(&who, session_num, &trustee_info)
-        }
-
-        /// A certain trustee member declares the reward
+        /// Assign trustee reward
+        ///
+        /// Any trust can actively call this to receive the
+        /// award for the term the trust is in after the change
+        /// of term.
+        ///
+        /// If a trust has not renewed for a long period of time
+        /// (no change in council membership or no unusual
+        /// circumstances to not renew), but they want to receive
+        /// their award early, they can call this through the council.
         #[pallet::weight(< T as Config >::WeightInfo::claim_trustee_reward())]
         #[transactional]
-        pub fn claim_trustee_reward(origin: OriginFor<T>, session_num: i32) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+        pub fn claim_trustee_reward(
+            origin: OriginFor<T>,
+            chain: Chain,
+            session_num: i32,
+        ) -> DispatchResult {
             let session_num: u32 = if session_num < 0 {
                 match session_num {
-                    -1i32 => Self::trustee_session_info_len(Chain::Bitcoin),
-                    -2i32 => Self::trustee_session_info_len(Chain::Bitcoin)
+                    -1i32 => Self::trustee_session_info_len(chain),
+                    -2i32 => Self::trustee_session_info_len(chain)
                         .checked_sub(1)
                         .ok_or(Error::<T>::InvalidSessionNum)?,
                     _ => return Err(Error::<T>::InvalidSessionNum.into()),
@@ -517,9 +500,27 @@ pub mod pallet {
             } else {
                 session_num as u32
             };
-            let trustee_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
 
-            Self::apply_claim_trustee_reward(&who, session_num, &trustee_info)
+            if session_num == Self::trustee_session_info_len(chain) {
+                T::CouncilOrigin::ensure_origin(origin)?;
+                // update trustee sig record info (update reward weight)
+                TrusteeSessionInfoOf::<T>::mutate(chain, session_num, |info| {
+                    if let Some(info) = info {
+                        info.0.trustee_list.iter_mut().for_each(|trustee| {
+                            trustee.1 = Self::trustee_sig_record(&trustee.0);
+                        });
+                    }
+                });
+            } else {
+                let session_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
+                let who = ensure_signed(origin)?;
+                ensure!(
+                    session_info.trustee_list.iter().any(|n| n.0 == who),
+                    Error::<T>::InvalidTrusteeHisMember
+                );
+            }
+
+            Self::apply_claim_trustee_reward(session_num)
         }
     }
 
@@ -546,9 +547,9 @@ pub mod pallet {
         /// Asset reward to trustee multi_account. [target, asset_id, reward_total]
         TransferAssetReward(T::AccountId, T::AssetId, T::Balance),
         /// The native asset of trustee multi_account is assigned. [who, multi_account, session_number, total_reward]
-        AllocNativeReward(T::AccountId, T::AccountId, u32, Balanceof<T>),
+        AllocNativeReward(T::AccountId, u32, Balanceof<T>),
         /// The not native asset of trustee multi_account is assigned. [who, multi_account, session_number, asset_id, total_reward]
-        AllocNotNativeReward(T::AccountId, T::AccountId, u32, T::AssetId, T::Balance),
+        AllocNotNativeReward(T::AccountId, u32, T::AssetId, T::Balance),
     }
 
     #[pallet::error]
@@ -1312,26 +1313,17 @@ impl<T: Config> Pallet<T> {
         Ok(total_reward)
     }
 
-    pub fn apply_claim_trustee_reward(
-        who: &T::AccountId,
-        session_num: u32,
-        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
-    ) -> DispatchResult {
-        ensure!(
-            trustee_info.trustee_list.iter().any(|n| &n.0 == who),
-            Error::<T>::InvalidTrusteeHisMember
-        );
-
+    pub fn apply_claim_trustee_reward(session_num: u32) -> DispatchResult {
+        let trustee_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
         let multi_account = match trustee_info.multi_account.clone() {
             None => return Err(Error::<T>::InvalidMultiAccount.into()),
             Some(n) => n,
         };
 
-        match Self::alloc_native_reward(&multi_account, trustee_info) {
+        match Self::alloc_native_reward(&multi_account, &trustee_info) {
             Ok(total_native_reward) => {
                 if !total_native_reward.is_zero() {
                     Self::deposit_event(Event::<T>::AllocNativeReward(
-                        who.clone(),
                         multi_account.clone(),
                         session_num,
                         total_native_reward,
@@ -1341,11 +1333,10 @@ impl<T: Config> Pallet<T> {
             Err(e) => return Err(e),
         }
 
-        match Self::alloc_not_native_reward(&multi_account, T::BtcAssetId::get(), trustee_info) {
+        match Self::alloc_not_native_reward(&multi_account, T::BtcAssetId::get(), &trustee_info) {
             Ok(total_btc_reward) => {
                 if !total_btc_reward.is_zero() {
                     Self::deposit_event(Event::<T>::AllocNotNativeReward(
-                        who.clone(),
                         multi_account,
                         session_num,
                         T::BtcAssetId::get(),
