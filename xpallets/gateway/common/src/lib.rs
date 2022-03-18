@@ -398,9 +398,9 @@ pub mod pallet {
             chain: Chain,
             config: TrusteeInfoConfig,
         ) -> DispatchResult {
-            if T::CouncilOrigin::ensure_origin(origin.clone()).is_err() {
-                ensure_root(origin)?;
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             TrusteeInfoConfigOf::<T>::insert(chain, config);
             Ok(())
@@ -409,9 +409,9 @@ pub mod pallet {
         /// Set trustee admin multiply
         #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin_multiply())]
         pub fn set_trustee_admin_multiply(origin: OriginFor<T>, multiply: u64) -> DispatchResult {
-            if T::CouncilOrigin::ensure_origin(origin.clone()).is_err() {
-                ensure_root(origin)?;
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             TrusteeAdminMultiply::<T>::put(multiply);
             Ok(())
@@ -423,9 +423,9 @@ pub mod pallet {
             origin: OriginFor<T>,
             duration: T::BlockNumber,
         ) -> DispatchResult {
-            if T::CouncilOrigin::ensure_origin(origin.clone()).is_err() {
-                ensure_root(origin)?;
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             TrusteeTransitionDuration::<T>::put(duration);
             Ok(())
@@ -436,9 +436,9 @@ pub mod pallet {
         /// This is a root-only operation.
         #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin())]
         pub fn set_relayer(origin: OriginFor<T>, relayer: T::AccountId) -> DispatchResult {
-            if T::CouncilOrigin::ensure_origin(origin.clone()).is_err() {
-                ensure_root(origin)?;
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             Relayer::<T>::put(relayer);
             Ok(())
@@ -454,9 +454,9 @@ pub mod pallet {
             admin: T::AccountId,
             chain: Chain,
         ) -> DispatchResult {
-            if T::CouncilOrigin::ensure_origin(origin.clone()).is_err() {
-                ensure_root(origin)?;
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             Self::trustee_intention_props_of(&admin, chain).ok_or_else::<DispatchError, _>(
                 || {
