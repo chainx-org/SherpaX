@@ -1,11 +1,12 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
 use crate::{
-    mock::{bob, charlie, ExtBuilder, Test, XGatewayCommon},
-    Pallet, TrusteeSessionInfoLen,
+    mock::{bob, charlie, dave, Assets, ExtBuilder, Test, XGatewayCommon, XGatewayRecords},
+    Pallet, TrusteeSessionInfoLen, TrusteeSessionInfoOf, TrusteeSigRecord,
 };
 use frame_support::assert_ok;
 use xp_assets_registrar::Chain;
+use xp_protocol::X_BTC;
 
 #[test]
 fn test_do_trustee_election() {
@@ -23,8 +24,8 @@ fn test_claim_not_native_asset_reward() {
     ExtBuilder::default().build().execute_with(|| {
         assert_ok!(XGatewayCommon::do_trustee_election());
 
-        TrusteeSigRecord::<Test>::mutate(Chain::Bitcoin, bob(), |record| *record = 9);
-        TrusteeSigRecord::<Test>::mutate(Chain::Bitcoin, charlie(), |record| *record = 1);
+        TrusteeSigRecord::<Test>::mutate(bob(), |record| *record = 9);
+        TrusteeSigRecord::<Test>::mutate(charlie(), |record| *record = 1);
 
         assert_eq!(XGatewayCommon::trustee_sig_record(bob()), 9);
         assert_eq!(XGatewayCommon::trustee_sig_record(charlie()), 1);
@@ -37,14 +38,14 @@ fn test_claim_not_native_asset_reward() {
         TrusteeSessionInfoOf::<Test>::mutate(Chain::Bitcoin, 1, |info| {
             if let Some(info) = info {
                 info.0.trustee_list.iter_mut().for_each(|trustee| {
-                    trustee.1 = XGatewayCommon::trustee_sig_record(Chain::Bitcoin, &trustee.0);
+                    trustee.1 = XGatewayCommon::trustee_sig_record(&trustee.0);
                 });
             }
         });
 
         assert_ok!(XGatewayCommon::apply_claim_trustee_reward(1));
 
-        assert_eq!(XAssets::usable_balance(&bob(), &X_BTC), 9);
-        assert_eq!(XAssets::usable_balance(&charlie(), &X_BTC), 1);
+        assert_eq!(Assets::balance(X_BTC, &bob()), 9);
+        assert_eq!(Assets::balance(X_BTC, &charlie()), 1);
     });
 }
