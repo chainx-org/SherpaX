@@ -35,7 +35,10 @@ use sherpax_primitives::ReferralId;
 use xp_assets_registrar::Chain;
 use xp_gateway_common::AccountExtractor;
 use xpallet_gateway_common::{
-    traits::{AddressBinding, ReferralBinding, TrusteeInfoUpdate, TrusteeSession},
+    traits::{
+        AddressBinding, ReferralBinding, RelayerInfo, TotalSupply, TrusteeInfoUpdate,
+        TrusteeSession,
+    },
     trustees::bitcoin::BtcTrusteeAddrInfo,
 };
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
@@ -70,9 +73,10 @@ macro_rules! log {
 pub mod pallet {
     use sp_std::marker::PhantomData;
 
-    use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::UnixTime};
+    use frame_support::{
+        dispatch::DispatchResult, pallet_prelude::*, traits::UnixTime, transactional,
+    };
     use frame_system::pallet_prelude::*;
-    use xpallet_gateway_common::traits::{RelayerInfo, TotalSupply};
 
     use super::*;
 
@@ -84,19 +88,38 @@ pub mod pallet {
     pub trait Config:
         frame_system::Config + pallet_assets::Config + xpallet_gateway_records::Config
     {
+        /// The overarching event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+        /// The unix time type.
         type UnixTime: UnixTime;
+
+        /// A majority of the council can excute some transactions.
+        type CouncilOrigin: EnsureOrigin<Self::Origin>;
+
+        /// Extract the account and possible extra from the data.
         type AccountExtractor: AccountExtractor<Self::AccountId, ReferralId>;
+
+        /// Get information about the trustee.
         type TrusteeSessionProvider: TrusteeSession<
             Self::AccountId,
             Self::BlockNumber,
             BtcTrusteeAddrInfo,
         >;
+
+        /// Update information about the trustee.
         type TrusteeInfoUpdate: TrusteeInfoUpdate;
-        type TrusteeOrigin: EnsureOrigin<Self::Origin, Success = Self::AccountId>;
+
+        /// Get relayer address. [deprecated after comming bot]
         type RelayerInfo: RelayerInfo<Self::AccountId>;
+
+        /// Handle referral of assets across chains.
         type ReferralBinding: ReferralBinding<Self::AccountId, Self::AssetId>;
+
+        /// Handle address binding about pending deposit.
         type AddressBinding: AddressBinding<Self::AccountId, BtcAddress>;
+
+        /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
     }
 
@@ -212,7 +235,7 @@ pub mod pallet {
             addr: BtcAddress,
             who: Option<T::AccountId>,
         ) -> DispatchResult {
-            T::TrusteeOrigin::try_origin(origin)
+            T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
 
@@ -228,10 +251,12 @@ pub mod pallet {
         /// Dangerous! remove current withdrawal proposal directly. Please check business logic before
         /// do this operation.
         #[pallet::weight(<T as Config>::WeightInfo::remove_proposal())]
+        #[transactional]
         pub fn remove_proposal(origin: OriginFor<T>) -> DispatchResult {
-            ensure_root(origin)?;
-            WithdrawalProposal::<T>::kill();
-            Ok(())
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
+            Self::apply_remove_proposal()
         }
 
         /// Set bitcoin withdrawal fee
@@ -240,7 +265,7 @@ pub mod pallet {
             origin: OriginFor<T>,
             #[pallet::compact] fee: u64,
         ) -> DispatchResult {
-            T::TrusteeOrigin::try_origin(origin)
+            T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
             BtcWithdrawalFee::<T>::put(fee);
@@ -253,7 +278,7 @@ pub mod pallet {
             origin: OriginFor<T>,
             #[pallet::compact] value: u64,
         ) -> DispatchResult {
-            T::TrusteeOrigin::try_origin(origin)
+            T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
             BtcMinDeposit::<T>::put(value);
@@ -654,12 +679,16 @@ pub mod pallet {
             deserialize(Reader::new(input)).map_err(|_| Error::<T>::DeserializeErr)
         }
 
-        #[inline]
-        #[allow(dead_code)]
-        pub(crate) fn deserialize_spent_outputs(
-            input: &[u8],
-        ) -> Result<TransactionOutputArray, Error<T>> {
-            deserialize(Reader::new(input)).map_err(|_| Error::<T>::DeserializeErr)
+        pub(crate) fn apply_remove_proposal() -> DispatchResult {
+            if let Some(proposal) = WithdrawalProposal::<T>::take() {
+                for id in proposal.withdrawal_id_list.iter() {
+                    xpallet_gateway_records::Pallet::<T>::set_withdrawal_state_by_root(
+                        *id,
+                        xpallet_gateway_records::WithdrawalState::Applying,
+                    )?;
+                }
+            }
+            Ok(())
         }
 
         pub(crate) fn apply_push_header(header: BtcHeader) -> DispatchResult {

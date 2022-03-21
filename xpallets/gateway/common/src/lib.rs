@@ -45,9 +45,7 @@ pub use pallet::*;
 use sherpax_primitives::{AddrStr, ChainAddress, Text};
 use xp_assets_registrar::Chain;
 use xp_runtime::Memo;
-use xpallet_gateway_records::{
-    ChainT, Withdrawal, WithdrawalLimit, WithdrawalRecordId, WithdrawalState,
-};
+use xpallet_gateway_records::{ChainT, Withdrawal, WithdrawalLimit, WithdrawalRecordId};
 use xpallet_support::traits::{MultisigAddressFor, Validator};
 
 type Balanceof<T> =
@@ -190,7 +188,7 @@ pub mod pallet {
 
         /// Manual execution of the election by admin.
         #[pallet::weight(0u64)]
-        pub fn excute_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
+        pub fn excute_trustee_election(origin: OriginFor<T>) -> DispatchResult {
             match ensure_signed(origin.clone()) {
                 Ok(who) => {
                     ensure!(who == Self::trustee_admin(), Error::<T>::NotTrusteeAdmin);
@@ -206,7 +204,7 @@ pub mod pallet {
         /// Force cancel trustee transition
         ///
         /// This is called by the root.
-        #[pallet::weight(100_000_000u64)]
+        #[pallet::weight(0u64)]
         pub fn cancel_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             ensure_root(origin)?;
 
@@ -224,7 +222,7 @@ pub mod pallet {
         /// # <weight>
         /// Since this is a root call and will go into trustee election, we assume full block for now.
         /// # </weight>
-        #[pallet::weight(100_000_000u64)]
+        #[pallet::weight(0u64)]
         #[transactional]
         pub fn move_trust_into_black_room(
             origin: OriginFor<T>,
@@ -272,7 +270,7 @@ pub mod pallet {
         /// # <weight>
         /// Since this is a root call and will go into trustee election, we assume full block for now.
         /// # </weight>
-        #[pallet::weight(100_000_000u64)]
+        #[pallet::weight(0u64)]
         pub fn move_trust_out_black_room(
             origin: OriginFor<T>,
             members: Vec<T::AccountId>,
@@ -819,10 +817,7 @@ impl<T: Config> Pallet<T> {
     }
 
     pub fn is_valid_about(about: &[u8]) -> DispatchResult {
-        // TODO
-        if about.len() > 128 {
-            return Err(Error::<T>::InvalidAboutLen.into());
-        }
+        ensure!(about.len() <= 128, Error::<T>::InvalidAboutLen);
 
         xp_runtime::xss_check(about)
     }

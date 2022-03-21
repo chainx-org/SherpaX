@@ -12,7 +12,7 @@ use frame_support::{
     traits::{LockIdentifier, UnixTime},
     weights::Weight,
 };
-use frame_system::{EnsureRoot, EnsureSigned, EnsureSignedBy};
+use frame_system::{EnsureRoot, EnsureSigned};
 use sp_core::H256;
 use sp_keyring::sr25519;
 use sp_runtime::{
@@ -215,14 +215,11 @@ impl UnixTime for Timestamp {
 impl Config for Test {
     type Event = ();
     type UnixTime = Timestamp;
+    type CouncilOrigin = EnsureSigned<AccountId>;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeSessionProvider =
         xpallet_gateway_common::trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type TrusteeInfoUpdate = XGatewayCommon;
-    type TrusteeOrigin = EnsureSignedBy<
-        xpallet_gateway_common::trustees::bitcoin::BtcTrusteeMultisig<Test>,
-        AccountId,
-    >;
     type RelayerInfo = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
