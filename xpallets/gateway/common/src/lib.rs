@@ -188,31 +188,31 @@ pub mod pallet {
             Self::setup_trustee_impl(who, proxy_account, chain, about, hot_entity, cold_entity)
         }
 
-        /// Transition the trustee session.
-        #[pallet::weight(< T as Config >::WeightInfo::transition_trustee_session())]
-        pub fn transition_trustee_session(
-            origin: OriginFor<T>,
-            chain: Chain,
-            new_trustees: Vec<T::AccountId>,
-        ) -> DispatchResult {
+        /// Manual execution of the election by admin.
+        #[pallet::weight(0u64)]
+        pub fn excute_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             match ensure_signed(origin.clone()) {
                 Ok(who) => {
-                    if who != Self::trustee_multisig_addr(chain) {
-                        return Err(Error::<T>::InvalidMultisig.into());
-                    }
+                    ensure!(who == Self::trustee_admin(), Error::<T>::NotTrusteeAdmin);
                 }
                 Err(_) => {
                     ensure_root(origin)?;
                 }
             };
 
-            info!(
-                target: "runtime::gateway::common",
-                "[transition_trustee_session] Try to transition trustees, chain:{:?}, new_trustees:{:?}",
-                chain,
-                new_trustees
-            );
-            Self::transition_trustee_session_impl(chain, new_trustees)
+            Self::do_trustee_election()
+        }
+
+        /// Force cancel trustee transition
+        ///
+        /// This is called by the root.
+        #[pallet::weight(100_000_000u64)]
+        pub fn cancel_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
+            ensure_root(origin)?;
+
+            Self::cancel_trustee_transition_impl(chain)?;
+            TrusteeTransitionStatus::<T>::put(false);
+            Ok(())
         }
 
         /// Move a current trustee into a small black room.
@@ -302,31 +302,6 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Automatic trustee transfer from relayer.
-        ///
-        /// Since the time of the function exectution only have 0.5 s during
-        /// the initialization of parachain, the action of the trustee election
-        /// is not supported, so the automatic trustee election is triggered by
-        /// the Relayer.
-        ///
-        /// This is called by the relayer and root.
-        #[pallet::weight(100_000_000u64)]
-        pub fn auto_trustee_election(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::relayer() {
-                        return Err(Error::<T>::InvalidRelayer.into());
-                    }
-                }
-                Err(_) => {
-                    ensure_root(origin)?;
-                }
-            };
-
-            Self::do_trustee_election()?;
-            Ok(Pays::No.into())
-        }
-
         /// Force trustee election
         ///
         /// Mandatory trustee renewal if the current trustee is not doing anything
@@ -357,36 +332,6 @@ pub mod pallet {
 
             Self::setup_trustee_impl(who, proxy_account, chain, about, hot_entity, cold_entity)?;
             Ok(())
-        }
-
-        /// Force cancel trustee transition
-        ///
-        /// This is called by the root.
-        #[pallet::weight(100_000_000u64)]
-        pub fn cancel_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
-            ensure_root(origin)?;
-
-            Self::cancel_trustee_transition_impl(chain)?;
-            TrusteeTransitionStatus::<T>::put(false);
-            Ok(())
-        }
-
-        /// Set the state of withdraw record by the trustees.
-        #[pallet::weight(< T as Config >::WeightInfo::set_withdrawal_state())]
-        pub fn set_withdrawal_state(
-            origin: OriginFor<T>,
-            #[pallet::compact] id: WithdrawalRecordId,
-            state: WithdrawalState,
-        ) -> DispatchResult {
-            let from = ensure_signed(origin)?;
-
-            let map = Self::trustee_multisigs();
-            let chain = map
-                .into_iter()
-                .find_map(|(chain, multisig)| if from == multisig { Some(chain) } else { None })
-                .ok_or(Error::<T>::InvalidMultisig)?;
-
-            xpallet_gateway_records::Pallet::<T>::set_withdrawal_state_by_trustees(id, chain, state)
         }
 
         /// Set the config of trustee information.
