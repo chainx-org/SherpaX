@@ -659,13 +659,13 @@ pub mod pallet {
                             .unwrap_or_default()
                     })
                     .all(|addr| xp_gateway_bitcoin::is_trustee_addr(addr, current_trustee_pair));
-                if !all_outputs_is_trustee {
-                    Err(Error::<T>::NoWithdrawInTrans.into())
-                } else if !full_amount {
-                    Err(Error::<T>::InvalidAmoutInTrans.into())
-                } else {
-                    Ok(true)
-                }
+
+                // Ensure that all outputs are cold addresses
+                ensure!(all_outputs_is_trustee, Error::<T>::NoWithdrawInTrans);
+                // Ensure that all amounts are sent
+                ensure!(full_amount, Error::<T>::InvalidAmoutInTrans);
+
+                Ok(true)
             } else {
                 // check normal withdrawal tx
                 trustee::check_withdraw_tx::<T>(&tx, &withdrawal_id_list)?;

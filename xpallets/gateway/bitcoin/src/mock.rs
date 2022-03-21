@@ -299,7 +299,7 @@ impl ExtBuilder {
         }
         .assimilate_storage(&mut storage);
 
-        let (genesis_info, genesis_hash, network_id) = load_mainnet_btc_genesis_header_info();
+        let (genesis_info, genesis_hash, network_id) = load_signet_btc_genesis_header_info();
 
         let _ = xpallet_gateway_bitcoin::GenesisConfig::<Test> {
             genesis_trustees,
@@ -386,7 +386,7 @@ pub fn trustees() -> Vec<(AccountId32, Vec<u8>, Vec<u8>, Vec<u8>)> {
     ]
 }
 
-pub fn load_mainnet_btc_genesis_header_info() -> ((BtcHeader, u32), H256, BtcNetwork) {
+pub fn load_signet_btc_genesis_header_info() -> ((BtcHeader, u32), H256, BtcNetwork) {
     (
         (
             BtcHeader {

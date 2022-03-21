@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 
 cd ..
 
-# cargo build --release --features=runtime-benchmarks
+cargo build --release --features=runtime-benchmarks
 
 bench_run() {
   pallet=$1
