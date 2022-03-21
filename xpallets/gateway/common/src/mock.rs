@@ -36,7 +36,7 @@ use crate::{
     traits::TrusteeForChain,
     trustees::{
         self,
-        bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeMultisig, BtcTrusteeType},
+        bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeType},
     },
     types::*,
     SaturatedConversion,
