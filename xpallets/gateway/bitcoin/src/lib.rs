@@ -41,14 +41,13 @@ use xpallet_gateway_common::{
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
 use xpallet_support::try_addr;
 
-pub use self::types::{BtcAddress, BtcParams, BtcTxVerifier, BtcWithdrawalProposal};
+pub use self::types::{BtcAddress, BtcHeaderInfo, BtcParams, BtcTxVerifier, BtcWithdrawalProposal};
 pub use self::weights::WeightInfo;
 use self::{
     trustee::{get_current_trustee_address_pair, get_last_trustee_address_pair},
     tx::remove_pending_deposit,
     types::{
-        BtcDepositCache, BtcHeaderIndex, BtcHeaderInfo, BtcRelayedTx, BtcRelayedTxInfo,
-        BtcTxResult, BtcTxState,
+        BtcDepositCache, BtcHeaderIndex, BtcRelayedTx, BtcRelayedTxInfo, BtcTxResult, BtcTxState,
     },
 };
 
@@ -625,6 +624,24 @@ pub mod pallet {
             let asset_id = T::BtcAssetId::get();
             let asset_supply = pallet_assets::Pallet::<T>::total_supply(asset_id);
             asset_supply + pending_deposits
+        }
+    }
+
+    /// Storage Query RPCs
+    impl<T: Config> Pallet<T> {
+        /// Get withdrawal proposal
+        pub fn get_withdrawal_proposal() -> Option<BtcWithdrawalProposal<T::AccountId>> {
+            Self::withdrawal_proposal()
+        }
+
+        /// Get genesis info
+        pub fn get_genesis_info() -> (BtcHeader, u32) {
+            Self::genesis_info()
+        }
+
+        /// Ger btc block headers
+        pub fn get_btc_block_header(txid: H256) -> Option<BtcHeaderInfo> {
+            Self::headers(txid)
         }
     }
 
