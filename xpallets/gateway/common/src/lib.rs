@@ -28,25 +28,32 @@ use frame_support::{
     traits::{fungibles, ChangeMembers, Currency, ExistenceRequirement, Get},
 };
 use frame_system::{ensure_root, ensure_signed};
+
 use sp_runtime::{
     traits::{CheckedDiv, Saturating, UniqueSaturatedInto, Zero},
     SaturatedConversion,
 };
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
-use self::traits::{TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession};
-use self::types::{
-    GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, RewardInfo, ScriptInfo,
-    TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo,
-};
-pub use self::weights::WeightInfo;
-use crate::trustees::bitcoin::BtcTrusteeAddrInfo;
-pub use pallet::*;
 use sherpax_primitives::{AddrStr, ChainAddress, Text};
 use xp_assets_registrar::Chain;
 use xp_runtime::Memo;
+
 use xpallet_gateway_records::{ChainT, Withdrawal, WithdrawalLimit, WithdrawalRecordId};
 use xpallet_support::traits::{MultisigAddressFor, Validator};
+
+use self::{
+    traits::{TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession},
+    trustees::bitcoin::BtcTrusteeAddrInfo,
+    types::{
+        GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, RewardInfo, ScriptInfo,
+        TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo,
+    },
+};
+
+pub use self::weights::WeightInfo;
+
+pub use pallet::*;
 
 type Balanceof<T> =
     <<T as xpallet_gateway_records::Config>::Currency as frame_support::traits::Currency<

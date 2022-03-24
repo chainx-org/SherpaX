@@ -18,7 +18,7 @@ mod mock;
 mod tests;
 
 use sp_runtime::SaturatedConversion;
-use sp_std::prelude::*;
+use sp_std::{marker::PhantomData, prelude::*, str::FromStr};
 
 use orml_utilities::with_transaction_result;
 
@@ -34,6 +34,7 @@ pub use light_bitcoin::{
 use sherpax_primitives::ReferralId;
 use xp_assets_registrar::Chain;
 use xp_gateway_common::AccountExtractor;
+
 use xpallet_gateway_common::{
     traits::{AddressBinding, ReferralBinding, TotalSupply, TrusteeInfoUpdate, TrusteeSession},
     trustees::bitcoin::BtcTrusteeAddrInfo,
@@ -41,8 +42,6 @@ use xpallet_gateway_common::{
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
 use xpallet_support::try_addr;
 
-pub use self::types::{BtcAddress, BtcHeaderInfo, BtcParams, BtcTxVerifier, BtcWithdrawalProposal};
-pub use self::weights::WeightInfo;
 use self::{
     trustee::{get_current_trustee_address_pair, get_last_trustee_address_pair},
     tx::remove_pending_deposit,
@@ -51,8 +50,12 @@ use self::{
     },
 };
 
+pub use self::{
+    types::{BtcAddress, BtcHeaderInfo, BtcParams, BtcTxVerifier, BtcWithdrawalProposal},
+    weights::WeightInfo,
+};
+
 pub use pallet::*;
-use sp_core::sp_std::str::FromStr;
 
 // syntactic sugar for native log.
 #[macro_export]
@@ -67,14 +70,11 @@ macro_rules! log {
 
 #[frame_support::pallet]
 pub mod pallet {
-    use sp_std::marker::PhantomData;
-
+    use super::*;
     use frame_support::{
         dispatch::DispatchResult, pallet_prelude::*, traits::UnixTime, transactional,
     };
     use frame_system::pallet_prelude::*;
-
-    use super::*;
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(crate) trait Store)]

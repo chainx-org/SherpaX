@@ -13,8 +13,6 @@ pub mod traits;
 pub mod types;
 pub mod weights;
 
-use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
-
 use frame_support::{
     dispatch::{DispatchError, DispatchResult},
     ensure,
@@ -22,20 +20,26 @@ use frame_support::{
     traits::fungibles::{Inspect, Mutate},
 };
 use frame_system::ensure_root;
+
 use sp_runtime::traits::{CheckedSub, StaticLookup};
+use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
 
 use orml_utilities::with_transaction_result;
 
-pub use self::traits::{ChainT, OnAssetChanged};
-pub use self::types::{
-    Withdrawal, WithdrawalLimit, WithdrawalRecord, WithdrawalRecordId, WithdrawalState,
-};
-pub use self::weights::WeightInfo;
-use pallet_assets::FrozenBalance;
 use sherpax_primitives::AddrStr;
 use xp_assets_registrar::Chain;
 use xp_runtime::Memo;
+
+use pallet_assets::FrozenBalance;
 use xpallet_support::try_addr;
+
+pub use self::{
+    traits::{ChainT, OnAssetChanged},
+    types::{Withdrawal, WithdrawalLimit, WithdrawalRecord, WithdrawalRecordId, WithdrawalState},
+    weights::WeightInfo,
+};
+
+pub use pallet::*;
 
 pub type WithdrawalRecordOf<T> = WithdrawalRecord<
     <T as frame_system::Config>::AccountId,
@@ -43,8 +47,6 @@ pub type WithdrawalRecordOf<T> = WithdrawalRecord<
     <T as pallet_assets::Config>::Balance,
     <T as frame_system::Config>::BlockNumber,
 >;
-
-pub use pallet::*;
 
 #[frame_support::pallet]
 pub mod pallet {
