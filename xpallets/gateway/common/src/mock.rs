@@ -250,7 +250,6 @@ impl xpallet_gateway_bitcoin::Config for Test {
     type UnixTime = Timestamp;
     type CouncilOrigin = EnsureSigned<AccountId>;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
-    type RelayerInfo = ();
     type TrusteeSessionProvider = ();
     type TrusteeInfoUpdate = ();
     type ReferralBinding = ();

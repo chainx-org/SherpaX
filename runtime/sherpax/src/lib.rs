@@ -785,7 +785,6 @@ impl xpallet_gateway_bitcoin::Config for Runtime {
         pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
-    type RelayerInfo = XGatewayCommon;
     type TrusteeInfoUpdate = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
