@@ -4,7 +4,6 @@ extern crate alloc;
 
 use alloc::string::ToString;
 
-mod secp256k1_verifier;
 pub mod validator;
 
 use frame_support::{
@@ -24,7 +23,7 @@ use light_bitcoin::{
 pub use self::validator::validate_transaction;
 use crate::{
     types::{AccountInfo, BtcAddress, BtcDepositCache, BtcTxResult, BtcTxState},
-    Config, Error, Event, Pallet, PendingDeposits, WithdrawalProposal,
+    Config, Event, Pallet, PendingDeposits, WithdrawalProposal,
 };
 use xp_gateway_bitcoin::{BtcDepositInfo, BtcTxMetaType, BtcTxTypeDetector};
 use xp_gateway_common::AccountExtractor;
@@ -290,34 +289,4 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
 
         BtcTxResult::Failure
     }
-}
-
-/// Returns Ok if `tx1` and `tx2` are the same transaction.
-#[allow(dead_code)]
-pub fn ensure_identical<T: Config>(tx1: &Transaction, tx2: &Transaction) -> DispatchResult {
-    if tx1.version == tx2.version
-        && tx1.outputs == tx2.outputs
-        && tx1.lock_time == tx2.lock_time
-        && tx1.inputs.len() == tx2.inputs.len()
-    {
-        for i in 0..tx1.inputs.len() {
-            if tx1.inputs[i].previous_output != tx2.inputs[i].previous_output
-                || tx1.inputs[i].sequence != tx2.inputs[i].sequence
-            {
-                log::error!(
-                    target: "runtime::bitcoin",
-                    "[ensure_identical] Tx1 is different to Tx2, tx1:{:?}, tx2:{:?}",
-                    tx1,
-                    tx2
-                );
-                return Err(Error::<T>::MismatchedTx.into());
-            }
-        }
-        return Ok(());
-    }
-    log::error!(
-        target: "runtime::bitcoin",
-        "The transaction text does not match the original text to be signed",
-    );
-    Err(Error::<T>::MismatchedTx.into())
 }

@@ -214,6 +214,17 @@ benchmarks! {
     }
 
     remove_proposal {
+        let caller = alice::<T>();
+        let amount:T::Balance = 1_000_000_000u32.into();
+        let withdrawal: T::Balance = 10000u32.into();
+
+        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
+        XGatewayRecords::<T>::withdraw(&caller, T::BtcAssetId::get(), withdrawal, b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
+        XGatewayRecords::<T>::withdraw(&caller, T::BtcAssetId::get(), withdrawal, b"tb1pexff2s7l58sthpyfrtx500ax234stcnt0gz2lr4kwe0ue95a2e0srxsc68".to_vec(), b"".to_vec().into()).unwrap();
+
+        XGatewayRecords::<T>::withdrawal_state_insert(0, WithdrawalState::Processing);
+        XGatewayRecords::<T>::withdrawal_state_insert(0, WithdrawalState::Processing);
+
         let (tx, _, _) = withdraw_tx();
         let proposal = BtcWithdrawalProposal::<T::AccountId> {
             sig_state: VoteResult::Unfinish,
@@ -221,6 +232,7 @@ benchmarks! {
             tx,
             trustee_list: vec![],
         };
+
         WithdrawalProposal::<T>::put(proposal);
     }: _(RawOrigin::Root)
     verify {
@@ -236,6 +248,12 @@ benchmarks! {
     set_btc_deposit_limit {
         let caller = alice::<T>();
     }: _(RawOrigin::Root,  2000000)
+    verify {
+    }
+
+    set_coming_bot {
+        let caller = alice::<T>();
+    }: _(RawOrigin::Root,  Some(caller))
     verify {
     }
 }
@@ -257,6 +275,7 @@ mod tests {
             assert_ok!(Pallet::<Test>::test_benchmark_remove_pending());
             assert_ok!(Pallet::<Test>::test_benchmark_set_btc_withdrawal_fee());
             assert_ok!(Pallet::<Test>::test_benchmark_set_btc_deposit_limit());
+            assert_ok!(Pallet::<Test>::test_benchmark_set_coming_bot());
         });
     }
 }

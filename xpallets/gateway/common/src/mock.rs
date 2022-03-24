@@ -9,7 +9,7 @@ use frame_support::{
     parameter_types, sp_io,
     traits::{ChangeMembers, GenesisBuild, LockIdentifier, UnixTime},
 };
-use frame_system::{EnsureRoot, EnsureSigned, EnsureSignedBy};
+use frame_system::{EnsureRoot, EnsureSigned};
 use light_bitcoin::keys::{Address, Public};
 use light_bitcoin::mast::{compute_min_threshold, Mast};
 use light_bitcoin::script::{Builder, Bytes, Opcode};
@@ -36,7 +36,7 @@ use crate::{
     traits::TrusteeForChain,
     trustees::{
         self,
-        bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeMultisig, BtcTrusteeType},
+        bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeType},
     },
     types::*,
     SaturatedConversion,
@@ -248,9 +248,8 @@ impl UnixTime for Timestamp {
 impl xpallet_gateway_bitcoin::Config for Test {
     type Event = ();
     type UnixTime = Timestamp;
+    type CouncilOrigin = EnsureSigned<AccountId>;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
-    type TrusteeOrigin = EnsureSignedBy<BtcTrusteeMultisig<Test>, AccountId>;
-    type RelayerInfo = ();
     type TrusteeSessionProvider = ();
     type TrusteeInfoUpdate = ();
     type ReferralBinding = ();

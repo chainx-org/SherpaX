@@ -202,7 +202,7 @@ pub fn benchmarks_config() -> Result<ChainSpec, String> {
                 ],
                 false,
                 btc_genesis_params(include_str!(
-                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                    "../res/genesis_config/gateway/btc_genesis_params_benchmarks.json"
                 )),
                 crate::bitcoin::benchmarks_trustees(),
                 hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),

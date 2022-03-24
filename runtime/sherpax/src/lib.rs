@@ -131,8 +131,8 @@ pub use xp_runtime::Memo;
 #[cfg(feature = "std")]
 pub use xpallet_gateway_bitcoin::h256_rev;
 pub use xpallet_gateway_bitcoin::{
-    hash_rev, BtcHeader, BtcNetwork, BtcParams, BtcTxVerifier, Compact as BtcCompact,
-    H256 as BtcHash,
+    hash_rev, BtcHeader, BtcHeaderInfo, BtcNetwork, BtcParams, BtcTxVerifier,
+    BtcWithdrawalProposal, Compact as BtcCompact, H256 as BtcHash,
 };
 pub use xpallet_gateway_common::{
     trustees,
@@ -154,7 +154,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 31,
+    spec_version: 32,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 2,
@@ -781,11 +781,10 @@ impl xpallet_gateway_common::Config for Runtime {
 impl xpallet_gateway_bitcoin::Config for Runtime {
     type Event = Event;
     type UnixTime = Timestamp;
+    type CouncilOrigin =
+        pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
-    type TrusteeOrigin =
-        frame_system::EnsureSignedBy<trustees::bitcoin::BtcTrusteeMultisig<Runtime>, AccountId>;
-    type RelayerInfo = XGatewayCommon;
     type TrusteeInfoUpdate = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
@@ -1223,13 +1222,26 @@ impl_runtime_apis! {
         }
     }
 
-    impl xpallet_gateway_bitcoin_rpc_runtime_api::XGatewayBitcoinApi<Block> for Runtime {
+    impl xpallet_gateway_bitcoin_rpc_runtime_api::XGatewayBitcoinApi<Block, AccountId> for Runtime {
         fn verify_tx_valid(
             raw_tx: Vec<u8>,
             withdrawal_id_list: Vec<u32>,
             full_amount: bool,
         ) -> Result<bool, DispatchError> {
             XGatewayBitcoin::verify_tx_valid(raw_tx, withdrawal_id_list, full_amount)
+        }
+
+
+        fn get_withdrawal_proposal() -> Option<BtcWithdrawalProposal<AccountId>> {
+            XGatewayBitcoin::get_withdrawal_proposal()
+        }
+
+        fn get_genesis_info() -> (BtcHeader, u32) {
+            XGatewayBitcoin::get_genesis_info()
+        }
+
+        fn get_btc_block_header(txid: H256) -> Option<BtcHeaderInfo> {
+            XGatewayBitcoin::get_btc_block_header(txid)
         }
     }
 

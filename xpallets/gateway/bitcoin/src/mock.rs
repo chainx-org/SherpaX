@@ -12,7 +12,7 @@ use frame_support::{
     traits::{LockIdentifier, UnixTime},
     weights::Weight,
 };
-use frame_system::{EnsureRoot, EnsureSigned, EnsureSignedBy};
+use frame_system::{EnsureRoot, EnsureSigned};
 use sp_core::H256;
 use sp_keyring::sr25519;
 use sp_runtime::{
@@ -215,15 +215,11 @@ impl UnixTime for Timestamp {
 impl Config for Test {
     type Event = ();
     type UnixTime = Timestamp;
+    type CouncilOrigin = EnsureSigned<AccountId>;
     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
     type TrusteeSessionProvider =
         xpallet_gateway_common::trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type TrusteeInfoUpdate = XGatewayCommon;
-    type TrusteeOrigin = EnsureSignedBy<
-        xpallet_gateway_common::trustees::bitcoin::BtcTrusteeMultisig<Test>,
-        AccountId,
-    >;
-    type RelayerInfo = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
     type WeightInfo = ();
@@ -302,7 +298,7 @@ impl ExtBuilder {
         }
         .assimilate_storage(&mut storage);
 
-        let (genesis_info, genesis_hash, network_id) = load_mainnet_btc_genesis_header_info();
+        let (genesis_info, genesis_hash, network_id) = load_signet_btc_genesis_header_info();
 
         let _ = xpallet_gateway_bitcoin::GenesisConfig::<Test> {
             genesis_trustees,
@@ -389,7 +385,7 @@ pub fn trustees() -> Vec<(AccountId32, Vec<u8>, Vec<u8>, Vec<u8>)> {
     ]
 }
 
-pub fn load_mainnet_btc_genesis_header_info() -> ((BtcHeader, u32), H256, BtcNetwork) {
+pub fn load_signet_btc_genesis_header_info() -> ((BtcHeader, u32), H256, BtcNetwork) {
     (
         (
             BtcHeader {

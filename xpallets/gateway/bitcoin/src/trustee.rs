@@ -25,7 +25,6 @@ use light_bitcoin::{
 
 use xp_assets_registrar::Chain;
 use xp_gateway_bitcoin::extract_output_addr;
-use xpallet_gateway_common::traits::RelayerInfo;
 use xpallet_gateway_common::{
     traits::{TrusteeForChain, TrusteeSession},
     trustees::bitcoin::{BtcTrusteeAddrInfo, BtcTrusteeType},
@@ -300,11 +299,12 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, Bt
 }
 
 impl<T: Config> Pallet<T> {
-    pub fn ensure_relayer(who: &T::AccountId) -> bool {
-        &T::RelayerInfo::current_relayer() == who
-    }
+    pub fn ensure_trustee_or_bot(who: &T::AccountId) -> DispatchResult {
+        match Self::coming_bot() {
+            Some(n) if &n == who => return Ok(()),
+            _ => (),
+        }
 
-    pub fn ensure_trustee(who: &T::AccountId) -> DispatchResult {
         if current_proxy_account::<T>()?.iter().any(|n| n == who) {
             return Ok(());
         }
@@ -319,7 +319,7 @@ impl<T: Config> Pallet<T> {
         } else {
             log!(
                 error,
-                "[ensure_trustee] Committer {:?} not in the trustee list:{:?}",
+                "[ensure_trustee_or_bot] Committer {:?} not in the trustee list:{:?}",
                 who,
                 trustee_session_info.trustee_list
             );
@@ -428,6 +428,9 @@ pub(crate) fn create_multi_address<T: Config>(
     pubkeys: &[Public],
     sig_num: u32,
 ) -> Option<BtcTrusteeAddrInfo> {
+    let mut pubkeys = pubkeys.to_vec();
+    pubkeys.sort_unstable();
+
     let sum = pubkeys.len() as u32;
     if sig_num > sum {
         panic!("required sig num should less than trustee_num; qed")

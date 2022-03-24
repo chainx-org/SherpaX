@@ -171,52 +171,6 @@ benchmarks! {
         assert!(Pallet::<T>::trustee_intention_props_of(caller, Chain::Bitcoin).is_some());
     }
 
-    transition_trustee_session {
-        let caller: T::AccountId = alice::<T>();
-        clean::<T>();
-        TrusteeMultiSigAddr::<T>::insert(Chain::Bitcoin, caller.clone());
-
-        let mut candidators = vec![];
-        for (account, about, hot, cold) in new_trustees::<T>() {
-            Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
-            candidators.push(account);
-        }
-
-        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 0);
-        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 0).is_none());
-
-    }: _(RawOrigin::Signed(caller.clone()), Chain::Bitcoin, candidators)
-    verify {
-        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 1);
-        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 1).is_some());
-    }
-
-    set_withdrawal_state {
-        let caller: T::AccountId = alice::<T>();
-        create_default_asset::<T>(caller.clone());
-        TrusteeMultiSigAddr::<T>::insert(Chain::Bitcoin, caller.clone());
-
-        let amount: T::Balance = 1_000_000_000u32.into();
-        XGatewayRecords::<T>::deposit(&caller, T::BtcAssetId::get(), amount).unwrap();
-        let withdrawal = 100_000_000u32.into();
-        let addr = b"3PgYgJA6h5xPEc3HbnZrUZWkpRxuCZVyEP".to_vec();
-        let memo = b"".to_vec().into();
-        Pallet::<T>::withdraw(
-            RawOrigin::Signed(caller.clone()).into(),
-            T::BtcAssetId::get(), withdrawal, addr, memo,
-        )
-        .unwrap();
-        let withdrawal_id: WithdrawalRecordId = 0;
-        assert!(XGatewayRecords::<T>::pending_withdrawals(withdrawal_id).is_some());
-        assert_eq!(XGatewayRecords::<T>::state_of(withdrawal_id), Some(WithdrawalState::Applying));
-
-        XGatewayRecords::<T>::process_withdrawal(withdrawal_id, Chain::Bitcoin).unwrap();
-        assert_eq!(XGatewayRecords::<T>::state_of(withdrawal_id), Some(WithdrawalState::Processing));
-    }: _(RawOrigin::Signed(caller.clone()), withdrawal_id, WithdrawalState::RootFinish)
-    verify {
-        assert!(XGatewayRecords::<T>::pending_withdrawals(withdrawal_id).is_none());
-    }
-
     set_trustee_info_config {
         let config = TrusteeInfoConfig {
             min_trustee_count: 5,
@@ -259,45 +213,6 @@ benchmarks! {
         assert_eq!(Pallet::<T>::trustee_admin_multiply(), multiply);
     }
 
-    tranfer_trustee_reward {
-        let caller: T::AccountId = alice::<T>();
-        clean::<T>();
-        TrusteeMultiSigAddr::<T>::insert(Chain::Bitcoin, caller.clone());
-        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 0);
-        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 0).is_none());
-        let mut candidators = vec![];
-        let trustee_info = new_trustees::<T>();
-        let trustee_len = trustee_info.len();
-        for (account, about, hot, cold) in (&trustee_info[0..trustee_len-1]).to_vec() {
-            Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
-            candidators.push(account);
-        }
-        assert_eq!(Pallet::<T>::transition_trustee_session_impl(Chain::Bitcoin, candidators), Ok(()));
-
-        let mut candidators = vec![];
-        let trustee_info = new_trustees::<T>();
-        let trustee_len = trustee_info.len();
-        for (account, about, hot, cold) in (&trustee_info[1..trustee_len]).to_vec() {
-            Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
-            candidators.push(account);
-        }
-        assert_eq!(Pallet::<T>::transition_trustee_session_impl(Chain::Bitcoin, candidators), Ok(()));
-        assert_eq!(Pallet::<T>::trustee_session_info_len(Chain::Bitcoin), 2);
-        assert!(Pallet::<T>::trustee_session_info_of(Chain::Bitcoin, 2).is_some());
-        let reward: Balanceof<T> = 100_000_000u32.into();
-        let session_num = 1;
-        #[cfg(not(feature = "runtime-benchmarks"))]
-        <T as xpallet_gateway_records::Config>::Currency::deposit_creating(&caller, reward);
-        #[cfg(feature = "runtime-benchmarks")]
-        update_trustee_info::<T>(session_num);
-        #[cfg(feature = "runtime-benchmarks")]
-        let reward: Balanceof<T> = <T as xpallet_gateway_records::Config>::Currency::free_balance(&caller).checked_div(&2u32.into()).unwrap();
-    }: _(RawOrigin::Signed(caller.clone()), session_num as i32, reward)
-    verify {
-        #[cfg(not(feature = "runtime-benchmarks"))]
-        assert_eq!(<T as xpallet_gateway_records::Config>::Currency::free_balance(&trustee_info[0].0), 33333333u32.into());
-    }
-
     claim_trustee_reward {
         let caller: T::AccountId = alice::<T>();
         clean::<T>();
@@ -331,7 +246,7 @@ benchmarks! {
         let reward: Balanceof<T> = <T as xpallet_gateway_records::Config>::Currency::free_balance(&caller).checked_div(&2u32.into()).unwrap();
         let multi_account = <T as crate::Config>::BitcoinTrusteeSessionProvider::trustee_session(session_num).unwrap().multi_account.unwrap();
         <T as xpallet_gateway_records::Config>::Currency::deposit_creating(&multi_account, reward);
-    }: _(RawOrigin::Signed(caller.clone()), session_num as i32)
+    }: _(RawOrigin::Signed(caller.clone()), Chain::Bitcoin, session_num as i32)
     verify {
         #[cfg(not(feature = "runtime-benchmarks"))]
         assert_eq!(<T as xpallet_gateway_records::Config>::Currency::free_balance(&trustee_info[0].0), 33333333u32.into());
@@ -350,14 +265,11 @@ mod tests {
             assert_ok!(Pallet::<Test>::test_benchmark_withdraw());
             assert_ok!(Pallet::<Test>::test_benchmark_cancel_withdrawal());
             assert_ok!(Pallet::<Test>::test_benchmark_setup_trustee());
-            assert_ok!(Pallet::<Test>::test_benchmark_transition_trustee_session());
-            assert_ok!(Pallet::<Test>::test_benchmark_set_withdrawal_state());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_info_config());
             assert_ok!(Pallet::<Test>::test_benchmark_change_trustee_transition_duration());
             assert_ok!(Pallet::<Test>::test_benchmark_set_relayer());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_admin());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_admin_multiply());
-            assert_ok!(Pallet::<Test>::test_benchmark_tranfer_trustee_reward());
             assert_ok!(Pallet::<Test>::test_benchmark_claim_trustee_reward());
         });
     }
