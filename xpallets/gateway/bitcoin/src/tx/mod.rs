@@ -4,7 +4,6 @@ extern crate alloc;
 
 use alloc::string::ToString;
 
-mod secp256k1_verifier;
 pub mod validator;
 
 use frame_support::{
