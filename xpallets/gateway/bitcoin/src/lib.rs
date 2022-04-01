@@ -696,13 +696,37 @@ pub mod pallet {
 
             // check trustee transition status
             if T::TrusteeSessionProvider::trustee_transition_state() {
+                // check trustee transition tx
+                // tx output address = new hot address
+                let prev_trustee_pair = get_last_trustee_address_pair::<T>()?;
+                let all_outputs_is_current_cold_address = tx
+                    .outputs
+                    .iter()
+                    .map(|output| {
+                        xp_gateway_bitcoin::extract_output_addr(output, NetworkId::<T>::get())
+                            .unwrap_or_default()
+                    })
+                    .all(|addr| addr.hash == current_trustee_pair.1.hash);
+
+                let all_outputs_is_prev_cold_address = tx
+                    .outputs
+                    .iter()
+                    .map(|output| {
+                        xp_gateway_bitcoin::extract_output_addr(output, NetworkId::<T>::get())
+                            .unwrap_or_default()
+                    })
+                    .all(|addr| addr.hash == prev_trustee_pair.1.hash);
+
                 // Ensure that all outputs are cold addresses
-                ensure!(all_outputs_is_trustee, Error::<T>::TxOutputNotColdAddr);
+                ensure!(
+                    all_outputs_is_current_cold_address || all_outputs_is_prev_cold_address,
+                    Error::<T>::TxOutputNotColdAddr
+                );
                 // Ensure that all amounts are sent
                 ensure!(full_amount, Error::<T>::TxNotFullAmount);
+
                 Ok(true)
             } else if all_outputs_is_trustee {
-                // hot and cold
                 Ok(true)
             } else {
                 // check normal withdrawal tx
