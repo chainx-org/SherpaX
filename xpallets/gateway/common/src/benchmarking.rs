@@ -200,8 +200,7 @@ benchmarks! {
         for (account, about, hot, cold) in new_trustees::<T>() {
             Pallet::<T>::setup_trustee_impl(account.clone(), None, Chain::Bitcoin, about, hot, cold).unwrap();
         }
-        let chain = Chain::Bitcoin;
-    }: _(RawOrigin::Root, who.clone(), chain)
+    }: _(RawOrigin::Root, who.clone())
     verify {
         assert_eq!(Pallet::<T>::trustee_admin(), who);
     }

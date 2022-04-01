@@ -27,7 +27,7 @@ use frame_support::{
     log::{error, info},
     traits::{fungibles, ChangeMembers, Currency, ExistenceRequirement, Get},
 };
-use frame_system::{ensure_root, ensure_signed};
+use frame_system::{ensure_root, ensure_signed, pallet_prelude::OriginFor};
 
 use sp_runtime::{
     traits::{CheckedDiv, Saturating, UniqueSaturatedInto, Zero},
@@ -43,7 +43,7 @@ use xpallet_gateway_records::{ChainT, Withdrawal, WithdrawalLimit, WithdrawalRec
 use xpallet_support::traits::{MultisigAddressFor, Validator};
 
 use self::{
-    traits::{TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession},
+    traits::{ProposalProvider, TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession},
     trustees::bitcoin::BtcTrusteeAddrInfo,
     types::{
         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, RewardInfo, ScriptInfo,
@@ -64,7 +64,6 @@ type Balanceof<T> =
 pub mod pallet {
     use super::*;
     use frame_support::{pallet_prelude::*, traits::fungibles::Inspect, transactional};
-    use frame_system::pallet_prelude::*;
 
     #[pallet::config]
     pub trait Config:
@@ -73,28 +72,36 @@ pub mod pallet {
         + pallet_elections_phragmen::Config
         + pallet_assets::Config
     {
+        /// The overarching event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
-        type Validator: Validator<Self::AccountId>;
-
+        /// Calculate the multi-signature address.
         type DetermineMultisigAddress: MultisigAddressFor<Self::AccountId>;
-
+        /// Check the validator's account.
+        type Validator: Validator<Self::AccountId>;
+        /// A majority of the council can excute some transactions.
         type CouncilOrigin: EnsureOrigin<Self::Origin>;
 
-        // for bitcoin
+        /// Bitcoin
+        /// Get btc chain info.
         type Bitcoin: ChainT<Self::AssetId, Self::Balance>;
+        /// Generate btc trustee session info.
         type BitcoinTrustee: TrusteeForChain<
             Self::AccountId,
             Self::BlockNumber,
             trustees::bitcoin::BtcTrusteeType,
             trustees::bitcoin::BtcTrusteeAddrInfo,
         >;
+        /// Get trustee session info.
         type BitcoinTrusteeSessionProvider: TrusteeSession<
             Self::AccountId,
             Self::BlockNumber,
             trustees::bitcoin::BtcTrusteeAddrInfo,
         >;
+        /// When the trust changes, the total supply of btc: total issue + pending deposit. Help
+        /// to the allocation of btc withdrawal fees.
         type BitcoinTotalSupply: TotalSupply<Self::Balance>;
+        /// Get btc withdrawal proposal.
+        type BitcoinWithdrawalProposal: ProposalProvider;
 
         type WeightInfo: WeightInfo;
     }
@@ -196,14 +203,11 @@ pub mod pallet {
         /// Manual execution of the election by admin.
         #[pallet::weight(0u64)]
         pub fn excute_trustee_election(origin: OriginFor<T>) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    ensure!(who == Self::trustee_admin(), Error::<T>::NotTrusteeAdmin);
-                }
-                Err(_) => {
-                    ensure_root(origin)?;
-                }
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(Self::try_ensure_trustee_admin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             Self::do_trustee_election()
         }
@@ -235,16 +239,11 @@ pub mod pallet {
             origin: OriginFor<T>,
             trustees: Option<Vec<T::AccountId>>,
         ) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::trustee_admin() {
-                        return Err(Error::<T>::NotTrusteeAdmin.into());
-                    }
-                }
-                Err(_) => {
-                    ensure_root(origin)?;
-                }
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(Self::try_ensure_trustee_admin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             info!(
                 target: "runtime::gateway::common",
@@ -282,16 +281,11 @@ pub mod pallet {
             origin: OriginFor<T>,
             members: Vec<T::AccountId>,
         ) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::trustee_admin() {
-                        return Err(Error::<T>::NotTrusteeAdmin.into());
-                    }
-                }
-                Err(_) => {
-                    ensure_root(origin)?;
-                }
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(Self::try_ensure_trustee_admin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             info!(
                 target: "runtime::gateway::common",
@@ -399,25 +393,11 @@ pub mod pallet {
         /// This is a root-only operation.
         /// The trustee admin is the account who can change the trustee list.
         #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin())]
-        pub fn set_trustee_admin(
-            origin: OriginFor<T>,
-            admin: T::AccountId,
-            chain: Chain,
-        ) -> DispatchResult {
+        pub fn set_trustee_admin(origin: OriginFor<T>, admin: T::AccountId) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
 
-            Self::trustee_intention_props_of(&admin, chain).ok_or_else::<DispatchError, _>(
-                || {
-                    error!(
-                        target: "runtime::gateway::common",
-                        "[set_trustee_admin] admin {:?} has not in TrusteeIntentionPropertiesOf",
-                        admin
-                    );
-                    Error::<T>::NotRegistered.into()
-                },
-            )?;
             TrusteeAdmin::<T>::put(admin);
             Ok(())
         }
@@ -548,6 +528,8 @@ pub mod pallet {
         NotMultiSigCount,
         /// The last trustee transition was not completed.
         LastTransitionNotCompleted,
+        /// prevent transition when the withdrawal proposal exists.
+        WithdrawalProposalExist,
         /// The trustee members was not enough.
         TrusteeMembersNotEnough,
         /// Exist in current trustee
@@ -833,9 +815,15 @@ impl<T: Config> Pallet<T> {
 /// Trustee Transition
 impl<T: Config> Pallet<T> {
     pub fn do_trustee_election() -> DispatchResult {
-        if Self::trustee_transition_status() {
-            return Err(Error::<T>::LastTransitionNotCompleted.into());
-        }
+        ensure!(
+            !Self::trustee_transition_status(),
+            Error::<T>::LastTransitionNotCompleted
+        );
+
+        ensure!(
+            T::BitcoinWithdrawalProposal::get_withdrawal_proposal().is_none(),
+            Error::<T>::WithdrawalProposalExist,
+        );
 
         // Current trustee list
         let old_trustee_candidate: Vec<T::AccountId> =
@@ -1208,6 +1196,22 @@ impl<T: Config> Pallet<T> {
             })?;
         }
         Ok(total_reward)
+    }
+}
+
+/// Ensure trustee admin
+impl<T: Config> Pallet<T> {
+    fn try_ensure_trustee_admin(origin: OriginFor<T>) -> Result<(), OriginFor<T>> {
+        match ensure_signed(origin.clone()) {
+            Ok(who) => {
+                if who != Self::trustee_admin() {
+                    return Err(origin);
+                }
+            }
+            Err(_) => return Err(origin),
+        }
+
+        Ok(())
     }
 }
 

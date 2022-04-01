@@ -36,7 +36,10 @@ use xp_assets_registrar::Chain;
 use xp_gateway_common::AccountExtractor;
 
 use xpallet_gateway_common::{
-    traits::{AddressBinding, ReferralBinding, TotalSupply, TrusteeInfoUpdate, TrusteeSession},
+    traits::{
+        AddressBinding, ProposalProvider, ReferralBinding, TotalSupply, TrusteeInfoUpdate,
+        TrusteeSession,
+    },
     trustees::bitcoin::BtcTrusteeAddrInfo,
 };
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
@@ -359,8 +362,8 @@ pub mod pallet {
         RejectSig,
         /// no proposal for current withdrawal
         NoProposal,
-        /// invalid proposal
-        InvalidProposal,
+        /// tx's outputs not match withdrawal id list
+        TxOutputsNotMatch,
         /// last proposal not finished yet
         NotFinishProposal,
         /// no withdrawal record for this id
@@ -369,10 +372,10 @@ pub mod pallet {
         DuplicateVote,
         /// Trustee transition period
         TrusteeTransitionPeriod,
-        /// Withdrawals are prohibited during the trust transition period
-        NoWithdrawInTrans,
+        /// The output address must be a cold address during the trust transition process
+        TxOutputNotColdAddr,
         /// The total amount of the trust must be transferred out in full
-        InvalidAmoutInTrans,
+        TxNotFullAmount,
     }
 
     #[pallet::event]
@@ -627,6 +630,13 @@ pub mod pallet {
         }
     }
 
+    impl<T: Config> ProposalProvider for Pallet<T> {
+        type WithdrawalProposal = BtcWithdrawalProposal<T::AccountId>;
+        fn get_withdrawal_proposal() -> Option<Self::WithdrawalProposal> {
+            Self::withdrawal_proposal()
+        }
+    }
+
     /// Storage Query RPCs
     impl<T: Config> Pallet<T> {
         /// Get withdrawal proposal
@@ -686,13 +696,37 @@ pub mod pallet {
 
             // check trustee transition status
             if T::TrusteeSessionProvider::trustee_transition_state() {
+                // check trustee transition tx
+                // tx output address = new hot address
+                let prev_trustee_pair = get_last_trustee_address_pair::<T>()?;
+                let all_outputs_is_current_cold_address = tx
+                    .outputs
+                    .iter()
+                    .map(|output| {
+                        xp_gateway_bitcoin::extract_output_addr(output, NetworkId::<T>::get())
+                            .unwrap_or_default()
+                    })
+                    .all(|addr| addr.hash == current_trustee_pair.1.hash);
+
+                let all_outputs_is_prev_cold_address = tx
+                    .outputs
+                    .iter()
+                    .map(|output| {
+                        xp_gateway_bitcoin::extract_output_addr(output, NetworkId::<T>::get())
+                            .unwrap_or_default()
+                    })
+                    .all(|addr| addr.hash == prev_trustee_pair.1.hash);
+
                 // Ensure that all outputs are cold addresses
-                ensure!(all_outputs_is_trustee, Error::<T>::NoWithdrawInTrans);
+                ensure!(
+                    all_outputs_is_current_cold_address || all_outputs_is_prev_cold_address,
+                    Error::<T>::TxOutputNotColdAddr
+                );
                 // Ensure that all amounts are sent
-                ensure!(full_amount, Error::<T>::InvalidAmoutInTrans);
+                ensure!(full_amount, Error::<T>::TxNotFullAmount);
+
                 Ok(true)
             } else if all_outputs_is_trustee {
-                // hot and cold
                 Ok(true)
             } else {
                 // check normal withdrawal tx
