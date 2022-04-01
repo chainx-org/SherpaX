@@ -393,11 +393,7 @@ pub mod pallet {
         /// This is a root-only operation.
         /// The trustee admin is the account who can change the trustee list.
         #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin())]
-        pub fn set_trustee_admin(
-            origin: OriginFor<T>,
-            admin: T::AccountId,
-            chain: Chain,
-        ) -> DispatchResult {
+        pub fn set_trustee_admin(origin: OriginFor<T>, admin: T::AccountId) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
