@@ -43,7 +43,7 @@ use xpallet_gateway_records::{ChainT, Withdrawal, WithdrawalLimit, WithdrawalRec
 use xpallet_support::traits::{MultisigAddressFor, Validator};
 
 use self::{
-    traits::{TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession},
+    traits::{ProposalProvider, TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession},
     trustees::bitcoin::BtcTrusteeAddrInfo,
     types::{
         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, RewardInfo, ScriptInfo,
@@ -73,28 +73,36 @@ pub mod pallet {
         + pallet_elections_phragmen::Config
         + pallet_assets::Config
     {
+        /// The overarching event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
-        type Validator: Validator<Self::AccountId>;
-
+        /// Calculate the multi-signature address.
         type DetermineMultisigAddress: MultisigAddressFor<Self::AccountId>;
-
+        /// Check the validator's account.
+        type Validator: Validator<Self::AccountId>;
+        /// A majority of the council can excute some transactions.
         type CouncilOrigin: EnsureOrigin<Self::Origin>;
 
-        // for bitcoin
+        /// Bitcoin
+        /// Get btc chain info.
         type Bitcoin: ChainT<Self::AssetId, Self::Balance>;
+        /// Generate btc trustee session info.
         type BitcoinTrustee: TrusteeForChain<
             Self::AccountId,
             Self::BlockNumber,
             trustees::bitcoin::BtcTrusteeType,
             trustees::bitcoin::BtcTrusteeAddrInfo,
         >;
+        /// Get trustee session info.
         type BitcoinTrusteeSessionProvider: TrusteeSession<
             Self::AccountId,
             Self::BlockNumber,
             trustees::bitcoin::BtcTrusteeAddrInfo,
         >;
+        /// When the trust changes, the total supply of btc: total issue + pending deposit. Help
+        /// to the allocation of btc withdrawal fees.
         type BitcoinTotalSupply: TotalSupply<Self::Balance>;
+        /// Get btc withdrawal proposal.
+        type BitcoinWithdrawalProposal: ProposalProvider;
 
         type WeightInfo: WeightInfo;
     }
@@ -548,6 +556,8 @@ pub mod pallet {
         NotMultiSigCount,
         /// The last trustee transition was not completed.
         LastTransitionNotCompleted,
+        /// prevent transition when the withdrawal proposal exists.
+        WithdrawalProposalExist,
         /// The trustee members was not enough.
         TrusteeMembersNotEnough,
         /// Exist in current trustee
@@ -833,9 +843,15 @@ impl<T: Config> Pallet<T> {
 /// Trustee Transition
 impl<T: Config> Pallet<T> {
     pub fn do_trustee_election() -> DispatchResult {
-        if Self::trustee_transition_status() {
-            return Err(Error::<T>::LastTransitionNotCompleted.into());
-        }
+        ensure!(
+            !Self::trustee_transition_status(),
+            Error::<T>::LastTransitionNotCompleted
+        );
+
+        ensure!(
+            T::BitcoinWithdrawalProposal::get_withdrawal_proposal().is_none(),
+            Error::<T>::WithdrawalProposalExist,
+        );
 
         // Current trustee list
         let old_trustee_candidate: Vec<T::AccountId> =
