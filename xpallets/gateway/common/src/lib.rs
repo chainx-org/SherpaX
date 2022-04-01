@@ -27,7 +27,7 @@ use frame_support::{
     log::{error, info},
     traits::{fungibles, ChangeMembers, Currency, ExistenceRequirement, Get},
 };
-use frame_system::{ensure_root, ensure_signed};
+use frame_system::{ensure_root, ensure_signed, pallet_prelude::OriginFor};
 
 use sp_runtime::{
     traits::{CheckedDiv, Saturating, UniqueSaturatedInto, Zero},
@@ -64,7 +64,6 @@ type Balanceof<T> =
 pub mod pallet {
     use super::*;
     use frame_support::{pallet_prelude::*, traits::fungibles::Inspect, transactional};
-    use frame_system::pallet_prelude::*;
 
     #[pallet::config]
     pub trait Config:
@@ -204,14 +203,11 @@ pub mod pallet {
         /// Manual execution of the election by admin.
         #[pallet::weight(0u64)]
         pub fn excute_trustee_election(origin: OriginFor<T>) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    ensure!(who == Self::trustee_admin(), Error::<T>::NotTrusteeAdmin);
-                }
-                Err(_) => {
-                    ensure_root(origin)?;
-                }
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(Self::try_ensure_trustee_admin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             Self::do_trustee_election()
         }
@@ -243,16 +239,11 @@ pub mod pallet {
             origin: OriginFor<T>,
             trustees: Option<Vec<T::AccountId>>,
         ) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::trustee_admin() {
-                        return Err(Error::<T>::NotTrusteeAdmin.into());
-                    }
-                }
-                Err(_) => {
-                    ensure_root(origin)?;
-                }
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(Self::try_ensure_trustee_admin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             info!(
                 target: "runtime::gateway::common",
@@ -290,16 +281,11 @@ pub mod pallet {
             origin: OriginFor<T>,
             members: Vec<T::AccountId>,
         ) -> DispatchResult {
-            match ensure_signed(origin.clone()) {
-                Ok(who) => {
-                    if who != Self::trustee_admin() {
-                        return Err(Error::<T>::NotTrusteeAdmin.into());
-                    }
-                }
-                Err(_) => {
-                    ensure_root(origin)?;
-                }
-            };
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(Self::try_ensure_trustee_admin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             info!(
                 target: "runtime::gateway::common",
@@ -416,16 +402,6 @@ pub mod pallet {
                 .map(|_| ())
                 .or_else(ensure_root)?;
 
-            Self::trustee_intention_props_of(&admin, chain).ok_or_else::<DispatchError, _>(
-                || {
-                    error!(
-                        target: "runtime::gateway::common",
-                        "[set_trustee_admin] admin {:?} has not in TrusteeIntentionPropertiesOf",
-                        admin
-                    );
-                    Error::<T>::NotRegistered.into()
-                },
-            )?;
             TrusteeAdmin::<T>::put(admin);
             Ok(())
         }
@@ -1224,6 +1200,22 @@ impl<T: Config> Pallet<T> {
             })?;
         }
         Ok(total_reward)
+    }
+}
+
+/// Ensure trustee admin
+impl<T: Config> Pallet<T> {
+    fn try_ensure_trustee_admin(origin: OriginFor<T>) -> Result<(), OriginFor<T>> {
+        match ensure_signed(origin.clone()) {
+            Ok(who) => {
+                if who != Self::trustee_admin() {
+                    return Err(origin);
+                }
+            }
+            Err(_) => return Err(origin),
+        }
+
+        Ok(())
     }
 }
 
