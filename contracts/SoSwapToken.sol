@@ -13,20 +13,18 @@ contract SoSwapToken is ERC20("SoSwapToken", "SO"), Ownable {
     uint256 constant minium_interval = 60;
     /// ~4 years
     uint256 constant halving_period = 2100000 * minium_interval;
-    /// 600s = 10 minutes
-    uint256 constant delay = 600;
 
     uint256 private _genesis_timestamp;
     uint256 private _last_mint;
 
     modifier ReadyMint() {
-        require(block.timestamp > _genesis_timestamp + delay, "SoSwapToken: not ready yet");
+        require(block.timestamp > _genesis_timestamp, "SoSwapToken: not ready yet");
 
         _;
     }
 
-    constructor() {
-        _genesis_timestamp = block.timestamp;
+    constructor(uint256 delay) {
+        _genesis_timestamp = block.timestamp + delay;
     }
 
     // Used for SoSwapStaking check
