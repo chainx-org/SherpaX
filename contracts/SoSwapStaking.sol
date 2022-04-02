@@ -111,11 +111,11 @@ contract SoSwapStaking is Ownable {
 
         pool_info.push(
             PoolInfo({
-        lp_token: _lp_token,
-        alloc_point: _alloc_point,
-        last_reward_time: last_reward_time,
-        acc_reward_per_share: 0
-        })
+                lp_token: _lp_token,
+                alloc_point: _alloc_point,
+                last_reward_time: last_reward_time,
+                acc_reward_per_share: 0
+            })
         );
     }
 
@@ -132,7 +132,9 @@ contract SoSwapStaking is Ownable {
             update_all_pools();
         }
 
-        total_alloc_point = total_alloc_point.sub(pool_info[_pid].alloc_point).add(_alloc_point);
+        total_alloc_point = total_alloc_point
+            .sub(pool_info[_pid].alloc_point)
+            .add(_alloc_point);
 
         pool_info[_pid].alloc_point = _alloc_point;
     }
@@ -160,14 +162,15 @@ contract SoSwapStaking is Ownable {
 
 
         uint256 so_rewards = soswap
-        .calculate_rewards(pool.last_reward_time, block.timestamp)
-        .mul(pool.alloc_point)
-        .div(total_alloc_point);
+            .calculate_rewards(pool.last_reward_time, block.timestamp)
+            .mul(pool.alloc_point)
+            .div(total_alloc_point);
 
         soswap.mint();
 
         pool.acc_reward_per_share = pool.acc_reward_per_share
-        .add(so_rewards.mul(1e12).div(lp_supply));
+            .add(so_rewards.mul(1e12)
+            .div(lp_supply));
 
         pool.last_reward_time = block.timestamp;
     }
@@ -184,8 +187,8 @@ contract SoSwapStaking is Ownable {
 
         if (user.amount > 0) {
             uint256 pending = user.amount
-            .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
-            .div(1e12);
+                .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
+                .div(1e12);
 
             safe_so_transfer(msg.sender, pending);
         }
@@ -215,8 +218,8 @@ contract SoSwapStaking is Ownable {
         update_pool(_pid);
 
         uint256 pending = user.amount
-        .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
-        .div(1e12);
+            .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
+            .div(1e12);
 
         safe_so_transfer(msg.sender, pending);
 
@@ -238,8 +241,8 @@ contract SoSwapStaking is Ownable {
         update_pool(_pid);
 
         uint256 pending = user.amount
-        .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
-        .div(1e12);
+            .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
+            .div(1e12);
 
         safe_so_transfer(msg.sender, pending);
 
@@ -258,9 +261,9 @@ contract SoSwapStaking is Ownable {
 
         if (block.timestamp > pool.last_reward_time && lp_supply != 0) {
             uint256 so_rewards = soswap
-            .calculate_rewards(pool.last_reward_time, block.timestamp)
-            .mul(pool.alloc_point)
-            .div(total_alloc_point);
+                .calculate_rewards(pool.last_reward_time, block.timestamp)
+                .mul(pool.alloc_point)
+                .div(total_alloc_point);
 
             acc_reward_per_share = acc_reward_per_share.add(
                 so_rewards.mul(1e12).div(lp_supply)
