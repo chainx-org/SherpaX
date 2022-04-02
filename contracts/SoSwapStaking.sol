@@ -70,7 +70,7 @@ contract SoSwapStaking is Ownable {
     }
 
     function _increment(uint256 i) internal pure returns (uint256) {
-    unchecked { return i + 1; }
+        unchecked { return i + 1; }
     }
 
     function pool_length() external view returns (uint256) {
