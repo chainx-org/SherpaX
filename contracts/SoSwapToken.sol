@@ -7,6 +7,9 @@ import "<https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/cont
 import "<https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/access/Ownable.sol>";
 
 contract SoSwapToken is ERC20("SoSwapToken", "SO"), Ownable {
+    /// 1 SO = 1000000000000000000.
+    /// Hard Cap 210000 SO
+    uint256 constant cap_supply = 210000000000000000000000;
     /// 0.05 SO per minutes
     uint256 constant initial_reward = 50000000000000000;
     /// 60s = 1 minutes
@@ -84,9 +87,8 @@ contract SoSwapToken is ERC20("SoSwapToken", "SO"), Ownable {
     function mint() public onlyOwner ReadyMint returns(uint256) {
         uint256 amount = calculate_rewards(_last_mint, block.timestamp);
 
-        // 1 SO = 1000000000000000000.
         // Hard Cap is 210000 SO.
-        if (amount != 0 && totalSupply() + amount <= 210000000000000000000000) {
+        if (amount != 0 && totalSupply() + amount <= cap_supply) {
             _mint(owner(), amount);
         }
 
