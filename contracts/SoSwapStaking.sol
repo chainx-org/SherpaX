@@ -5,6 +5,10 @@
 /// (2) deploy SoSwapStaking with SoSwapToken contract address.
 /// (3) transfer ownership of the SoSwapToken to the SoSwapStaking in delay period.
 /// (4) add_pool and set_pool in delay period.
+/// (5) stake after delay
+/// (6) add_pool with zero _alloc_point
+/// (7) stake
+/// (8) set_pool with positive _alloc_point
 
 pragma solidity ^0.8.0;
 
@@ -65,12 +69,6 @@ contract SoSwapStaking is Ownable {
 
     constructor(SoSwapToken _soswap) {
         soswap = _soswap;
-    }
-
-    modifier ReadyStaking() {
-        require(soswap.can_mint(), "SoSwapStaking: not ready yet");
-
-        _;
     }
 
     function _increment(uint256 i) internal pure returns (uint256) {
@@ -157,13 +155,14 @@ contract SoSwapStaking is Ownable {
             return;
         }
 
-
         uint256 so_rewards = soswap
             .calculate_rewards(pool.last_reward_time, block.timestamp)
             .mul(pool.alloc_point)
             .div(total_alloc_point);
 
-        soswap.mint();
+        if (soswap.can_mint()) {
+            soswap.mint();
+        }
 
         pool.acc_reward_per_share = pool.acc_reward_per_share
             .add(so_rewards.mul(1e12)
