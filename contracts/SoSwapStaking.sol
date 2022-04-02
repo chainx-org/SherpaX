@@ -53,7 +53,6 @@ contract SoSwapStaking is Ownable {
     mapping(uint256 => mapping(address => UserInfo)) public user_info;
     // Total allocation poitns. Must be the sum of all allocation points in all pools.
     uint256 public total_alloc_point = 0;
-    uint256 public genesis_timestamp = 0;
 
     event Stake(address indexed user, uint256 indexed pid, uint256 amount);
     event UnStake(address indexed user, uint256 indexed pid, uint256 amount);
@@ -102,18 +101,11 @@ contract SoSwapStaking is Ownable {
 
         total_alloc_point = total_alloc_point.add(_alloc_point);
 
-        uint256 last_reward_time = block.timestamp;
-
-        if (genesis_timestamp == 0) {
-            genesis_timestamp = soswap.genesis_timestamp();
-            last_reward_time = genesis_timestamp;
-        }
-
         pool_info.push(
             PoolInfo({
                 lp_token: _lp_token,
                 alloc_point: _alloc_point,
-                last_reward_time: last_reward_time,
+                last_reward_time: block.timestamp,
                 acc_reward_per_share: 0
             })
         );
