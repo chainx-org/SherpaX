@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/ERC20.sol)
 
+/// (1) deploy SoSwapToken with delay.
+/// (2) deploy SoSwapStaking with SoSwapToken contract address.
+/// (3) transfer ownership of the SoSwapToken to the SoSwapStaking in delay period.
+/// (4) add_pool and set_pool in delay period.
+
 pragma solidity ^0.8.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/token/ERC20/IERC20.sol";
