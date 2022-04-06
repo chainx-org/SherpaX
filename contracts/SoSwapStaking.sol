@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/ERC20.sol)
 
-/// (1) deploy SoSwapToken with delay.
-/// (2) deploy SoSwapStaking with SoSwapToken contract address.
-/// (3) transfer ownership of the SoSwapToken to the SoSwapStaking in delay period.
-/// (4) add_pool and set_pool in delay period.
-/// (5) stake after delay
-/// (6) add_pool with zero _alloc_point
-/// (7) stake
-/// (8) set_pool with positive _alloc_point
+/// (1) admin: deploy SoSwapToken with delay.
+/// (2) admin: deploy SoSwapStaking with SoSwapToken contract address.
+/// (3) admin: transfer ownership of the SoSwapToken to the SoSwapStaking in delay period.
+/// (4) admin: approve LP for SoSwapStaking
+/// (5) admin: add_pool_with_staking
+/// (6) user : approve LP for SoSwapStaking
+/// (7) user : stake LP
+/// (8) user : unstake LP
+/// (9) user : claim SO
 
 pragma solidity ^0.8.0;
 
@@ -114,6 +115,37 @@ contract SoSwapStaking is Ownable {
         );
     }
 
+    // Add a new lp to the pool with staking. Can only be called by the owner.
+    function add_pool_with_staking(
+        IERC20 _lp_token,
+        uint256 _alloc_point,
+        bool _without_update,
+        uint256 _amount
+    ) public onlyOwner {
+        require(!pool_exsist(_lp_token), "SoSwapStaking: pool is exsist");
+
+        if (!_without_update) {
+            // update all pools
+            update_all_pools();
+        }
+
+        total_alloc_point = total_alloc_point.add(_alloc_point);
+
+        pool_info.push(
+            PoolInfo({
+                lp_token: _lp_token,
+                alloc_point: _alloc_point,
+                last_reward_time: block.timestamp,
+                acc_reward_per_share: 0
+            })
+        );
+
+        // pool_info.length >= 1
+        uint256 _pid = pool_info.length - 1;
+
+        _stake(msg.sender, _pid, _amount, false);
+    }
+
     // Update the given pool's SO allocation point. Can only be called by the owner.
     function set_pool(
         uint256 _pid,
@@ -144,13 +176,9 @@ contract SoSwapStaking is Ownable {
     // Update reward variables of the given pool to be up-to-date.
     function update_pool(uint256 _pid) public {
         PoolInfo storage pool = pool_info[_pid];
-
-        if (block.timestamp <= pool.last_reward_time) {
-            return;
-        }
-
         uint256 lp_supply = pool.lp_token.balanceOf(address(this));
-        if (lp_supply == 0) {
+
+        if (block.timestamp <= pool.last_reward_time || total_alloc_point == 0 || lp_supply == 0) {
             pool.last_reward_time = block.timestamp;
             return;
         }
@@ -160,7 +188,7 @@ contract SoSwapStaking is Ownable {
             .mul(pool.alloc_point)
             .div(total_alloc_point);
 
-        if (soswap.can_mint()) {
+        if (soswap.can_mint() && soswap.ready_mint()) {
             soswap.mint();
         }
 
@@ -173,24 +201,30 @@ contract SoSwapStaking is Ownable {
 
     // Stake LP tokens to SoSwapStaking for SoSwapToken allocation.
     function stake(uint256 _pid, uint256 _amount) public {
+        _stake(msg.sender, _pid, _amount, true);
+    }
+
+    function _stake(address _account, uint256 _pid, uint256 _amount, bool update) internal {
         require(_pid < pool_info.length, "SoSwapStaking: pool is not exsist");
         require(_amount > 0, "SoSwapStaking: amount is 0");
 
         PoolInfo storage pool = pool_info[_pid];
-        UserInfo storage user = user_info[_pid][msg.sender];
+        UserInfo storage user = user_info[_pid][_account];
 
-        update_pool(_pid);
+        if (update) {
+            update_pool(_pid);
+        }
 
-        if (user.amount > 0) {
+        if (user.amount > 0 && pool.acc_reward_per_share > 0) {
             uint256 pending = user.amount
                 .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
                 .div(1e12);
 
-            safe_so_transfer(msg.sender, pending);
+            safe_so_transfer(_account, pending);
         }
 
         pool.lp_token.safeTransferFrom(
-            address(msg.sender),
+            address(_account),
             address(this),
             _amount
         );
@@ -198,7 +232,7 @@ contract SoSwapStaking is Ownable {
         user.amount = user.amount.add(_amount);
         user.mark_reward_per_share = pool.acc_reward_per_share;
 
-        emit Stake(msg.sender, _pid, _amount);
+        emit Stake(_account, _pid, _amount);
     }
 
     // UnStake LP tokens from SoSwapStaking.
@@ -255,7 +289,11 @@ contract SoSwapStaking is Ownable {
         uint256 acc_reward_per_share = pool.acc_reward_per_share;
         uint256 lp_supply = pool.lp_token.balanceOf(address(this));
 
-        if (block.timestamp > pool.last_reward_time && lp_supply != 0) {
+        if (total_alloc_point == 0 || lp_supply == 0) {
+            return 0;
+        }
+
+        if (block.timestamp > pool.last_reward_time) {
             uint256 so_rewards = soswap
                 .calculate_rewards(pool.last_reward_time, block.timestamp)
                 .mul(pool.alloc_point)

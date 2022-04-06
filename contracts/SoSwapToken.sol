@@ -35,6 +35,11 @@ contract SoSwapToken is ERC20("SoSwapToken", "SO"), Ownable {
         return _msgSender() == owner();
     }
 
+    // Check ready
+    function ready_mint() public view returns (bool) {
+        return block.timestamp > _genesis_timestamp;
+    }
+
     // 50000000000000000 >> 56 == 0
     function halving_reward(uint256 _times) public pure returns(uint256) {
         return initial_reward >> _times;
