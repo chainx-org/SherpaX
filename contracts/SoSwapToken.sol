@@ -3,8 +3,8 @@
 
 pragma solidity ^0.8.0;
 
-import "<https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/token/ERC20/ERC20.sol>";
-import "<https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/access/Ownable.sol>";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/token/ERC20/ERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.1/contracts/access/Ownable.sol";
 
 contract SoSwapToken is ERC20("SoSwapToken", "SO"), Ownable {
     /// 1 SO = 1000000000000000000.
