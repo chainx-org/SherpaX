@@ -66,6 +66,7 @@ contract SoSwapStaking is Ownable {
 
     event Stake(address indexed user, uint256 indexed pid, uint256 amount);
     event UnStake(address indexed user, uint256 indexed pid, uint256 amount);
+    event Claim(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyUnStake(address indexed user, uint256 indexed pid, uint256 amount);
 
     constructor(SoSwapToken _soswap) {
@@ -277,6 +278,8 @@ contract SoSwapStaking is Ownable {
         safe_so_transfer(msg.sender, pending);
 
         user.mark_reward_per_share = pool.acc_reward_per_share;
+
+        emit Claim(msg.sender, _pid, pending);
     }
 
     // View function to see pending SoSwapTokens on frontend.
@@ -317,10 +320,10 @@ contract SoSwapStaking is Ownable {
 
         pool.lp_token.safeTransfer(address(msg.sender), user.amount);
 
-        emit EmergencyUnStake(msg.sender, _pid, user.amount);
-
         user.amount = 0;
         user.mark_reward_per_share = 0;
+
+        emit EmergencyUnStake(msg.sender, _pid, user.amount);
     }
 
     // Safe SoSwapToken transfer function.
