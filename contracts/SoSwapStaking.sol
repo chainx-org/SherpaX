@@ -64,10 +64,14 @@ contract SoSwapStaking is Ownable {
     // Total allocation poitns. Must be the sum of all allocation points in all pools.
     uint256 public total_alloc_point = 0;
 
-    event Stake(address indexed user, uint256 indexed pid, uint256 amount);
-    event UnStake(address indexed user, uint256 indexed pid, uint256 amount);
+    // (account, pool_id, rewards, stake)
+    event Stake(address indexed user, uint256 indexed pid, uint256 amount, uint256 stake);
+    // (account, pool_id, rewards, unstake)
+    event UnStake(address indexed user, uint256 indexed pid, uint256 amount, uint256 unstake);
+    // (account, pool_id, rewards)
     event Claim(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyUnStake(address indexed user, uint256 indexed pid, uint256 amount);
+    // (account, pool_id, unstake)
+    event EmergencyUnStake(address indexed user, uint256 indexed pid, uint256 unstake);
 
     constructor(SoSwapToken _soswap) {
         soswap = _soswap;
@@ -211,13 +215,14 @@ contract SoSwapStaking is Ownable {
 
         PoolInfo storage pool = pool_info[_pid];
         UserInfo storage user = user_info[_pid][_account];
+        uint256 pending = 0;
 
         if (update) {
             update_pool(_pid);
         }
 
-        if (user.amount > 0 && pool.acc_reward_per_share > 0) {
-            uint256 pending = user.amount
+        if (user.amount > 0 && pool.acc_reward_per_share > user.mark_reward_per_share) {
+            pending = user.amount
                 .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
                 .div(1e12);
 
@@ -233,7 +238,7 @@ contract SoSwapStaking is Ownable {
         user.amount = user.amount.add(_amount);
         user.mark_reward_per_share = pool.acc_reward_per_share;
 
-        emit Stake(_account, _pid, _amount);
+        emit Stake(_account, _pid, pending, _amount);
     }
 
     // UnStake LP tokens from SoSwapStaking.
@@ -243,23 +248,27 @@ contract SoSwapStaking is Ownable {
 
         PoolInfo storage pool = pool_info[_pid];
         UserInfo storage user = user_info[_pid][msg.sender];
+        uint256 pending = 0;
 
         require(user.amount >= _amount, "SoSwapStaking: more than can unstake");
 
         update_pool(_pid);
 
-        uint256 pending = user.amount
-            .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
-            .div(1e12);
+        if (user.amount > 0 && pool.acc_reward_per_share > user.mark_reward_per_share) {
+            pending = user.amount
+                .mul(pool.acc_reward_per_share.sub(user.mark_reward_per_share))
+                .div(1e12);
 
-        safe_so_transfer(msg.sender, pending);
+            safe_so_transfer(msg.sender, pending);
+        }
+
 
         pool.lp_token.safeTransfer(address(msg.sender), _amount);
 
         user.amount = user.amount.sub(_amount);
         user.mark_reward_per_share = pool.acc_reward_per_share;
 
-        emit UnStake(msg.sender, _pid, _amount);
+        emit UnStake(msg.sender, _pid, pending, _amount);
     }
 
     // Claim SoSwapToken rewards from SoSwapStaking.
