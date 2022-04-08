@@ -64,14 +64,14 @@ contract SoSwapStaking is Ownable {
     // Total allocation poitns. Must be the sum of all allocation points in all pools.
     uint256 public total_alloc_point = 0;
 
-    // (account, pool_id, rewards, stake)
-    event Stake(address indexed user, uint256 indexed pid, uint256 amount, uint256 stake);
-    // (account, pool_id, rewards, unstake)
-    event UnStake(address indexed user, uint256 indexed pid, uint256 amount, uint256 unstake);
-    // (account, pool_id, rewards)
-    event Claim(address indexed user, uint256 indexed pid, uint256 amount);
-    // (account, pool_id, unstake)
-    event EmergencyUnStake(address indexed user, uint256 indexed pid, uint256 unstake);
+    // (account, pool_id, rewards, current_stake)
+    event Stake(address indexed user, uint256 indexed pid, uint256 rewards, uint256 current_stake);
+    // (account, pool_id, rewards, current_stake)
+    event UnStake(address indexed user, uint256 indexed pid, uint256 rewards, uint256 current_stake);
+    // (account, pool_id, rewards, current_stake)
+    event Claim(address indexed user, uint256 indexed pid, uint256 rewards, uint256 current_stake);
+    // (account, pool_id)
+    event EmergencyUnStake(address indexed user, uint256 indexed pid);
 
     constructor(SoSwapToken _soswap) {
         soswap = _soswap;
@@ -238,7 +238,7 @@ contract SoSwapStaking is Ownable {
         user.amount = user.amount.add(_amount);
         user.mark_reward_per_share = pool.acc_reward_per_share;
 
-        emit Stake(_account, _pid, pending, _amount);
+        emit Stake(_account, _pid, pending, user.amount);
     }
 
     // UnStake LP tokens from SoSwapStaking.
@@ -268,7 +268,7 @@ contract SoSwapStaking is Ownable {
         user.amount = user.amount.sub(_amount);
         user.mark_reward_per_share = pool.acc_reward_per_share;
 
-        emit UnStake(msg.sender, _pid, pending, _amount);
+        emit UnStake(msg.sender, _pid, pending, user.amount);
     }
 
     // Claim SoSwapToken rewards from SoSwapStaking.
@@ -288,7 +288,7 @@ contract SoSwapStaking is Ownable {
 
         user.mark_reward_per_share = pool.acc_reward_per_share;
 
-        emit Claim(msg.sender, _pid, pending);
+        emit Claim(msg.sender, _pid, pending, user.amount);
     }
 
     // View function to see pending SoSwapTokens on frontend.
@@ -332,7 +332,7 @@ contract SoSwapStaking is Ownable {
         user.amount = 0;
         user.mark_reward_per_share = 0;
 
-        emit EmergencyUnStake(msg.sender, _pid, user.amount);
+        emit EmergencyUnStake(msg.sender, _pid);
     }
 
     // Safe SoSwapToken transfer function.
