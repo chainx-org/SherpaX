@@ -26,6 +26,6 @@ bench_run() {
   rustfmt "$output"
 }
 
-bench_run xpallet_gateway_bitcoin   ./xpallets/gateway/bitcoin/src/weights.rs
+# bench_run xpallet_gateway_bitcoin   ./xpallets/gateway/bitcoin/src/weights.rs
 bench_run xpallet_gateway_common    ./xpallets/gateway/common/src/weights.rs
-bench_run xpallet_gateway_records   ./xpallets/gateway/records/src/weights.rs
+# bench_run xpallet_gateway_records   ./xpallets/gateway/records/src/weights.rs
