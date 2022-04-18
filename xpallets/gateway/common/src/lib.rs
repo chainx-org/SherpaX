@@ -375,19 +375,6 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Set relayer.
-        ///
-        /// This is a root-only operation.
-        #[pallet::weight(< T as Config >::WeightInfo::set_trustee_admin())]
-        pub fn set_relayer(origin: OriginFor<T>, relayer: T::AccountId) -> DispatchResult {
-            T::CouncilOrigin::try_origin(origin)
-                .map(|_| ())
-                .or_else(ensure_root)?;
-
-            Relayer::<T>::put(relayer);
-            Ok(())
-        }
-
         /// Set the trustee admin.
         ///
         /// This is a root-only operation.
@@ -556,10 +543,6 @@ pub mod pallet {
     }
 
     #[pallet::storage]
-    #[pallet::getter(fn relayer)]
-    pub(crate) type Relayer<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
-
-    #[pallet::storage]
     #[pallet::getter(fn agg_pubkey_info)]
     pub(crate) type AggPubkeyInfo<T: Config> =
         StorageMap<_, Twox64Concat, Vec<u8>, Vec<T::AccountId>, ValueQuery>;
@@ -673,7 +656,6 @@ pub mod pallet {
         )>,
         pub genesis_trustee_transition_duration: T::BlockNumber,
         pub genesis_trustee_transition_status: bool,
-        pub relayer: T::AccountId,
     }
 
     #[cfg(feature = "std")]
@@ -683,7 +665,6 @@ pub mod pallet {
                 trustees: Default::default(),
                 genesis_trustee_transition_duration: Default::default(),
                 genesis_trustee_transition_status: Default::default(),
-                relayer: Default::default(),
             }
         }
     }
@@ -710,7 +691,6 @@ pub mod pallet {
                 }
                 TrusteeTransitionDuration::<T>::put(config.genesis_trustee_transition_duration);
                 TrusteeTransitionStatus::<T>::put(&config.genesis_trustee_transition_status);
-                Relayer::<T>::put(&config.relayer)
             };
             extra_genesis_builder(self);
         }

@@ -295,7 +295,6 @@ impl ExtBuilder {
             trustees: info,
             genesis_trustee_transition_duration: Default::default(),
             genesis_trustee_transition_status: Default::default(),
-            ..Default::default()
         }
         .assimilate_storage(&mut storage);
 
