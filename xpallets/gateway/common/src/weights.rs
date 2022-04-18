@@ -37,7 +37,6 @@ pub trait WeightInfo {
     fn set_trustee_proxy() -> Weight;
     fn set_trustee_info_config() -> Weight;
     fn change_trustee_transition_duration() -> Weight;
-    fn set_relayer() -> Weight;
     fn set_trustee_admin() -> Weight;
     fn set_trustee_admin_multiply() -> Weight;
     fn claim_trustee_reward() -> Weight;
@@ -71,9 +70,6 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
     }
     fn change_trustee_transition_duration() -> Weight {
         (2_245_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
-    }
-    fn set_relayer() -> Weight {
-        (2_630_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_admin() -> Weight {
         (3_477_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
@@ -115,9 +111,6 @@ impl WeightInfo for () {
     }
     fn change_trustee_transition_duration() -> Weight {
         (2_245_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
-    }
-    fn set_relayer() -> Weight {
-        (2_630_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_admin() -> Weight {
         (3_477_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))

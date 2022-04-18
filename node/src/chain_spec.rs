@@ -205,7 +205,6 @@ pub fn benchmarks_config() -> Result<ChainSpec, String> {
                     "../res/genesis_config/gateway/btc_genesis_params_benchmarks.json"
                 )),
                 crate::bitcoin::benchmarks_trustees(),
-                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         // Bootnodes
@@ -249,7 +248,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
                 crate::bitcoin::dev_trustees(),
-                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         // Bootnodes
@@ -303,7 +301,6 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
                 crate::bitcoin::mainnet_trustees(),
-                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         // Bootnodes
@@ -376,7 +373,6 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
                 crate::bitcoin::mainnet_trustees(),
-                hex!("d4dcddf3586f5d60568cddcda61b4f1395f22adda5920f5ac60434911b535076").into(),
             )
         },
         // Bootnodes
@@ -421,7 +417,6 @@ pub fn sherpax_genesis(
     load_genesis: bool,
     bitcoin: BtcGenesisParams,
     trustees: Vec<(Chain, TrusteeInfoConfig, Vec<BtcTrusteeParams>)>,
-    relayer: AccountId,
 ) -> GenesisConfig {
     let (balances, vesting) = if load_genesis {
         load_genesis_config(&root_key)
@@ -501,7 +496,6 @@ pub fn sherpax_genesis(
             trustees,
             genesis_trustee_transition_duration: 30 * DAYS,
             genesis_trustee_transition_status: false,
-            relayer,
         },
         x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
             genesis_trustees: btc_genesis_trustees,
