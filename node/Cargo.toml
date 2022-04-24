@@ -1,6 +1,6 @@
 [package]
 name = "sherpax"
-version = "1.2.0"
+version = "1.3.0"
 authors = ['The ChainX Authors']
 edition = "2018"
 build = "build.rs"
@@ -72,15 +72,15 @@ fc-mapping-sync = { git = "https://github.com/chainx-org/frontier", branch = "ne
 fc-db = { git = "https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
 pallet-ethereum = { git="https://github.com/chainx-org/frontier", branch = "new-polkadot-v0.9.11" }
 
-# Cross Chain
-sherpax-primitives = { path = "../primitives" }
-xpallet-gateway-bitcoin-rpc = { path = "../xpallets/gateway/bitcoin/rpc" }
-xpallet-gateway-bitcoin-rpc-runtime-api = { path = "../xpallets/gateway/bitcoin/rpc/runtime-api" }
-xpallet-gateway-common-rpc = { path = "../xpallets/gateway/common/rpc" }
-xpallet-gateway-common-rpc-runtime-api = { path = "../xpallets/gateway/common/rpc/runtime-api" }
-xpallet-gateway-records-rpc = { path = "../xpallets/gateway/records/rpc" }
-xpallet-gateway-records-rpc-runtime-api = { path = "../xpallets/gateway/records/rpc/runtime-api" }
-
+## Cross Chain
+#sherpax-primitives = { path = "../primitives" }
+#xpallet-gateway-bitcoin-rpc = { path = "../xpallets/gateway/bitcoin/rpc" }
+#xpallet-gateway-bitcoin-rpc-runtime-api = { path = "../xpallets/gateway/bitcoin/rpc/runtime-api" }
+#xpallet-gateway-common-rpc = { path = "../xpallets/gateway/common/rpc" }
+#xpallet-gateway-common-rpc-runtime-api = { path = "../xpallets/gateway/common/rpc/runtime-api" }
+#xpallet-gateway-records-rpc = { path = "../xpallets/gateway/records/rpc" }
+#xpallet-gateway-records-rpc-runtime-api = { path = "../xpallets/gateway/records/rpc/runtime-api" }
+#
 
 [build-dependencies]
 substrate-build-script-utils = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }

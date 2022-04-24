@@ -51,7 +51,7 @@ impl SubstrateCli for Cli {
         set_default_ss58_version(Ss58AddressFormat::ChainXAccount);
 
         Ok(match id {
-            "dev" => Box::new(chain_spec::development_config()?),
+            "" | "dev" => Box::new(chain_spec::development_config()?),
             "benchmarks" => {
                 #[cfg(feature = "runtime-benchmarks")]
                 {
@@ -65,7 +65,7 @@ impl SubstrateCli for Cli {
                     );
                 }
             }
-            "" | "local" => Box::new(chain_spec::local_testnet_config()?),
+            // "" | "local" => Box::new(chain_spec::local_testnet_config()?),
             path => {
                 use std::fs::File;
                 use std::io::Read;
