@@ -1,6 +1,7 @@
 pub use crate as assets_bridge;
 pub use assets_bridge::{Config, Error, Event as AssetsBridgeEvent};
 
+use frame_support::traits::ConstU32;
 use frame_support::{parameter_types, traits::GenesisBuild};
 use frame_system as system;
 use sp_core::{H160, H256};
@@ -58,6 +59,7 @@ impl system::Config for Test {
     type SystemWeightInfo = ();
     type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
+    type MaxConsumers = ConstU32<5>;
 }
 
 parameter_types! {
@@ -110,6 +112,7 @@ impl pallet_assets::Config for Test {
     type Freezer = ();
     type WeightInfo = ();
     type Extra = ();
+    type AssetAccountDeposit = ();
 }
 
 impl pallet_evm::Config for Test {
@@ -128,6 +131,7 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
     type FindAuthor = ();
+    type WeightInfo = ();
 }
 
 impl assets_bridge::Config for Test {

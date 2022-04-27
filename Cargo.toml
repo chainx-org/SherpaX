@@ -4,13 +4,13 @@ resolver = "2"
 members = [
     "node",
     "primitives",
-#    "primitives/assets-registrar",
+    "primitives/assets-registrar",
 #    "primitives/gateway/bitcoin",
 #    "primitives/gateway/common",
-#    "primitives/io",
-#    "primitives/protocol",
-#    "primitives/rpc",
-#    "primitives/runtime",
+    "primitives/io",
+    "primitives/protocol",
+    "primitives/rpc",
+    "primitives/runtime",
     "runtime/sherpax",
 
     "xpallets/assets",
@@ -23,7 +23,7 @@ members = [
 #    "xpallets/gateway/records",
 #    "xpallets/gateway/records/rpc",
 #    "xpallets/gateway/records/rpc/runtime-api",
-#    "xpallets/support",
+    "xpallets/support",
 ]
 
 [profile.release]

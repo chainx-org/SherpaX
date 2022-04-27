@@ -2,14 +2,14 @@
 name = "xpallet-gateway-bitcoin-rpc"
 version = "3.0.0"
 authors = ["The ChainX Authors"]
-edition = "2018"
+edition = "2021"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2.3.1" }
-serde = { version = "1.0.101", features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.0.0" }
+serde = { version = "1.0.136", features = ["derive"] }
 hex = "0.4"
 jsonrpc-core = "18.0.0"
 jsonrpc-core-client = "18.0.0"

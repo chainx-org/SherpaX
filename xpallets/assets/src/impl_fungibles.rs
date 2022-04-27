@@ -1,13 +1,13 @@
 // This file is part of Substrate.
 
-// Copyright (C) 2017-2021 Parity Technologies (UK) Ltd.
+// Copyright (C) 2017-2022 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// 	http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -61,6 +61,25 @@ impl<T: Config<I>, I: 'static> fungibles::Inspect<<T as SystemConfig>::AccountId
         amount: Self::Balance,
     ) -> WithdrawConsequence<Self::Balance> {
         Pallet::<T, I>::can_decrease(asset, who, amount, false)
+    }
+}
+
+impl<T: Config<I>, I: 'static> fungibles::InspectMetadata<<T as SystemConfig>::AccountId>
+    for Pallet<T, I>
+{
+    /// Return the name of an asset.
+    fn name(asset: &Self::AssetId) -> Vec<u8> {
+        Metadata::<T, I>::get(asset).name.to_vec()
+    }
+
+    /// Return the symbol of an asset.
+    fn symbol(asset: &Self::AssetId) -> Vec<u8> {
+        Metadata::<T, I>::get(asset).symbol.to_vec()
+    }
+
+    /// Return the decimals of an asset.
+    fn decimals(asset: &Self::AssetId) -> u8 {
+        Metadata::<T, I>::get(asset).decimals
     }
 }
 
@@ -192,5 +211,74 @@ impl<T: Config<I>, I: 'static> fungibles::Destroy<T::AccountId> for Pallet<T, I>
         maybe_check_owner: Option<T::AccountId>,
     ) -> Result<Self::DestroyWitness, DispatchError> {
         Self::do_destroy(id, witness, maybe_check_owner)
+    }
+}
+
+impl<T: Config<I>, I: 'static> fungibles::metadata::Inspect<<T as SystemConfig>::AccountId>
+    for Pallet<T, I>
+{
+    fn name(asset: T::AssetId) -> Vec<u8> {
+        Metadata::<T, I>::get(asset).name.to_vec()
+    }
+
+    fn symbol(asset: T::AssetId) -> Vec<u8> {
+        Metadata::<T, I>::get(asset).symbol.to_vec()
+    }
+
+    fn decimals(asset: T::AssetId) -> u8 {
+        Metadata::<T, I>::get(asset).decimals
+    }
+}
+
+impl<T: Config<I>, I: 'static> fungibles::metadata::Mutate<<T as SystemConfig>::AccountId>
+    for Pallet<T, I>
+{
+    fn set(
+        asset: T::AssetId,
+        from: &<T as SystemConfig>::AccountId,
+        name: Vec<u8>,
+        symbol: Vec<u8>,
+        decimals: u8,
+    ) -> DispatchResult {
+        Self::do_set_metadata(asset, from, name, symbol, decimals)
+    }
+}
+
+impl<T: Config<I>, I: 'static> fungibles::approvals::Inspect<<T as SystemConfig>::AccountId>
+    for Pallet<T, I>
+{
+    // Check the amount approved to be spent by an owner to a delegate
+    fn allowance(
+        asset: T::AssetId,
+        owner: &<T as SystemConfig>::AccountId,
+        delegate: &<T as SystemConfig>::AccountId,
+    ) -> T::Balance {
+        Approvals::<T, I>::get((asset, &owner, &delegate))
+            .map(|x| x.amount)
+            .unwrap_or_else(Zero::zero)
+    }
+}
+
+impl<T: Config<I>, I: 'static> fungibles::approvals::Mutate<<T as SystemConfig>::AccountId>
+    for Pallet<T, I>
+{
+    fn approve(
+        asset: T::AssetId,
+        owner: &<T as SystemConfig>::AccountId,
+        delegate: &<T as SystemConfig>::AccountId,
+        amount: T::Balance,
+    ) -> DispatchResult {
+        Self::do_approve_transfer(asset, owner, delegate, amount)
+    }
+
+    // Aprove spending tokens from a given account
+    fn transfer_from(
+        asset: T::AssetId,
+        owner: &<T as SystemConfig>::AccountId,
+        delegate: &<T as SystemConfig>::AccountId,
+        dest: &<T as SystemConfig>::AccountId,
+        amount: T::Balance,
+    ) -> DispatchResult {
+        Self::do_transfer_approved(asset, owner, delegate, dest, amount)
     }
 }
