@@ -9,8 +9,8 @@
 
 #[cfg(any(feature = "runtime-benchmarks", test))]
 mod benchmarking;
-#[cfg(test)]
-mod mock;
+// #[cfg(test)]
+// mod mock;
 #[cfg(test)]
 mod tests;
 
@@ -102,6 +102,23 @@ pub mod pallet {
         type BitcoinTotalSupply: TotalSupply<Self::Balance>;
         /// Get btc withdrawal proposal.
         type BitcoinWithdrawalProposal: ProposalProvider;
+
+        /// Dogecoin
+        /// Get btc chain info.
+        type Dogecoin: ChainT<Self::AssetId, Self::Balance>;
+        /// Generate dogecoin trustee session info.
+        type DogecoinTrustee: TrusteeForChain<
+            Self::AccountId,
+            Self::BlockNumber,
+            trustees::dogecoin::DogeTrusteeType,
+            trustees::dogecoin::DogeTrusteeAddrInfo,
+        >;
+        /// Get trustee session info.
+        type DogecoinTrusteeSessionProvider: TrusteeSession<
+            Self::AccountId,
+            Self::BlockNumber,
+            trustees::dogecoin::DogeTrusteeAddrInfo,
+        >;
 
         type WeightInfo: WeightInfo;
     }
@@ -202,14 +219,14 @@ pub mod pallet {
 
         /// Manual execution of the election by admin.
         #[pallet::weight(0u64)]
-        pub fn excute_trustee_election(origin: OriginFor<T>) -> DispatchResult {
+        pub fn excute_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(Self::try_ensure_trustee_admin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
 
-            Self::do_trustee_election()
+            Self::do_trustee_election(chain)
         }
 
         /// Force cancel trustee transition
@@ -237,6 +254,7 @@ pub mod pallet {
         #[transactional]
         pub fn move_trust_into_black_room(
             origin: OriginFor<T>,
+            chain: Chain,
             trustees: Option<Vec<T::AccountId>>,
         ) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
@@ -266,7 +284,7 @@ pub mod pallet {
                 });
             }
 
-            Self::do_trustee_election()?;
+            Self::do_trustee_election(chain)?;
             Ok(())
         }
 
@@ -447,6 +465,7 @@ pub mod pallet {
                     }
                 });
             } else {
+                // TODO： match chain
                 let session_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
                 let who = ensure_signed(origin)?;
                 ensure!(
@@ -643,12 +662,14 @@ pub mod pallet {
 
     /// How long each trustee is kept. This defines the next block number at which an
     /// trustee transition will happen. If set to zero, no trustee transition are ever triggered.
+    /// TODO!: Add Chain
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_duration)]
     pub(crate) type TrusteeTransitionDuration<T: Config> =
         StorageValue<_, T::BlockNumber, ValueQuery>;
 
     /// The status of the of the trustee transition
+    /// TODO!: Add Chain
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_status)]
     pub(crate) type TrusteeTransitionStatus<T: Config> = StorageValue<_, bool, ValueQuery>;
@@ -827,18 +848,21 @@ impl<T: Config> Pallet<T> {
 
 /// Trustee Transition
 impl<T: Config> Pallet<T> {
-    pub fn do_trustee_election() -> DispatchResult {
+    pub fn do_trustee_election(chain: Chain) -> DispatchResult {
+        // TODO!: Based on chain judgment
         ensure!(
             !Self::trustee_transition_status(),
             Error::<T>::LastTransitionNotCompleted
         );
 
+        // TODO!: Based on chain judgment
         ensure!(
             T::BitcoinWithdrawalProposal::get_withdrawal_proposal().is_none(),
             Error::<T>::WithdrawalProposalExist,
         );
 
         // Current trustee list
+        // TODO!: Based on chain judgment
         let old_trustee_candidate: Vec<T::AccountId> =
             if let Ok(info) = T::BitcoinTrusteeSessionProvider::current_trustee_session() {
                 info.trustee_list.into_iter().unzip::<_, _, _, Vec<u64>>().0
@@ -846,6 +870,7 @@ impl<T: Config> Pallet<T> {
                 vec![]
             };
 
+        // TODO!: Based on chain judgment
         let filter_members: Vec<T::AccountId> = Self::little_black_house();
 
         let all_trustee_pool = Self::generate_trustee_pool();
@@ -890,10 +915,11 @@ impl<T: Config> Pallet<T> {
         if incoming.is_empty() && outgoing.is_empty() {
             return Err(Error::<T>::TrusteeMembersNotEnough.into());
         }
-        Self::transition_trustee_session_impl(Chain::Bitcoin, new_trustee_candidate)?;
+        Self::transition_trustee_session_impl(chain, new_trustee_candidate)?;
         LittleBlackHouse::<T>::put(remain_filter_members);
-        if Self::trustee_session_info_len(Chain::Bitcoin) != 1 {
+        if Self::trustee_session_info_len(chain) != 1 {
             TrusteeTransitionStatus::<T>::put(true);
+            // TODO!: Based on chain judgment
             let total_supply = T::BitcoinTotalSupply::total_supply();
             PreTotalSupply::<T>::insert(T::BtcAssetId::get(), total_supply);
         }
@@ -974,6 +1000,22 @@ impl<T: Config> Pallet<T> {
 
                 (session_info.0.into(), session_info.1)
             }
+            Chain::Dogecoin => {
+                let props = props
+                    .into_iter()
+                    .map(|(id, prop)| {
+                        (
+                            id,
+                            TrusteeIntentionProps::<T::AccountId, _>::try_from(prop)
+                                .expect("must decode succss from storage data"),
+                        )
+                    })
+                    .collect();
+                let session_info =
+                    T::DogecoinTrustee::generate_trustee_session_info(props, config)?;
+
+                (session_info.0.into(), session_info.1)
+            }
             _ => return Err(Error::<T>::NotSupportedChain.into()),
         };
         Ok(info)
@@ -1024,13 +1066,19 @@ impl<T: Config> Pallet<T> {
         TrusteeSessionInfoOf::<T>::insert(chain, session_number, session_info.0.clone());
         TrusteeMultiSigAddr::<T>::insert(chain, multi_addr);
         // Remove the information of the previous aggregate public key，Withdrawal is prohibited at this time.
-        AggPubkeyInfo::<T>::remove_all(None);
-        for index in 0..session_info.1.agg_pubkeys.len() {
-            AggPubkeyInfo::<T>::insert(
-                &session_info.1.agg_pubkeys[index],
-                session_info.1.personal_accounts[index].clone(),
-            );
+        match chain {
+            Chain::Bitcoin => {
+                AggPubkeyInfo::<T>::remove_all(None);
+                for index in 0..session_info.1.agg_pubkeys.len() {
+                    AggPubkeyInfo::<T>::insert(
+                        &session_info.1.agg_pubkeys[index],
+                        session_info.1.personal_accounts[index].clone(),
+                    );
+                }
+            }
+            _ => {}
         }
+        // TODO! : Add Chain
         TrusteeAdmin::<T>::kill();
 
         Self::deposit_event(Event::<T>::TrusteeSetChanged(
@@ -1086,6 +1134,7 @@ impl<T: Config> Pallet<T> {
 /// Trustee Reward
 impl<T: Config> Pallet<T> {
     pub fn apply_claim_trustee_reward(session_num: u32) -> DispatchResult {
+        // TODO: match chain
         let trustee_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
         let multi_account = match trustee_info.multi_account.clone() {
             None => return Err(Error::<T>::InvalidMultiAccount.into()),
@@ -1236,6 +1285,7 @@ impl<T: Config> Pallet<T> {
         let chain = xpallet_gateway_records::Pallet::<T>::chain_of(asset_id)?;
         match chain {
             Chain::Bitcoin => T::Bitcoin::withdrawal_limit(asset_id),
+            Chain::Dogecoin => T::Dogecoin::withdrawal_limit(asset_id),
             _ => Err(Error::<T>::NotSupportedChain.into()),
         }
     }

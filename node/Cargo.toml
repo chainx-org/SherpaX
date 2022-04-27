@@ -76,6 +76,7 @@ pallet-ethereum = { git="https://github.com/chainx-org/frontier", branch = "new-
 sherpax-primitives = { path = "../primitives" }
 xpallet-gateway-bitcoin-rpc = { path = "../xpallets/gateway/bitcoin/rpc" }
 xpallet-gateway-bitcoin-rpc-runtime-api = { path = "../xpallets/gateway/bitcoin/rpc/runtime-api" }
+xpallet-gateway-dogecoin = { path = "../xpallets/gateway/dogecoin" }
 xpallet-gateway-common-rpc = { path = "../xpallets/gateway/common/rpc" }
 xpallet-gateway-common-rpc-runtime-api = { path = "../xpallets/gateway/common/rpc/runtime-api" }
 xpallet-gateway-records-rpc = { path = "../xpallets/gateway/records/rpc" }

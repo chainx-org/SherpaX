@@ -776,6 +776,9 @@ impl xpallet_gateway_common::Config for Runtime {
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
     type BitcoinTotalSupply = XGatewayBitcoin;
     type BitcoinWithdrawalProposal = XGatewayBitcoin;
+    type Dogecoin = XGatewayDogecoin;
+    type DogecoinTrustee = XGatewayDogecoin;
+    type DogecoinTrusteeSessionProvider = trustees::dogecoin::DogeTrusteeSessionManager<Runtime>;
     type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
 }
 
@@ -790,6 +793,18 @@ impl xpallet_gateway_bitcoin::Config for Runtime {
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
     type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+}
+
+impl xpallet_gateway_dogecoin::Config for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type CouncilOrigin =
+        pallet_collective::EnsureProportionAtLeast<_2, _3, AccountId, CouncilCollective>;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = trustees::dogecoin::DogeTrusteeSessionManager<Runtime>;
+    type ReferralBinding = XGatewayCommon;
+    type AddressBinding = XGatewayCommon;
+    type WeightInfo = xpallet_gateway_dogecoin::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -842,6 +857,7 @@ construct_runtime!(
         XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 60,
         XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 61,
         XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 62,
+        XGatewayDogecoin: xpallet_gateway_dogecoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 63,
     }
 );
 

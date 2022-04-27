@@ -3592,7 +3592,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "light-bitcoin-chain",
  "light-bitcoin-crypto",
@@ -3607,7 +3607,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-chain"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "hex",
  "light-bitcoin-crypto",
@@ -3621,7 +3621,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-crypto"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "digest 0.9.0",
  "light-bitcoin-primitives",
@@ -3634,7 +3634,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-keys"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "arrayref",
  "bitcoin-bech32",
@@ -3655,7 +3655,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-mast"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "arrayref",
  "bitcoin-bech32",
@@ -3676,7 +3676,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-merkle"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "light-bitcoin-chain",
  "light-bitcoin-primitives",
@@ -3688,7 +3688,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-primitives"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "byteorder",
  "fixed-hash",
@@ -3704,7 +3704,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-script"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "hex",
  "libsecp256k1 0.7.0 (git+https://github.com/chainx-org/libsecp256k1.git)",
@@ -3721,7 +3721,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-serialization"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "light-bitcoin-primitives",
  "light-bitcoin-serialization-derive",
@@ -3732,7 +3732,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-serialization-derive"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=taproot#b6587ef7feca71e6b6a6861c44d85983780b428f"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=support-dogecoin#4c70fc5ba0eeb4582bb0c213f33ae57bb2377ee9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7162,6 +7162,7 @@ dependencies = [
  "xpallet-gateway-bitcoin-rpc-runtime-api",
  "xpallet-gateway-common-rpc",
  "xpallet-gateway-common-rpc-runtime-api",
+ "xpallet-gateway-dogecoin",
  "xpallet-gateway-records-rpc",
  "xpallet-gateway-records-rpc-runtime-api",
 ]
@@ -7251,6 +7252,7 @@ dependencies = [
  "xpallet-gateway-bitcoin-rpc-runtime-api",
  "xpallet-gateway-common",
  "xpallet-gateway-common-rpc-runtime-api",
+ "xpallet-gateway-dogecoin",
  "xpallet-gateway-records",
  "xpallet-gateway-records-rpc-runtime-api",
  "xpallet-support",
@@ -9500,6 +9502,44 @@ dependencies = [
  "xp-runtime",
  "xpallet-gateway-common",
  "xpallet-gateway-records",
+]
+
+[[package]]
+name = "xpallet-gateway-dogecoin"
+version = "1.0.0"
+dependencies = [
+ "bs58 0.3.1",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "hex-literal",
+ "lazy_static",
+ "light-bitcoin",
+ "musig2",
+ "orml-utilities",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-elections-phragmen",
+ "pallet-multisig",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sherpax-primitives",
+ "sp-core",
+ "sp-io",
+ "sp-keyring",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-gateway-bitcoin",
+ "xp-gateway-common",
+ "xp-protocol",
+ "xpallet-gateway-common",
+ "xpallet-gateway-records",
+ "xpallet-support",
 ]
 
 [[package]]
