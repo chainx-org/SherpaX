@@ -781,6 +781,8 @@ impl xpallet_gateway_common::Config for Runtime {
     type Dogecoin = XGatewayDogecoin;
     type DogecoinTrustee = XGatewayDogecoin;
     type DogecoinTrusteeSessionProvider = trustees::dogecoin::DogeTrusteeSessionManager<Runtime>;
+    type DogecoinTotalSupply = XGatewayDogecoin;
+    type DogecoinWithdrawalProposal = XGatewayDogecoin;
     type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
 }
 

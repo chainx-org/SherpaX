@@ -36,7 +36,7 @@ use xp_assets_registrar::Chain;
 use xp_gateway_common::AccountExtractor;
 
 use xpallet_gateway_common::{
-    traits::{AddressBinding, ProposalProvider, ReferralBinding, TrusteeSession},
+    traits::{AddressBinding, ProposalProvider, ReferralBinding, TotalSupply, TrusteeSession},
     trustees::dogecoin::DogeTrusteeAddrInfo,
 };
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
@@ -171,7 +171,7 @@ pub mod pallet {
             let from = ensure_signed(origin)?;
 
             ensure!(
-                !T::TrusteeSessionProvider::trustee_transition_state(),
+                !T::TrusteeSessionProvider::trustee_transition_state(Chain::Dogecoin),
                 Error::<T>::TrusteeTransitionPeriod
             );
 
@@ -606,6 +606,24 @@ pub mod pallet {
                 fee,
             };
             Ok(limit)
+        }
+    }
+
+    impl<T: Config> TotalSupply<T::Balance> for Pallet<T> {
+        fn total_supply() -> T::Balance {
+            let pending_deposits: T::Balance = PendingDeposits::<T>::iter_values()
+                .map(|deposits| {
+                    deposits
+                        .into_iter()
+                        .map(|deposit| deposit.balance)
+                        .sum::<u64>()
+                })
+                .sum::<u64>()
+                .saturated_into();
+
+            let asset_id = T::DogeAssetId::get();
+            let asset_supply = pallet_assets::Pallet::<T>::total_supply(asset_id);
+            asset_supply + pending_deposits
         }
     }
 

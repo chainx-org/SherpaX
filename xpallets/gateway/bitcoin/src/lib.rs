@@ -176,7 +176,7 @@ pub mod pallet {
             let from = ensure_signed(origin)?;
 
             ensure!(
-                !T::TrusteeSessionProvider::trustee_transition_state(),
+                !T::TrusteeSessionProvider::trustee_transition_state(Chain::Bitcoin),
                 Error::<T>::TrusteeTransitionPeriod
             );
 
@@ -695,7 +695,7 @@ pub mod pallet {
                 .all(|addr| xp_gateway_bitcoin::is_trustee_addr(addr, current_trustee_pair));
 
             // check trustee transition status
-            if T::TrusteeSessionProvider::trustee_transition_state() {
+            if T::TrusteeSessionProvider::trustee_transition_state(Chain::Bitcoin) {
                 // check trustee transition tx
                 // tx output address = new hot address
                 let prev_trustee_pair = get_last_trustee_address_pair::<T>()?;

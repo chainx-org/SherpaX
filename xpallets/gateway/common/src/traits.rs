@@ -66,7 +66,7 @@ pub trait TrusteeSession<AccountId, BlockNumber, TrusteeAddress: BytesLike> {
     fn last_trustee_session(
     ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError>;
 
-    fn trustee_transition_state() -> bool;
+    fn trustee_transition_state(chain: Chain) -> bool;
 
     #[cfg(feature = "std")]
     fn genesis_trustee(chain: Chain, init: &[AccountId]);
@@ -95,7 +95,7 @@ impl<AccountId, BlockNumber, TrusteeAddress: BytesLike>
         Err("NoTrustee".into())
     }
 
-    fn trustee_transition_state() -> bool {
+    fn trustee_transition_state(_: Chain) -> bool {
         false
     }
 
@@ -105,13 +105,13 @@ impl<AccountId, BlockNumber, TrusteeAddress: BytesLike>
 
 pub trait TrusteeInfoUpdate {
     /// Update the trustee trasition status when the renewal of the trustee is completed
-    fn update_transition_status(status: bool, trans_amount: Option<u64>);
+    fn update_transition_status(chain: Chain, status: bool, trans_amount: Option<u64>);
     /// Each withdrawal is completed to record the weight of the signer
     fn update_trustee_sig_record(script: &[u8], withdraw_amout: u64);
 }
 
 impl TrusteeInfoUpdate for () {
-    fn update_transition_status(_: bool, _: Option<u64>) {}
+    fn update_transition_status(_: Chain, _: bool, _: Option<u64>) {}
 
     fn update_trustee_sig_record(_: &[u8], _: u64) {}
 }

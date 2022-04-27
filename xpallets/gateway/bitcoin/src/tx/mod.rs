@@ -19,6 +19,7 @@ use light_bitcoin::{
     keys::{Address, Network},
     primitives::{hash_rev, H256},
 };
+use xp_assets_registrar::Chain;
 
 pub use self::validator::validate_transaction;
 use crate::{
@@ -64,7 +65,7 @@ pub fn process_tx<T: Config>(
 fn trustee_transition<T: Config>(tx: Transaction) -> BtcTxResult {
     let amount = tx.outputs().iter().map(|output| output.value).sum::<u64>();
 
-    T::TrusteeInfoUpdate::update_transition_status(false, Some(amount));
+    T::TrusteeInfoUpdate::update_transition_status(Chain::Bitcoin, false, Some(amount));
 
     BtcTxResult::Success
 }
