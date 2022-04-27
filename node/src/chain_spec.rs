@@ -1,7 +1,7 @@
-// use crate::bitcoin::{
-//     btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, BtcTxVerifier, Chain,
-//     TrusteeInfoConfig,
-// };
+use crate::bitcoin::{
+    btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, BtcTxVerifier, Chain,
+    TrusteeInfoConfig,
+};
 use frame_benchmarking::frame_support::PalletId;
 use hex_literal::hex;
 use sc_chain_spec::ChainSpecExtension;
@@ -84,10 +84,10 @@ type AssetDecimals = u8;
 type AssetSufficient = bool;
 type AssetMinBalance = Balance;
 
-// /// Asset registration
-// fn sbtc() -> (Chain, AssetId) {
-//     (Chain::Bitcoin, 1)
-// }
+/// Asset registration
+fn sbtc() -> (Chain, AssetId) {
+    (Chain::Bitcoin, 1)
+}
 
 #[allow(clippy::type_complexity)]
 fn reserved_assets(
@@ -202,10 +202,10 @@ pub fn benchmarks_config() -> Result<ChainSpec, String> {
                     caller.clone(),
                 ],
                 false,
-                // btc_genesis_params(include_str!(
-                //     "../res/genesis_config/gateway/btc_genesis_params_benchmarks.json"
-                // )),
-                // crate::bitcoin::benchmarks_trustees(),
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/btc_genesis_params_benchmarks.json"
+                )),
+                crate::bitcoin::benchmarks_trustees(),
             )
         },
         // Bootnodes
@@ -246,10 +246,10 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 // Pre-funded accounts
                 vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
                 true,
-                // btc_genesis_params(include_str!(
-                //     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
-                // )),
-                // crate::bitcoin::dev_trustees(),
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                crate::bitcoin::dev_trustees(),
             )
         },
         // Bootnodes
@@ -266,138 +266,138 @@ pub fn development_config() -> Result<ChainSpec, String> {
     ))
 }
 
-/*
-pub fn local_testnet_config() -> Result<ChainSpec, String> {
-    let mut properties = Properties::new();
-    properties.insert("tokenSymbol".into(), "KSX".into());
-    properties.insert("tokenDecimals".into(), 18i32.into());
-    properties.insert(
-        "ss58Format".into(),
-        sherpax_runtime::SS58Prefix::get().into(),
-    );
-
-    Ok(ChainSpec::from_genesis(
-        // Name
-        "Local Testnet",
-        // ID
-        "local_testnet",
-        ChainType::Local,
-        move || {
-            sherpax_genesis(
-                // Initial PoA authorities
-                vec![
-                    authority_keys_from_seed("Alice"),
-                    authority_keys_from_seed("Bob"),
-                ],
-                // Sudo account
-                get_account_id_from_seed::<sr25519::Public>("Alice"),
-                // Pre-funded accounts
-                vec![
-                    get_account_id_from_seed::<sr25519::Public>("Alice"),
-                    get_account_id_from_seed::<sr25519::Public>("Bob"),
-                    get_account_id_from_seed::<sr25519::Public>("Charlie"),
-                    get_account_id_from_seed::<sr25519::Public>("Dave"),
-                    get_account_id_from_seed::<sr25519::Public>("Eve"),
-                    get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-                ],
-                true,
-                btc_genesis_params(include_str!(
-                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
-                )),
-                crate::bitcoin::mainnet_trustees(),
-            )
-        },
-        // Bootnodes
-        vec![],
-        // Telemetry
-        None,
-        // Protocol ID
-        None,
-        // Properties
-        Some(properties),
-        // Extensions
-        Default::default(),
-    ))
-}
-
-#[allow(unused)]
-pub fn mainnet_config() -> Result<ChainSpec, String> {
-    let bootnodes = bootnodes![
-        "/ip4/52.77.243.26/tcp/10025/ws/p2p/12D3KooWK6zL4BFCFgcfCLn8xMmZcAp1wX6nTGfJx3gRzbq6qE3Y",
-        "/ip4/47.114.74.52/tcp/40041/ws/p2p/12D3KooWJws7aM9euRhEM2CAvNTvKboiVi9wFRdHeWjtLUEiAJWo",
-        "/ip4/116.62.46.8/tcp/40042/ws/p2p/12D3KooWSAeap3NaSihLuz85tX8uKn8f8Wfgo8iY9WFM1MRAvQiX",
-    ];
-
-    let mut properties = Properties::new();
-    properties.insert("tokenSymbol".into(), "KSX".into());
-    properties.insert("tokenDecimals".into(), 18i32.into());
-    properties.insert(
-        "ss58Format".into(),
-        sherpax_runtime::SS58Prefix::get().into(),
-    );
-
-    Ok(ChainSpec::from_genesis(
-        // Name
-        "SherpaX",
-        // ID
-        "sherpax_singleton",
-        ChainType::Live,
-        move || {
-            sherpax_genesis(
-                // Initial PoA authorities
-                vec![
-                    (
-                        // Ff3b3gdWT2nwC9BSjcys1S8Tth2XBayEgHZkX8pbCrErqgf
-                        hex!("884f4d6638c1f70ed80537be200df124efc384e8177f74377a2be919513dcc3a")
-                            .into(),
-                        hex!("e07d42d9b6a3403be406efaaaf952981c2e124cabc305b49b179546d5cfe7f0e")
-                            .unchecked_into(),
-                        hex!("67b4639b336f7fcefc2b7696be57dbf5059208d01ad67e08ff9688d97efdb519")
-                            .unchecked_into(),
-                    ),
-                    (
-                        // J1SDJ7KvkESXfT8RjSP9Sy8TfUh2UMstRTh7CN7be9NipQB
-                        hex!("f054d6fd1444f2e78f2839dc4ec5e4f35f0fc003cf006f3f712f659cdc2ecb63")
-                            .into(),
-                        hex!("86a185b97c75744c614355991d5faac5ea8a57eb6b24a4baf352246f5eb58221")
-                            .unchecked_into(),
-                        hex!("c17b592b9ccf92127726607881c51304df8b8bb002caff9cd864a046cc85d4d0")
-                            .unchecked_into(),
-                    ),
-                ],
-                // Sudo account
-                // FCcnKcbTe5EYDZXDCKwbhkPAoYyakG1iRBxS9Ai5m2uFTfn
-                hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
-                // Pre-funded accounts
-                vec![
-                    hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
-                ],
-                true,
-                btc_genesis_params(include_str!(
-                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
-                )),
-                crate::bitcoin::mainnet_trustees(),
-            )
-        },
-        // Bootnodes
-        bootnodes,
-        // Telemetry
-        Some(
-            TelemetryEndpoints::new(vec![
-                (CHAINX_TELEMETRY_URL.to_string(), 0),
-                (POLKADOT_TELEMETRY_URL.to_string(), 0),
-            ])
-            .expect("SherpaX telemetry url is valid; qed"),
-        ),
-        // Protocol ID
-        Some(DEFAULT_PROTOCOL_ID),
-        // Properties
-        Some(properties),
-        // Extensions
-        Default::default(),
-    ))
-}
-*/
+// pub fn local_testnet_config() -> Result<ChainSpec, String> {
+//     let mut properties = Properties::new();
+//     properties.insert("tokenSymbol".into(), "KSX".into());
+//     properties.insert("tokenDecimals".into(), 18i32.into());
+//     properties.insert(
+//         "ss58Format".into(),
+//         sherpax_runtime::SS58Prefix::get().into(),
+//     );
+//
+//     Ok(ChainSpec::from_genesis(
+//         // Name
+//         "Local Testnet",
+//         // ID
+//         "local_testnet",
+//         ChainType::Local,
+//         move || {
+//             sherpax_genesis(
+//                 // Initial PoA authorities
+//                 vec![
+//                     authority_keys_from_seed("Alice"),
+//                     authority_keys_from_seed("Bob"),
+//                 ],
+//                 // Sudo account
+//                 get_account_id_from_seed::<sr25519::Public>("Alice"),
+//                 // Pre-funded accounts
+//                 vec![
+//                     get_account_id_from_seed::<sr25519::Public>("Alice"),
+//                     get_account_id_from_seed::<sr25519::Public>("Bob"),
+//                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
+//                     get_account_id_from_seed::<sr25519::Public>("Dave"),
+//                     get_account_id_from_seed::<sr25519::Public>("Eve"),
+//                     get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+//                 ],
+//                 true,
+//                 btc_genesis_params(include_str!(
+//                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+//                 )),
+//                 crate::bitcoin::mainnet_trustees(),
+//             )
+//         },
+//         // Bootnodes
+//         vec![],
+//         // Telemetry
+//         None,
+//         // Protocol ID
+//         None,
+//         None,
+//         // Properties
+//         Some(properties),
+//         // Extensions
+//         Default::default(),
+//     ))
+// }
+//
+// #[allow(unused)]
+// pub fn mainnet_config() -> Result<ChainSpec, String> {
+//     let bootnodes = bootnodes![
+//         "/ip4/52.77.243.26/tcp/10025/ws/p2p/12D3KooWK6zL4BFCFgcfCLn8xMmZcAp1wX6nTGfJx3gRzbq6qE3Y",
+//         "/ip4/47.114.74.52/tcp/40041/ws/p2p/12D3KooWJws7aM9euRhEM2CAvNTvKboiVi9wFRdHeWjtLUEiAJWo",
+//         "/ip4/116.62.46.8/tcp/40042/ws/p2p/12D3KooWSAeap3NaSihLuz85tX8uKn8f8Wfgo8iY9WFM1MRAvQiX",
+//     ];
+//
+//     let mut properties = Properties::new();
+//     properties.insert("tokenSymbol".into(), "KSX".into());
+//     properties.insert("tokenDecimals".into(), 18i32.into());
+//     properties.insert(
+//         "ss58Format".into(),
+//         sherpax_runtime::SS58Prefix::get().into(),
+//     );
+//
+//     Ok(ChainSpec::from_genesis(
+//         // Name
+//         "SherpaX",
+//         // ID
+//         "sherpax_singleton",
+//         ChainType::Live,
+//         move || {
+//             sherpax_genesis(
+//                 // Initial PoA authorities
+//                 vec![
+//                     (
+//                         // Ff3b3gdWT2nwC9BSjcys1S8Tth2XBayEgHZkX8pbCrErqgf
+//                         hex!("884f4d6638c1f70ed80537be200df124efc384e8177f74377a2be919513dcc3a")
+//                             .into(),
+//                         hex!("e07d42d9b6a3403be406efaaaf952981c2e124cabc305b49b179546d5cfe7f0e")
+//                             .unchecked_into(),
+//                         hex!("67b4639b336f7fcefc2b7696be57dbf5059208d01ad67e08ff9688d97efdb519")
+//                             .unchecked_into(),
+//                     ),
+//                     (
+//                         // J1SDJ7KvkESXfT8RjSP9Sy8TfUh2UMstRTh7CN7be9NipQB
+//                         hex!("f054d6fd1444f2e78f2839dc4ec5e4f35f0fc003cf006f3f712f659cdc2ecb63")
+//                             .into(),
+//                         hex!("86a185b97c75744c614355991d5faac5ea8a57eb6b24a4baf352246f5eb58221")
+//                             .unchecked_into(),
+//                         hex!("c17b592b9ccf92127726607881c51304df8b8bb002caff9cd864a046cc85d4d0")
+//                             .unchecked_into(),
+//                     ),
+//                 ],
+//                 // Sudo account
+//                 // FCcnKcbTe5EYDZXDCKwbhkPAoYyakG1iRBxS9Ai5m2uFTfn
+//                 hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
+//                 // Pre-funded accounts
+//                 vec![
+//                     hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
+//                 ],
+//                 true,
+//                 btc_genesis_params(include_str!(
+//                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+//                 )),
+//                 crate::bitcoin::mainnet_trustees(),
+//             )
+//         },
+//         // Bootnodes
+//         bootnodes,
+//         // Telemetry
+//         Some(
+//             TelemetryEndpoints::new(vec![
+//                 (CHAINX_TELEMETRY_URL.to_string(), 0),
+//                 (POLKADOT_TELEMETRY_URL.to_string(), 0),
+//             ])
+//             .expect("SherpaX telemetry url is valid; qed"),
+//         ),
+//         // Protocol ID
+//         Some(DEFAULT_PROTOCOL_ID),
+//         None,
+//         // Properties
+//         Some(properties),
+//         // Extensions
+//         Default::default(),
+//     ))
+// }
 
 fn sherpax_session_keys(aura: AuraId, grandpa: GrandpaId) -> SessionKeys {
     SessionKeys { aura, grandpa }
@@ -420,8 +420,8 @@ pub fn sherpax_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     load_genesis: bool,
-    // bitcoin: BtcGenesisParams,
-    // trustees: Vec<(Chain, TrusteeInfoConfig, Vec<BtcTrusteeParams>)>,
+    bitcoin: BtcGenesisParams,
+    trustees: Vec<(Chain, TrusteeInfoConfig, Vec<BtcTrusteeParams>)>,
 ) -> GenesisConfig {
     let (balances, vesting) = if load_genesis {
         load_genesis_config(&root_key)
@@ -435,22 +435,22 @@ pub fn sherpax_genesis(
         (balances, Default::default())
     };
 
-    // let btc_genesis_trustees = trustees
-    //     .iter()
-    //     .find_map(|(chain, _, trustee_params)| {
-    //         if *chain == Chain::Bitcoin {
-    //             Some(
-    //                 trustee_params
-    //                     .iter()
-    //                     .map(|i| (i.0).clone())
-    //                     .collect::<Vec<_>>(),
-    //             )
-    //         } else {
-    //             None
-    //         }
-    //     })
-    //     .expect("bitcoin trustees generation can not fail; qed");
-    // let sbtc_info = sbtc();
+    let btc_genesis_trustees = trustees
+        .iter()
+        .find_map(|(chain, _, trustee_params)| {
+            if *chain == Chain::Bitcoin {
+                Some(
+                    trustee_params
+                        .iter()
+                        .map(|i| (i.0).clone())
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                None
+            }
+        })
+        .expect("bitcoin trustees generation can not fail; qed");
+    let sbtc_info = sbtc();
     let assets_info = reserved_assets(&root_key);
     let wasm_binary = WASM_BINARY.unwrap();
     GenesisConfig {
@@ -501,32 +501,32 @@ pub fn sherpax_genesis(
             phantom: Default::default(),
         },
         treasury: Default::default(),
-        // x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
-        //     trustees,
-        //     genesis_trustee_transition_duration: 30 * DAYS,
-        //     genesis_trustee_transition_status: false,
-        // },
-        // x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
-        //     genesis_trustees: btc_genesis_trustees,
-        //     network_id: bitcoin.network,
-        //     confirmation_number: bitcoin.confirmation_number,
-        //     genesis_hash: bitcoin.hash(),
-        //     genesis_info: (bitcoin.header(), bitcoin.height),
-        //     params_info: BtcParams::new(
-        //         // for signet and regtest
-        //         545259519,            // max_bits
-        //         2 * 60 * 60,          // block_max_future
-        //         2 * 7 * 24 * 60 * 60, // target_timespan_seconds
-        //         10 * 60,              // target_spacing_seconds
-        //         4,                    // retargeting_factor
-        //     ), // retargeting_factor
-        //     btc_withdrawal_fee: 500000,
-        //     max_withdrawal_count: 100,
-        //     verifier: BtcTxVerifier::Recover,
-        // },
-        // x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
-        //     initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
-        // },
+        x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
+            trustees,
+            genesis_trustee_transition_duration: 30 * DAYS,
+            genesis_trustee_transition_status: false,
+        },
+        x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
+            genesis_trustees: btc_genesis_trustees,
+            network_id: bitcoin.network,
+            confirmation_number: bitcoin.confirmation_number,
+            genesis_hash: bitcoin.hash(),
+            genesis_info: (bitcoin.header(), bitcoin.height),
+            params_info: BtcParams::new(
+                // for signet and regtest
+                545259519,            // max_bits
+                2 * 60 * 60,          // block_max_future
+                2 * 7 * 24 * 60 * 60, // target_timespan_seconds
+                10 * 60,              // target_spacing_seconds
+                4,                    // retargeting_factor
+            ), // retargeting_factor
+            btc_withdrawal_fee: 500000,
+            max_withdrawal_count: 100,
+            verifier: BtcTxVerifier::Recover,
+        },
+        x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
+            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
+        },
     }
 }
 

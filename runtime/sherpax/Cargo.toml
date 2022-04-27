@@ -84,17 +84,17 @@ fp-rpc = { git = "https://github.com/chainx-org/frontier", default-features = fa
 fp-self-contained = { git = "https://github.com/chainx-org/frontier", default-features = false, branch = "polkadot-v0.9.18" }
 
 # Cross chain
-#sherpax-primitives = { path = "../../primitives", default-features = false }
-#xp-assets-registrar = { path = "../../primitives/assets-registrar", default-features = false }
-#xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false }
-#xp-runtime = { path = "../../primitives/runtime", default-features = false }
-#xpallet-gateway-bitcoin = { path = "../../xpallets/gateway/bitcoin", default-features = false }
-#xpallet-gateway-bitcoin-rpc-runtime-api = { path = "../../xpallets/gateway/bitcoin/rpc/runtime-api", default-features = false }
-#xpallet-gateway-common = { path = "../../xpallets/gateway/common", default-features = false }
-#xpallet-gateway-common-rpc-runtime-api = { path = "../../xpallets/gateway/common/rpc/runtime-api", default-features = false }
-#xpallet-gateway-records = { path = "../../xpallets/gateway/records", default-features = false }
-#xpallet-gateway-records-rpc-runtime-api = { path = "../../xpallets/gateway/records/rpc/runtime-api", default-features = false }
-#xpallet-support = { path = "../../xpallets/support", default-features = false }
+sherpax-primitives = { path = "../../primitives", default-features = false }
+xp-assets-registrar = { path = "../../primitives/assets-registrar", default-features = false }
+xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false }
+xp-runtime = { path = "../../primitives/runtime", default-features = false }
+xpallet-gateway-bitcoin = { path = "../../xpallets/gateway/bitcoin", default-features = false }
+xpallet-gateway-bitcoin-rpc-runtime-api = { path = "../../xpallets/gateway/bitcoin/rpc/runtime-api", default-features = false }
+xpallet-gateway-common = { path = "../../xpallets/gateway/common", default-features = false }
+xpallet-gateway-common-rpc-runtime-api = { path = "../../xpallets/gateway/common/rpc/runtime-api", default-features = false }
+xpallet-gateway-records = { path = "../../xpallets/gateway/records", default-features = false }
+xpallet-gateway-records-rpc-runtime-api = { path = "../../xpallets/gateway/records/rpc/runtime-api", default-features = false }
+xpallet-support = { path = "../../xpallets/support", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18" }
@@ -157,18 +157,17 @@ std = [
     "fp-evm/std",
     "fp-rpc/std",
     "fp-self-contained/std",
-
-#    "sherpax-primitives/std",
-#    "xp-assets-registrar/std",
-#    "xp-gateway-bitcoin/std",
-#    "xp-runtime/std",
-#    "xpallet-gateway-bitcoin/std",
-#    "xpallet-gateway-bitcoin-rpc-runtime-api/std",
-#    "xpallet-gateway-common/std",
-#    "xpallet-gateway-common-rpc-runtime-api/std",
-#    "xpallet-gateway-records/std",
-#    "xpallet-gateway-records-rpc-runtime-api/std",
-#    "xpallet-support/std",
+    "sherpax-primitives/std",
+    "xp-assets-registrar/std",
+    "xp-gateway-bitcoin/std",
+    "xp-runtime/std",
+    "xpallet-gateway-bitcoin/std",
+    "xpallet-gateway-bitcoin-rpc-runtime-api/std",
+    "xpallet-gateway-common/std",
+    "xpallet-gateway-common-rpc-runtime-api/std",
+    "xpallet-gateway-records/std",
+    "xpallet-gateway-records-rpc-runtime-api/std",
+    "xpallet-support/std",
 ]
 runtime-benchmarks = [
     "hex-literal",
@@ -182,7 +181,7 @@ runtime-benchmarks = [
     "pallet-ethereum/runtime-benchmarks",
     "pallet-evm/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
-#    "xpallet-gateway-bitcoin/runtime-benchmarks",
-#    "xpallet-gateway-common/runtime-benchmarks",
-#    "xpallet-gateway-records/runtime-benchmarks",
+    "xpallet-gateway-bitcoin/runtime-benchmarks",
+    "xpallet-gateway-common/runtime-benchmarks",
+    "xpallet-gateway-records/runtime-benchmarks",
 ]

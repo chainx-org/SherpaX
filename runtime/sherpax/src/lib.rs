@@ -123,24 +123,24 @@ pub mod opaque {
     }
 }
 
-// // Cross Chain
-// pub use sherpax_primitives::{AddrStr, AssetId, ChainAddress};
-// pub use xp_assets_registrar::Chain;
-// pub use xp_runtime::Memo;
-// #[cfg(feature = "std")]
-// pub use xpallet_gateway_bitcoin::h256_rev;
-// pub use xpallet_gateway_bitcoin::{
-//     hash_rev, BtcHeader, BtcHeaderInfo, BtcNetwork, BtcParams, BtcTxVerifier,
-//     BtcWithdrawalProposal, Compact as BtcCompact, H256 as BtcHash,
-// };
-// pub use xpallet_gateway_common::{
-//     trustees,
-//     types::{
-//         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo, TrusteeInfoConfig,
-//     },
-// };
-// pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit, WithdrawalRecordId};
-// use xpallet_support::traits::MultisigAddressFor;
+// Cross Chain
+pub use sherpax_primitives::{AddrStr, AssetId, ChainAddress};
+pub use xp_assets_registrar::Chain;
+pub use xp_runtime::Memo;
+#[cfg(feature = "std")]
+pub use xpallet_gateway_bitcoin::h256_rev;
+pub use xpallet_gateway_bitcoin::{
+    hash_rev, BtcHeader, BtcHeaderInfo, BtcNetwork, BtcParams, BtcTxVerifier,
+    BtcWithdrawalProposal, Compact as BtcCompact, H256 as BtcHash,
+};
+pub use xpallet_gateway_common::{
+    trustees,
+    types::{
+        GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo, TrusteeInfoConfig,
+    },
+};
+pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit, WithdrawalRecordId};
+use xpallet_support::traits::MultisigAddressFor;
 
 // To learn more about runtime versioning and what each of the following value means:
 //   https://substrate.dev/docs/en/knowledgebase/runtime/upgrades#runtime-versioning
@@ -744,8 +744,7 @@ impl pallet_assets::Config for Runtime {
     type MetadataDepositPerByte = MetadataDepositPerByte;
     type ApprovalDeposit = ApprovalDeposit;
     type StringLimit = StringLimit;
-    // type Freezer = XGatewayRecords;
-    type Freezer = ();
+    type Freezer = XGatewayRecords;
     type Extra = ();
     type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 }
@@ -790,50 +789,50 @@ impl pallet_multisig::Config for Runtime {
     type WeightInfo = ();
 }
 
-// parameter_types! {
-//     pub const BtcAssetId: AssetId = 1;
-// }
+parameter_types! {
+    pub const BtcAssetId: AssetId = 1;
+}
 
-// impl xpallet_gateway_records::Config for Runtime {
-//     type Event = Event;
-//     type BtcAssetId = BtcAssetId;
-//     type Currency = Balances;
-//     type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
-// }
-//
-// pub struct MultisigProvider;
-// impl MultisigAddressFor<AccountId> for MultisigProvider {
-//     fn calc_multisig(who: &[AccountId], threshold: u16) -> AccountId {
-//         Multisig::multi_account_id(who, threshold)
-//     }
-// }
+impl xpallet_gateway_records::Config for Runtime {
+    type Event = Event;
+    type BtcAssetId = BtcAssetId;
+    type Currency = Balances;
+    type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
+}
 
-// impl xpallet_gateway_common::Config for Runtime {
-//     type Event = Event;
-//     type Validator = ();
-//     type DetermineMultisigAddress = MultisigProvider;
-//     type CouncilOrigin =
-//         pallet_collective::EnsureProportionAtLeast<2, 3, AccountId, CouncilCollective>;
-//     type Bitcoin = XGatewayBitcoin;
-//     type BitcoinTrustee = XGatewayBitcoin;
-//     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
-//     type BitcoinTotalSupply = XGatewayBitcoin;
-//     type BitcoinWithdrawalProposal = XGatewayBitcoin;
-//     type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
-// }
+pub struct MultisigProvider;
+impl MultisigAddressFor<AccountId> for MultisigProvider {
+    fn calc_multisig(who: &[AccountId], threshold: u16) -> AccountId {
+        Multisig::multi_account_id(who, threshold)
+    }
+}
 
-// impl xpallet_gateway_bitcoin::Config for Runtime {
-//     type Event = Event;
-//     type UnixTime = Timestamp;
-//     type CouncilOrigin =
-//         pallet_collective::EnsureProportionAtLeast<2, 3, AccountId, CouncilCollective>;
-//     type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
-//     type TrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
-//     type TrusteeInfoUpdate = XGatewayCommon;
-//     type ReferralBinding = XGatewayCommon;
-//     type AddressBinding = XGatewayCommon;
-//     type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
-// }
+impl xpallet_gateway_common::Config for Runtime {
+    type Event = Event;
+    type Validator = ();
+    type DetermineMultisigAddress = MultisigProvider;
+    type CouncilOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
+    type Bitcoin = XGatewayBitcoin;
+    type BitcoinTrustee = XGatewayBitcoin;
+    type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
+    type BitcoinTotalSupply = XGatewayBitcoin;
+    type BitcoinWithdrawalProposal = XGatewayBitcoin;
+    type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
+}
+
+impl xpallet_gateway_bitcoin::Config for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type CouncilOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
+    type TrusteeInfoUpdate = XGatewayCommon;
+    type ReferralBinding = XGatewayCommon;
+    type AddressBinding = XGatewayCommon;
+    type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -883,9 +882,9 @@ construct_runtime!(
         BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 54,
 
         // Crypto gateway stuff.
-        // XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 60,
-        // XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 61,
-        // XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 62,
+        XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 60,
+        XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 61,
+        XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 62,
     }
 );
 
@@ -945,7 +944,7 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
-    SchedulerMigrationV3,
+    CustomOnRuntimeUpgrades,
 >;
 
 // Migration for scheduler pallet to move from a plain Call to a CallOrHash.
@@ -954,6 +953,32 @@ pub struct SchedulerMigrationV3;
 impl OnRuntimeUpgrade for SchedulerMigrationV3 {
     fn on_runtime_upgrade() -> frame_support::weights::Weight {
         Scheduler::migrate_v2_to_v3()
+    }
+}
+
+pub struct XGatewayCommonStorageMigration;
+
+impl OnRuntimeUpgrade for XGatewayCommonStorageMigration {
+    fn on_runtime_upgrade() -> frame_support::weights::Weight {
+        xpallet_gateway_common::migrations::taproot::apply::<Runtime>()
+    }
+}
+
+pub struct CustomOnRuntimeUpgrades;
+impl OnRuntimeUpgrade for CustomOnRuntimeUpgrades {
+    fn on_runtime_upgrade() -> Weight {
+        let mut weight = 0;
+        // 1. SchedulerMigrationV3
+        frame_support::log::info!("🔍️ SchedulerMigrationV3 start");
+        weight += <SchedulerMigrationV3 as OnRuntimeUpgrade>::on_runtime_upgrade();
+        frame_support::log::info!("🚀 SchedulerMigrationV3 end");
+
+        // 2. XGatewayCommonStorageMigration
+        frame_support::log::info!("🔍️ XGatewayCommonStorageMigration start");
+        weight += <XGatewayCommonStorageMigration as OnRuntimeUpgrade>::on_runtime_upgrade();
+        frame_support::log::info!("🚀 XGatewayCommonStorageMigration end");
+
+        weight
     }
 }
 
@@ -1280,100 +1305,100 @@ impl_runtime_apis! {
         }
     }
 
-    // impl xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<Block, AccountId, Balance, BlockNumber> for Runtime {
-    //     fn withdrawal_list() -> BTreeMap<u32, Withdrawal<AccountId, AssetId, Balance, BlockNumber>> {
-    //         XGatewayRecords::withdrawal_list()
-    //     }
-    //
-    //     fn withdrawal_list_by_chain(chain: Chain) -> BTreeMap<u32, Withdrawal<AccountId, AssetId, Balance, BlockNumber>> {
-    //         XGatewayRecords::withdrawals_list_by_chain(chain)
-    //     }
-    // }
-    //
-    // impl xpallet_gateway_bitcoin_rpc_runtime_api::XGatewayBitcoinApi<Block, AccountId> for Runtime {
-    //     fn verify_tx_valid(
-    //         raw_tx: Vec<u8>,
-    //         withdrawal_id_list: Vec<u32>,
-    //         full_amount: bool,
-    //     ) -> Result<bool, DispatchError> {
-    //         XGatewayBitcoin::verify_tx_valid(raw_tx, withdrawal_id_list, full_amount)
-    //     }
-    //
-    //
-    //     fn get_withdrawal_proposal() -> Option<BtcWithdrawalProposal<AccountId>> {
-    //         XGatewayBitcoin::get_withdrawal_proposal()
-    //     }
-    //
-    //     fn get_genesis_info() -> (BtcHeader, u32) {
-    //         XGatewayBitcoin::get_genesis_info()
-    //     }
-    //
-    //     fn get_btc_block_header(txid: H256) -> Option<BtcHeaderInfo> {
-    //         XGatewayBitcoin::get_btc_block_header(txid)
-    //     }
-    // }
-    //
-    // impl xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance, BlockNumber> for Runtime {
-    //     fn bound_addrs(who: AccountId) -> BTreeMap<Chain, Vec<ChainAddress>> {
-    //         XGatewayCommon::bound_addrs(&who)
-    //     }
-    //
-    //     fn withdrawal_limit(asset_id: AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError> {
-    //         XGatewayCommon::withdrawal_limit(&asset_id)
-    //     }
-    //
-    //     fn withdrawal_list_with_fee_info(asset_id: AssetId) -> Result<
-    //         BTreeMap<
-    //             WithdrawalRecordId,
-    //             (
-    //                 Withdrawal<AccountId, AssetId, Balance, BlockNumber>,
-    //                 WithdrawalLimit<Balance>,
-    //             ),
-    //         >,
-    //         DispatchError,
-    //     >
-    //     {
-    //         XGatewayCommon::withdrawal_list_with_fee_info(&asset_id)
-    //     }
-    //
-    //     fn verify_withdrawal(asset_id: AssetId, value: Balance, addr: AddrStr, memo: Memo) -> Result<(), DispatchError> {
-    //         XGatewayCommon::verify_withdrawal(asset_id, value, &addr, &memo)
-    //     }
-    //
-    //     fn trustee_multisigs() -> BTreeMap<Chain, AccountId> {
-    //         XGatewayCommon::trustee_multisigs()
-    //     }
-    //
-    //     fn trustee_properties(chain: Chain, who: AccountId) -> Option<GenericTrusteeIntentionProps<AccountId>> {
-    //         XGatewayCommon::trustee_intention_props_of(who, chain)
-    //     }
-    //
-    //     fn trustee_session_info(chain: Chain, session_number: i32) -> Option<GenericTrusteeSessionInfo<AccountId, BlockNumber>> {
-    //         if session_number < 0 {
-    //             let number = match session_number {
-    //                 -1i32 => Some(XGatewayCommon::trustee_session_info_len(chain)),
-    //                 -2i32 => XGatewayCommon::trustee_session_info_len(chain).checked_sub(1),
-    //                 _ => None
-    //             };
-    //             if let Some(number) = number {
-    //                 XGatewayCommon::trustee_session_info_of(chain, number)
-    //             }else{
-    //                 None
-    //             }
-    //         }else{
-    //             let number = session_number as u32;
-    //             XGatewayCommon::trustee_session_info_of(chain, number)
-    //         }
-    //
-    //     }
-    //
-    //     fn generate_trustee_session_info(chain: Chain, candidates: Vec<AccountId>) -> Result<(GenericTrusteeSessionInfo<AccountId, BlockNumber>, ScriptInfo<AccountId>), DispatchError> {
-    //         let info = XGatewayCommon::try_generate_session_info(chain, candidates)?;
-    //         // check multisig address
-    //         let _ = XGatewayCommon::generate_multisig_addr(chain, &info.0)?;
-    //         Ok(info)
-    //     }
-    // }
+    impl xpallet_gateway_records_rpc_runtime_api::XGatewayRecordsApi<Block, AccountId, Balance, BlockNumber> for Runtime {
+        fn withdrawal_list() -> BTreeMap<u32, Withdrawal<AccountId, AssetId, Balance, BlockNumber>> {
+            XGatewayRecords::withdrawal_list()
+        }
+
+        fn withdrawal_list_by_chain(chain: Chain) -> BTreeMap<u32, Withdrawal<AccountId, AssetId, Balance, BlockNumber>> {
+            XGatewayRecords::withdrawals_list_by_chain(chain)
+        }
+    }
+
+    impl xpallet_gateway_bitcoin_rpc_runtime_api::XGatewayBitcoinApi<Block, AccountId> for Runtime {
+        fn verify_tx_valid(
+            raw_tx: Vec<u8>,
+            withdrawal_id_list: Vec<u32>,
+            full_amount: bool,
+        ) -> Result<bool, DispatchError> {
+            XGatewayBitcoin::verify_tx_valid(raw_tx, withdrawal_id_list, full_amount)
+        }
+
+
+        fn get_withdrawal_proposal() -> Option<BtcWithdrawalProposal<AccountId>> {
+            XGatewayBitcoin::get_withdrawal_proposal()
+        }
+
+        fn get_genesis_info() -> (BtcHeader, u32) {
+            XGatewayBitcoin::get_genesis_info()
+        }
+
+        fn get_btc_block_header(txid: H256) -> Option<BtcHeaderInfo> {
+            XGatewayBitcoin::get_btc_block_header(txid)
+        }
+    }
+
+    impl xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance, BlockNumber> for Runtime {
+        fn bound_addrs(who: AccountId) -> BTreeMap<Chain, Vec<ChainAddress>> {
+            XGatewayCommon::bound_addrs(&who)
+        }
+
+        fn withdrawal_limit(asset_id: AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError> {
+            XGatewayCommon::withdrawal_limit(&asset_id)
+        }
+
+        fn withdrawal_list_with_fee_info(asset_id: AssetId) -> Result<
+            BTreeMap<
+                WithdrawalRecordId,
+                (
+                    Withdrawal<AccountId, AssetId, Balance, BlockNumber>,
+                    WithdrawalLimit<Balance>,
+                ),
+            >,
+            DispatchError,
+        >
+        {
+            XGatewayCommon::withdrawal_list_with_fee_info(&asset_id)
+        }
+
+        fn verify_withdrawal(asset_id: AssetId, value: Balance, addr: AddrStr, memo: Memo) -> Result<(), DispatchError> {
+            XGatewayCommon::verify_withdrawal(asset_id, value, &addr, &memo)
+        }
+
+        fn trustee_multisigs() -> BTreeMap<Chain, AccountId> {
+            XGatewayCommon::trustee_multisigs()
+        }
+
+        fn trustee_properties(chain: Chain, who: AccountId) -> Option<GenericTrusteeIntentionProps<AccountId>> {
+            XGatewayCommon::trustee_intention_props_of(who, chain)
+        }
+
+        fn trustee_session_info(chain: Chain, session_number: i32) -> Option<GenericTrusteeSessionInfo<AccountId, BlockNumber>> {
+            if session_number < 0 {
+                let number = match session_number {
+                    -1i32 => Some(XGatewayCommon::trustee_session_info_len(chain)),
+                    -2i32 => XGatewayCommon::trustee_session_info_len(chain).checked_sub(1),
+                    _ => None
+                };
+                if let Some(number) = number {
+                    XGatewayCommon::trustee_session_info_of(chain, number)
+                }else{
+                    None
+                }
+            }else{
+                let number = session_number as u32;
+                XGatewayCommon::trustee_session_info_of(chain, number)
+            }
+
+        }
+
+        fn generate_trustee_session_info(chain: Chain, candidates: Vec<AccountId>) -> Result<(GenericTrusteeSessionInfo<AccountId, BlockNumber>, ScriptInfo<AccountId>), DispatchError> {
+            let info = XGatewayCommon::try_generate_session_info(chain, candidates)?;
+            // check multisig address
+            let _ = XGatewayCommon::generate_multisig_addr(chain, &info.0)?;
+            Ok(info)
+        }
+    }
 
     #[cfg(feature = "runtime-benchmarks")]
     impl frame_benchmarking::Benchmark<Block> for Runtime {
@@ -1386,9 +1411,9 @@ impl_runtime_apis! {
 
             let mut list = Vec::<BenchmarkList>::new();
 
-            // list_benchmark!(list, extra, xpallet_gateway_records, XGatewayRecords);
-            // list_benchmark!(list, extra, xpallet_gateway_common, XGatewayCommon);
-            // list_benchmark!(list, extra, xpallet_gateway_bitcoin, XGatewayBitcoin);
+            list_benchmark!(list, extra, xpallet_gateway_records, XGatewayRecords);
+            list_benchmark!(list, extra, xpallet_gateway_common, XGatewayCommon);
+            list_benchmark!(list, extra, xpallet_gateway_bitcoin, XGatewayBitcoin);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1419,9 +1444,9 @@ impl_runtime_apis! {
             let mut batches = Vec::<BenchmarkBatch>::new();
             let params = (&config, &whitelist);
 
-            // add_benchmark!(params, batches, xpallet_gateway_records, XGatewayRecords);
-            // add_benchmark!(params, batches, xpallet_gateway_common, XGatewayCommon);
-            // add_benchmark!(params, batches, xpallet_gateway_bitcoin, XGatewayBitcoin);
+            add_benchmark!(params, batches, xpallet_gateway_records, XGatewayRecords);
+            add_benchmark!(params, batches, xpallet_gateway_common, XGatewayCommon);
+            add_benchmark!(params, batches, xpallet_gateway_bitcoin, XGatewayBitcoin);
 
             if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
             Ok(batches)
