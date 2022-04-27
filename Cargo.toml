@@ -6,6 +6,7 @@ members = [
     "primitives",
     "primitives/assets-registrar",
     "primitives/gateway/bitcoin",
+    "primitives/gateway/dogecoin",
     "primitives/gateway/common",
     "primitives/io",
     "primitives/protocol",

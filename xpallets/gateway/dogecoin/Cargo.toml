@@ -31,7 +31,7 @@ orml-utilities = { git = "https://github.com/chainx-org/ormls", branch = "main",
 # ChainX primitives
 sherpax-primitives = { path = "../../../primitives", default-features = false }
 xp-assets-registrar = { path = "../../../primitives/assets-registrar", default-features = false }
-xp-gateway-bitcoin = { path = "../../../primitives/gateway/bitcoin", default-features = false }
+xp-gateway-dogecoin = { path = "../../../primitives/gateway/dogecoin", default-features = false }
 xp-gateway-common = { path = "../../../primitives/gateway/common", default-features = false }
 xp-protocol = { path = "../../../primitives/protocol", default-features = false }
 
@@ -78,7 +78,7 @@ std = [
     # ChainX primitives
     "sherpax-primitives/std",
     "xp-assets-registrar/std",
-    "xp-gateway-bitcoin/std",
+    "xp-gateway-dogecoin/std",
     "xp-gateway-common/std",
     "xp-protocol/std",
     # ChainX pallets

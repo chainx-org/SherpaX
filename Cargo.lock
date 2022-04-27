@@ -9325,6 +9325,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "xp-gateway-dogecoin"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "hex",
+ "light-bitcoin",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sherpax-primitives",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+ "xp-gateway-common",
+]
+
+[[package]]
 name = "xp-io"
 version = "3.0.0"
 dependencies = [
@@ -9534,8 +9551,8 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "xp-assets-registrar",
- "xp-gateway-bitcoin",
  "xp-gateway-common",
+ "xp-gateway-dogecoin",
  "xp-protocol",
  "xpallet-gateway-common",
  "xpallet-gateway-records",

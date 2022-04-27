@@ -22,11 +22,11 @@ use light_bitcoin::{
 
 pub use self::validator::validate_transaction;
 use crate::{
-    types::{AccountInfo, BtcAddress, BtcDepositCache, BtcTxResult, BtcTxState},
+    types::{AccountInfo, DogeAddress, DogeDepositCache, DogeTxResult, DogeTxState},
     Config, Event, Pallet, PendingDeposits, WithdrawalProposal,
 };
-use xp_gateway_bitcoin::{BtcDepositInfo, BtcTxMetaType, BtcTxTypeDetector};
 use xp_gateway_common::AccountExtractor;
+use xp_gateway_dogecoin::{DogeDepositInfo, DogeTxMetaType, DogeTxTypeDetector};
 use xpallet_gateway_common::traits::{AddressBinding, ReferralBinding};
 use xpallet_gateway_records::ChainT;
 use xpallet_support::try_str;
@@ -38,9 +38,9 @@ pub fn process_tx<T: Config>(
     min_deposit: u64,
     current_trustee_pair: (Address, Address),
     last_trustee_pair: Option<(Address, Address)>,
-) -> BtcTxState {
-    let btc_tx_detector = BtcTxTypeDetector::new(network, min_deposit);
-    let meta_type = btc_tx_detector.detect_transaction_type::<T::AccountId, _>(
+) -> DogeTxState {
+    let doge_tx_detector = DogeTxTypeDetector::new(network, min_deposit);
+    let meta_type = doge_tx_detector.detect_transaction_type::<T::AccountId, _>(
         &tx,
         prev_tx.as_ref(),
         T::AccountExtractor::extract_account,
@@ -50,18 +50,18 @@ pub fn process_tx<T: Config>(
 
     let tx_type = meta_type.ref_into();
     let result = match meta_type {
-        BtcTxMetaType::<_>::Deposit(deposit_info) => deposit::<T>(tx.hash(), deposit_info),
-        BtcTxMetaType::<_>::Withdrawal => withdraw::<T>(tx),
-        BtcTxMetaType::TrusteeTransition => BtcTxResult::Success,
-        BtcTxMetaType::HotAndCold => BtcTxResult::Success,
+        DogeTxMetaType::<_>::Deposit(deposit_info) => deposit::<T>(tx.hash(), deposit_info),
+        DogeTxMetaType::<_>::Withdrawal => withdraw::<T>(tx),
+        DogeTxMetaType::TrusteeTransition => DogeTxResult::Success,
+        DogeTxMetaType::HotAndCold => DogeTxResult::Success,
         // mark `Irrelevance` be `Failure` so that it could be replayed in the future
-        BtcTxMetaType::<_>::Irrelevance => BtcTxResult::Failure,
+        DogeTxMetaType::<_>::Irrelevance => DogeTxResult::Failure,
     };
 
-    BtcTxState { tx_type, result }
+    DogeTxState { tx_type, result }
 }
 
-fn deposit<T: Config>(txid: H256, deposit_info: BtcDepositInfo<T::AccountId>) -> BtcTxResult {
+fn deposit<T: Config>(txid: H256, deposit_info: DogeDepositInfo<T::AccountId>) -> DogeTxResult {
     let account_info = match (deposit_info.op_return, deposit_info.input_addr) {
         (Some((account, referral)), Some(input_addr)) => {
             let input_addr = input_addr.to_string().into_bytes();
@@ -95,13 +95,13 @@ fn deposit<T: Config>(txid: H256, deposit_info: BtcDepositInfo<T::AccountId>) ->
                 "[deposit] Process deposit tx ({:?}) but missing valid opreturn and input addr",
                 hash_rev(txid)
             );
-            return BtcTxResult::Failure;
+            return DogeTxResult::Failure;
         }
     };
 
     match account_info {
         AccountInfo::<_>::Account((account, referral)) => {
-            T::ReferralBinding::update_binding(&T::BtcAssetId::get(), &account, referral);
+            T::ReferralBinding::update_binding(&T::DogeAssetId::get(), &account, referral);
             match deposit_token::<T>(txid, &account, deposit_info.deposit_value.saturated_into()) {
                 Ok(_) => {
                     info!(
@@ -111,9 +111,9 @@ fn deposit<T: Config>(txid: H256, deposit_info: BtcDepositInfo<T::AccountId>) ->
                         account,
                         deposit_info.deposit_value
                     );
-                    BtcTxResult::Success
+                    DogeTxResult::Success
                 }
-                Err(_) => BtcTxResult::Failure,
+                Err(_) => DogeTxResult::Failure,
             }
         }
         AccountInfo::<_>::Address(input_addr) => {
@@ -125,13 +125,13 @@ fn deposit<T: Config>(txid: H256, deposit_info: BtcDepositInfo<T::AccountId>) ->
                 try_str(input_addr.to_string().into_bytes()),
                 deposit_info.deposit_value
             );
-            BtcTxResult::Success
+            DogeTxResult::Success
         }
     }
 }
 
 fn deposit_token<T: Config>(txid: H256, who: &T::AccountId, balance: T::Balance) -> DispatchResult {
-    let asset_id = T::BtcAssetId::get();
+    let asset_id = T::DogeAssetId::get();
 
     match pallet_assets::Pallet::<T>::mint_into(asset_id, who, balance) {
         Ok(()) => {
@@ -149,7 +149,7 @@ fn deposit_token<T: Config>(txid: H256, who: &T::AccountId, balance: T::Balance)
     }
 }
 
-pub fn remove_pending_deposit<T: Config>(input_address: &BtcAddress, who: &T::AccountId) {
+pub fn remove_pending_deposit<T: Config>(input_address: &DogeAddress, who: &T::AccountId) {
     // notice this would delete this cache
     let records = PendingDeposits::<T>::take(input_address);
     for record in records {
@@ -173,7 +173,7 @@ pub fn remove_pending_deposit<T: Config>(input_address: &BtcAddress, who: &T::Ac
 fn insert_pending_deposit<T: Config>(input_addr: &Address, txid: H256, balance: u64) {
     let addr_bytes = input_addr.to_string().into_bytes();
 
-    let cache = BtcDepositCache { txid, balance };
+    let cache = DogeDepositCache { txid, balance };
 
     PendingDeposits::<T>::mutate(&addr_bytes, |list| {
         if !list.contains(&cache) {
@@ -191,7 +191,7 @@ fn insert_pending_deposit<T: Config>(input_addr: &Address, txid: H256, balance: 
     });
 }
 
-fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
+fn withdraw<T: Config>(tx: Transaction) -> DogeTxResult {
     if let Some(proposal) = WithdrawalProposal::<T>::take() {
         log::debug!(
             target: "runtime::bitcoin",
@@ -212,7 +212,7 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
                     tx,
                     proposal
                 );
-                return BtcTxResult::Failure;
+                return DogeTxResult::Failure;
             }
 
             let mut total = T::Balance::zero();
@@ -238,17 +238,17 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
                 }
             }
 
-            let btc_withdrawal_fee = Pallet::<T>::btc_withdrawal_fee();
+            let doge_withdrawal_fee = Pallet::<T>::doge_withdrawal_fee();
             // real withdraw value would reduce withdraw_fee
             total -=
-                (proposal.withdrawal_id_list.len() as u64 * btc_withdrawal_fee).saturated_into();
+                (proposal.withdrawal_id_list.len() as u64 * doge_withdrawal_fee).saturated_into();
 
             Pallet::<T>::deposit_event(Event::<T>::Withdrawn(
                 tx_hash,
                 proposal.withdrawal_id_list,
                 total,
             ));
-            BtcTxResult::Success
+            DogeTxResult::Success
         } else {
             error!(
                 target: "runtime::bitcoin",
@@ -259,7 +259,7 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
             WithdrawalProposal::<T>::put(proposal);
 
             Pallet::<T>::deposit_event(Event::<T>::WithdrawalFatalErr(proposal_hash, tx_hash));
-            BtcTxResult::Failure
+            DogeTxResult::Failure
         }
     } else {
         error!(
@@ -273,6 +273,6 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
             Default::default(),
         ));
 
-        BtcTxResult::Failure
+        DogeTxResult::Failure
     }
 }

@@ -749,11 +749,13 @@ impl pallet_multisig::Config for Runtime {
 
 parameter_types! {
     pub const BtcAssetId: AssetId = 1;
+    pub const DogeAssetId: AssetId = 10;
 }
 
 impl xpallet_gateway_records::Config for Runtime {
     type Event = Event;
     type BtcAssetId = BtcAssetId;
+    type DogeAssetId = DogeAssetId;
     type Currency = Balances;
     type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
 }

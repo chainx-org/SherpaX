@@ -1,6 +1,6 @@
 // Copyright 2019-2021 ChainX Project Authors. Licensed under GPL-3.0.
 
-//! this module is for btc-bridge
+//! this module is for Doge-bridge
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -10,10 +10,10 @@ mod tx;
 pub mod types;
 pub mod weights;
 
-#[cfg(any(feature = "runtime-benchmarks", test))]
-mod benchmarking;
-#[cfg(test)]
-mod mock;
+// #[cfg(any(feature = "runtime-benchmarks", test))]
+// mod benchmarking;
+// #[cfg(test)]
+// mod mock;
 #[cfg(test)]
 mod tests;
 
@@ -25,7 +25,7 @@ use orml_utilities::with_transaction_result;
 #[cfg(feature = "std")]
 pub use light_bitcoin::primitives::h256_rev;
 pub use light_bitcoin::{
-    chain::{BlockHeader as BtcHeader, Transaction, TransactionOutputArray},
+    chain::{BlockHeader, Transaction, TransactionOutputArray},
     keys::{Address, DisplayLayout, Network as DogecoinNetwork},
     primitives::{hash_rev, Compact, H256, H264},
     serialization::{deserialize, Reader},
@@ -46,12 +46,13 @@ use self::{
     trustee::{get_current_trustee_address_pair, get_last_trustee_address_pair},
     tx::remove_pending_deposit,
     types::{
-        BtcDepositCache, BtcHeaderIndex, BtcRelayedTx, BtcRelayedTxInfo, BtcTxResult, BtcTxState,
+        DogeDepositCache, DogeHeaderIndex, DogeRelayedTx, DogeRelayedTxInfo, DogeTxResult,
+        DogeTxState,
     },
 };
 
 pub use self::{
-    types::{BtcAddress, BtcHeaderInfo, BtcParams, BtcTxVerifier, BtcWithdrawalProposal},
+    types::{DogeAddress, DogeHeaderInfo, DogeParams, DogeTxVerifier, DogeWithdrawalProposal},
     weights::WeightInfo,
 };
 
@@ -107,7 +108,7 @@ pub mod pallet {
         type ReferralBinding: ReferralBinding<Self::AccountId, Self::AssetId>;
 
         /// Handle address binding about pending deposit.
-        type AddressBinding: AddressBinding<Self::AccountId, BtcAddress>;
+        type AddressBinding: AddressBinding<Self::AccountId, DogeAddress>;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
@@ -115,11 +116,11 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        /// if use `BtcHeader` struct would export in metadata, cause complex in front-end
+        /// if use `DogeHeader` struct would export in metadata, cause complex in front-end
         #[pallet::weight(<T as Config>::WeightInfo::push_header())]
         pub fn push_header(origin: OriginFor<T>, header: Vec<u8>) -> DispatchResultWithPostInfo {
             let from = ensure_signed(origin)?;
-            let header: BtcHeader =
+            let header: BlockHeader =
                 deserialize(header.as_slice()).map_err(|_| Error::<T>::DeserializeErr)?;
             log!(debug, "[push_header] from:{:?}, header:{:?}", from, header);
 
@@ -139,7 +140,7 @@ pub mod pallet {
         ) -> DispatchResultWithPostInfo {
             let _from = ensure_signed(origin)?;
             let raw_tx = Self::deserialize_tx(raw_tx.as_slice())?;
-            let relayed_info: BtcRelayedTxInfo =
+            let relayed_info: DogeRelayedTxInfo =
                 Decode::decode(&mut &relayed_info[..]).map_err(|_| Error::<T>::DeserializeErr)?;
             let prev_tx = if let Some(prev_tx) = prev_tx {
                 Some(Self::deserialize_tx(prev_tx.as_slice())?)
@@ -192,7 +193,7 @@ pub mod pallet {
 
         /// Dangerous! Be careful to set BestIndex
         #[pallet::weight(<T as Config>::WeightInfo::set_best_index())]
-        pub fn set_best_index(origin: OriginFor<T>, index: BtcHeaderIndex) -> DispatchResult {
+        pub fn set_best_index(origin: OriginFor<T>, index: DogeHeaderIndex) -> DispatchResult {
             ensure_root(origin)?;
             BestIndex::<T>::put(index);
             Ok(())
@@ -200,7 +201,7 @@ pub mod pallet {
 
         /// Dangerous! Be careful to set ConfirmedIndex
         #[pallet::weight(<T as Config>::WeightInfo::set_confirmed_index())]
-        pub fn set_confirmed_index(origin: OriginFor<T>, index: BtcHeaderIndex) -> DispatchResult {
+        pub fn set_confirmed_index(origin: OriginFor<T>, index: DogeHeaderIndex) -> DispatchResult {
             ensure_root(origin)?;
             ConfirmedIndex::<T>::put(index);
             Ok(())
@@ -220,7 +221,7 @@ pub mod pallet {
         #[pallet::weight(<T as Config>::WeightInfo::remove_pending())]
         pub fn remove_pending(
             origin: OriginFor<T>,
-            addr: BtcAddress,
+            addr: DogeAddress,
             who: Option<T::AccountId>,
         ) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
@@ -256,7 +257,7 @@ pub mod pallet {
             T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
-            BtcWithdrawalFee::<T>::put(fee);
+            DogeWithdrawalFee::<T>::put(fee);
             Ok(())
         }
 
@@ -269,7 +270,7 @@ pub mod pallet {
             T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
-            BtcMinDeposit::<T>::put(value);
+            DogeMinDeposit::<T>::put(value);
             Ok(())
         }
 
@@ -375,18 +376,18 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub(crate) fn deposit_event)]
     pub enum Event<T: Config> {
-        /// A Bitcoin header was validated and inserted. [btc_header_hash]
+        /// A Bitcoin header was validated and inserted. [Doge_header_hash]
         HeaderInserted(H256),
         /// A Bitcoin transaction was processed. [tx_hash, block_hash, tx_state]
-        TxProcessed(H256, H256, BtcTxState),
+        TxProcessed(H256, H256, DogeTxState),
         /// An account deposited some token. [tx_hash, who, amount]
         Deposited(H256, T::AccountId, T::Balance),
         /// A list of withdrawal applications were processed successfully. [tx_hash, withdrawal_ids, total_withdrawn]
         Withdrawn(H256, Vec<u32>, T::Balance),
-        /// A new record of unclaimed deposit. [tx_hash, btc_address]
-        UnclaimedDeposit(H256, BtcAddress),
-        /// A unclaimed deposit record was removed. [depositor, deposit_amount, tx_hash, btc_address]
-        PendingDepositRemoved(T::AccountId, T::Balance, H256, BtcAddress),
+        /// A new record of unclaimed deposit. [tx_hash, Doge_address]
+        UnclaimedDeposit(H256, DogeAddress),
+        /// A unclaimed deposit record was removed. [depositor, deposit_amount, tx_hash, Doge_address]
+        PendingDepositRemoved(T::AccountId, T::Balance, H256, DogeAddress),
         /// A new withdrawal proposal was created. [proposer, withdrawal_ids]
         WithdrawalProposalCreated(T::AccountId, Vec<u32>),
         /// A trustee voted/vetoed a withdrawal proposal. [trustee, vote_status]
@@ -402,12 +403,12 @@ pub mod pallet {
     /// best header info
     #[pallet::storage]
     #[pallet::getter(fn best_index)]
-    pub(crate) type BestIndex<T: Config> = StorageValue<_, BtcHeaderIndex, ValueQuery>;
+    pub(crate) type BestIndex<T: Config> = StorageValue<_, DogeHeaderIndex, ValueQuery>;
 
     /// confirmed header info
     #[pallet::storage]
     #[pallet::getter(fn confirmed_index)]
-    pub(crate) type ConfirmedIndex<T: Config> = StorageValue<_, BtcHeaderIndex>;
+    pub(crate) type ConfirmedIndex<T: Config> = StorageValue<_, DogeHeaderIndex>;
 
     /// block hash list for a height, include forked header hash
     #[pallet::storage]
@@ -423,34 +424,34 @@ pub mod pallet {
     /// all valid blockheader (include forked blockheader)
     #[pallet::storage]
     #[pallet::getter(fn headers)]
-    pub(crate) type Headers<T: Config> = StorageMap<_, Identity, H256, BtcHeaderInfo>;
+    pub(crate) type Headers<T: Config> = StorageMap<_, Identity, H256, DogeHeaderInfo>;
 
     /// mark tx has been handled, in case re-handle this tx, and log handle result
     #[pallet::storage]
     #[pallet::getter(fn tx_state)]
-    pub(crate) type TxState<T: Config> = StorageMap<_, Identity, H256, BtcTxState>;
+    pub(crate) type TxState<T: Config> = StorageMap<_, Identity, H256, DogeTxState>;
 
-    /// unclaimed deposit info, addr => tx_hash, btc value,
+    /// unclaimed deposit info, addr => tx_hash, Doge value,
     #[pallet::storage]
     #[pallet::getter(fn pending_deposits)]
     pub(crate) type PendingDeposits<T: Config> =
-        StorageMap<_, Blake2_128Concat, BtcAddress, Vec<BtcDepositCache>, ValueQuery>;
+        StorageMap<_, Blake2_128Concat, DogeAddress, Vec<DogeDepositCache>, ValueQuery>;
 
     /// withdrawal tx outs for account, tx_hash => outs ( out index => withdrawal account )
     #[pallet::storage]
     #[pallet::getter(fn withdrawal_proposal)]
     pub(crate) type WithdrawalProposal<T: Config> =
-        StorageValue<_, BtcWithdrawalProposal<T::AccountId>>;
+        StorageValue<_, DogeWithdrawalProposal<T::AccountId>>;
 
     /// get GenesisInfo (header, height)
     #[pallet::storage]
     #[pallet::getter(fn genesis_info)]
-    pub(crate) type GenesisInfo<T: Config> = StorageValue<_, (BtcHeader, u32), ValueQuery>;
+    pub(crate) type GenesisInfo<T: Config> = StorageValue<_, (BlockHeader, u32), ValueQuery>;
 
     /// get ParamsInfo from genesis_config
     #[pallet::storage]
     #[pallet::getter(fn params_info)]
-    pub(crate) type ParamsInfo<T: Config> = StorageValue<_, BtcParams, ValueQuery>;
+    pub(crate) type ParamsInfo<T: Config> = StorageValue<_, DogeParams, ValueQuery>;
 
     ///  NetworkId for testnet or mainnet
     #[pallet::storage]
@@ -462,20 +463,20 @@ pub mod pallet {
     #[pallet::getter(fn confirmation_number)]
     pub(crate) type ConfirmationNumber<T: Config> = StorageValue<_, u32, ValueQuery>;
 
-    /// get BtcWithdrawalFee from genesis_config
+    /// get DogeWithdrawalFee from genesis_config
     #[pallet::storage]
-    #[pallet::getter(fn btc_withdrawal_fee)]
-    pub(crate) type BtcWithdrawalFee<T: Config> = StorageValue<_, u64, ValueQuery>;
+    #[pallet::getter(fn doge_withdrawal_fee)]
+    pub(crate) type DogeWithdrawalFee<T: Config> = StorageValue<_, u64, ValueQuery>;
 
     #[pallet::type_value]
     pub fn DefaultForMinDeposit<T: Config>() -> u64 {
         100000
     }
 
-    /// min deposit value limit, default is 10w sotashi(0.001 BTC)
+    /// min deposit value limit, default is 10w sotashi(0.001 Doge)
     #[pallet::storage]
-    #[pallet::getter(fn btc_min_deposit)]
-    pub(crate) type BtcMinDeposit<T: Config> =
+    #[pallet::getter(fn doge_min_deposit)]
+    pub(crate) type DogeMinDeposit<T: Config> =
         StorageValue<_, u64, ValueQuery, DefaultForMinDeposit<T>>;
 
     /// max withdraw account count in bitcoin withdrawal transaction
@@ -485,9 +486,9 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn verifier)]
-    pub(crate) type Verifier<T: Config> = StorageValue<_, BtcTxVerifier, ValueQuery>;
+    pub(crate) type Verifier<T: Config> = StorageValue<_, DogeTxVerifier, ValueQuery>;
 
-    /// Coming bot helps update btc withdrawal transaction status
+    /// Coming bot helps update Doge withdrawal transaction status
     #[pallet::storage]
     #[pallet::getter(fn coming_bot)]
     pub(crate) type ComingBot<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
@@ -497,14 +498,14 @@ pub mod pallet {
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         pub genesis_hash: H256,
-        pub genesis_info: (BtcHeader, u32),
+        pub genesis_info: (BlockHeader, u32),
         pub genesis_trustees: Vec<T::AccountId>,
-        pub params_info: BtcParams,
+        pub params_info: DogeParams,
         pub network_id: DogecoinNetwork,
         pub confirmation_number: u32,
-        pub btc_withdrawal_fee: u64,
+        pub doge_withdrawal_fee: u64,
         pub max_withdrawal_count: u32,
-        pub verifier: BtcTxVerifier,
+        pub verifier: DogeTxVerifier,
     }
 
     #[cfg(feature = "std")]
@@ -517,7 +518,7 @@ pub mod pallet {
                 params_info: Default::default(),
                 network_id: Default::default(),
                 confirmation_number: Default::default(),
-                btc_withdrawal_fee: Default::default(),
+                doge_withdrawal_fee: Default::default(),
                 max_withdrawal_count: Default::default(),
                 verifier: Default::default(),
             }
@@ -530,11 +531,11 @@ pub mod pallet {
         fn build(&self) {
             let genesis_hash = &self.genesis_hash.clone();
             let (genesis_header, genesis_height) = &self.genesis_info.clone();
-            let genesis_index = BtcHeaderIndex {
+            let genesis_index = DogeHeaderIndex {
                 hash: *genesis_hash,
                 height: *genesis_height,
             };
-            let header_info = BtcHeaderInfo {
+            let header_info = DogeHeaderInfo {
                 header: *genesis_header,
                 height: *genesis_height,
             };
@@ -547,7 +548,7 @@ pub mod pallet {
             ParamsInfo::<T>::put(self.params_info);
             NetworkId::<T>::put(self.network_id);
             ConfirmationNumber::<T>::put(self.confirmation_number);
-            BtcWithdrawalFee::<T>::put(self.btc_withdrawal_fee);
+            DogeWithdrawalFee::<T>::put(self.doge_withdrawal_fee);
             MaxWithdrawalCount::<T>::put(self.max_withdrawal_count);
             Verifier::<T>::put(self.verifier);
 
@@ -568,10 +569,10 @@ pub mod pallet {
 
         fn check_addr(addr: &[u8], _: &[u8]) -> DispatchResult {
             // this addr is base58 addr
-            let address = Self::verify_btc_address(addr).map_err(|err| {
+            let address = Self::verify_doge_address(addr).map_err(|err| {
                 log!(
                     error,
-                    "[verify_btc_address] Verify failed, error:{:?}, source addr:{:?}",
+                    "[verify_doge_address] Verify failed, error:{:?}, source addr:{:?}",
                     err,
                     xpallet_support::try_addr(addr)
                 );
@@ -596,10 +597,10 @@ pub mod pallet {
         fn withdrawal_limit(
             asset_id: &T::AssetId,
         ) -> Result<WithdrawalLimit<T::Balance>, DispatchError> {
-            if *asset_id != T::BtcAssetId::get() {
+            if *asset_id != T::DogeAssetId::get() {
                 return Err(pallet_assets::Error::<T>::Unknown.into());
             }
-            let fee = Self::btc_withdrawal_fee().saturated_into();
+            let fee = Self::doge_withdrawal_fee().saturated_into();
             let limit = WithdrawalLimit::<T::Balance> {
                 minimal_withdrawal: fee * 3u32.saturated_into() / 2u32.saturated_into(),
                 fee,
@@ -609,7 +610,7 @@ pub mod pallet {
     }
 
     impl<T: Config> ProposalProvider for Pallet<T> {
-        type WithdrawalProposal = BtcWithdrawalProposal<T::AccountId>;
+        type WithdrawalProposal = DogeWithdrawalProposal<T::AccountId>;
         fn get_withdrawal_proposal() -> Option<Self::WithdrawalProposal> {
             Self::withdrawal_proposal()
         }
@@ -618,41 +619,28 @@ pub mod pallet {
     /// Storage Query RPCs
     impl<T: Config> Pallet<T> {
         /// Get withdrawal proposal
-        pub fn get_withdrawal_proposal() -> Option<BtcWithdrawalProposal<T::AccountId>> {
+        pub fn get_withdrawal_proposal() -> Option<DogeWithdrawalProposal<T::AccountId>> {
             Self::withdrawal_proposal()
         }
 
         /// Get genesis info
-        pub fn get_genesis_info() -> (BtcHeader, u32) {
+        pub fn get_genesis_info() -> (BlockHeader, u32) {
             Self::genesis_info()
         }
 
-        /// Ger btc block headers
-        pub fn get_btc_block_header(txid: H256) -> Option<BtcHeaderInfo> {
+        /// Ger Doge block headers
+        pub fn get_doge_block_header(txid: H256) -> Option<DogeHeaderInfo> {
             Self::headers(txid)
         }
     }
 
     impl<T: Config> Pallet<T> {
-        pub fn verify_btc_address(data: &[u8]) -> Result<Address, DispatchError> {
-            let result = Self::verify_bs58_address(data);
-            if result.is_ok() {
-                return result;
-            }
-            Self::verify_bech32_address(data)
-        }
-
-        pub fn verify_bs58_address(data: &[u8]) -> Result<Address, DispatchError> {
+        pub fn verify_doge_address(data: &[u8]) -> Result<Address, DispatchError> {
             let r = bs58::decode(data)
                 .into_vec()
                 .map_err(|_| Error::<T>::InvalidBase58)?;
             let addr = Address::from_layout(&r).map_err(|_| Error::<T>::InvalidAddr)?;
             Ok(addr)
-        }
-
-        pub fn verify_bech32_address(data: &[u8]) -> Result<Address, DispatchError> {
-            let addr = core::str::from_utf8(data).map_err(|_| Error::<T>::InvalidAddr)?;
-            Address::from_str(addr).map_err(|_| Error::<T>::InvalidAddr.into())
         }
 
         /// Helper function for deserializing the slice of raw tx.
@@ -673,12 +661,12 @@ pub mod pallet {
             Ok(())
         }
 
-        pub(crate) fn apply_push_header(header: BtcHeader) -> DispatchResult {
+        pub(crate) fn apply_push_header(header: BlockHeader) -> DispatchResult {
             // current should not exist
             if Self::headers(&header.hash()).is_some() {
                 log!(
                     error,
-                    "[apply_push_header] The BTC header already exists, hash:{:?}",
+                    "[apply_push_header] The Doge header already exists, hash:{:?}",
                     header.hash()
                 );
                 return Err(Error::<T>::ExistingHeader.into());
@@ -693,8 +681,8 @@ pub mod pallet {
                 Error::<T>::PrevHeaderNotExisted
             })?;
 
-            // convert btc header to self header info
-            let header_info = BtcHeaderInfo {
+            // convert Doge header to self header info
+            let header_info = DogeHeaderInfo {
                 header,
                 height: prev_info.height + 1,
             };
@@ -735,7 +723,7 @@ pub mod pallet {
                     );
 
                     // new best index
-                    let new_best_index = BtcHeaderIndex {
+                    let new_best_index = DogeHeaderIndex {
                         hash,
                         height: header_info.height,
                     };
@@ -756,7 +744,7 @@ pub mod pallet {
         }
 
         pub(crate) fn apply_push_transaction(
-            tx: BtcRelayedTx,
+            tx: DogeRelayedTx,
             prev_tx: Option<Transaction>,
         ) -> DispatchResult {
             let tx_hash = tx.raw.hash();
@@ -791,7 +779,7 @@ pub mod pallet {
             match Self::tx_state(&tx_hash) {
                 None => { /* do nothing */ }
                 Some(state) => {
-                    if state.result == BtcTxResult::Success {
+                    if state.result == DogeTxResult::Success {
                         log!(error,
                         "[apply_push_transaction] Reject processed tx (hash:{:?}, type:{:?}, result:{:?})",
                         tx_hash, state.tx_type, state.result
@@ -802,7 +790,7 @@ pub mod pallet {
             }
 
             let network = Pallet::<T>::network_id();
-            let min_deposit = Pallet::<T>::btc_min_deposit();
+            let min_deposit = Pallet::<T>::doge_min_deposit();
             let current_trustee_pair = get_current_trustee_address_pair::<T>()?;
             let last_trustee_pair = get_last_trustee_address_pair::<T>().ok();
             let state = tx::process_tx::<T>(
@@ -816,8 +804,8 @@ pub mod pallet {
             TxState::<T>::insert(&tx_hash, state);
             Self::deposit_event(Event::<T>::TxProcessed(tx_hash, block_hash, state));
             match state.result {
-                BtcTxResult::Success => Ok(()),
-                BtcTxResult::Failure => Err(Error::<T>::ProcessTxFailed.into()),
+                DogeTxResult::Success => Ok(()),
+                DogeTxResult::Failure => Err(Error::<T>::ProcessTxFailed.into()),
             }
         }
     }

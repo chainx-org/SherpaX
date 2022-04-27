@@ -9,13 +9,13 @@ use sp_runtime::RuntimeDebug;
 use sp_std::{cmp, convert::TryFrom};
 
 use light_bitcoin::{
-    chain::BlockHeader as BtcHeader,
+    chain::BlockHeader as DogeHeader,
     keys::Network,
     primitives::{hash_rev, Compact, H256, U256},
 };
 
 use crate::{
-    types::{BtcHeaderInfo, BtcParams},
+    types::{DogeHeaderInfo, DogeParams},
     Config, Error, Pallet,
 };
 
@@ -26,7 +26,7 @@ pub struct HeaderVerifier<'a> {
 }
 
 impl<'a> HeaderVerifier<'a> {
-    pub fn new<T: Config>(header_info: &'a BtcHeaderInfo) -> Self {
+    pub fn new<T: Config>(header_info: &'a DogeHeaderInfo) -> Self {
         let now = T::UnixTime::now();
         // if convert from u64 to u32 failed (unix timestamp should not be greater than u32::MAX),
         // ignore timestamp check, timestamp check are not important
@@ -40,7 +40,7 @@ impl<'a> HeaderVerifier<'a> {
     }
 
     pub fn check<T: Config>(&self) -> DispatchResult {
-        let params: BtcParams = Pallet::<T>::params_info();
+        let params: DogeParams = Pallet::<T>::params_info();
         let network_id: Network = Pallet::<T>::network_id();
         if let Network::Mainnet = network_id {
             self.work.check::<T>(&params)?;
@@ -61,15 +61,15 @@ pub enum RequiredWork {
 }
 
 pub struct HeaderWork<'a> {
-    info: &'a BtcHeaderInfo,
+    info: &'a DogeHeaderInfo,
 }
 
 impl<'a> HeaderWork<'a> {
-    fn new(info: &'a BtcHeaderInfo) -> Self {
+    fn new(info: &'a DogeHeaderInfo) -> Self {
         HeaderWork { info }
     }
 
-    fn check<T: Config>(&self, params: &BtcParams) -> DispatchResult {
+    fn check<T: Config>(&self, params: &DogeParams) -> DispatchResult {
         let previous_header_hash = self.info.header.previous_header_hash;
         let work = work_required::<T>(previous_header_hash, self.info.height, params);
         match work {
@@ -92,14 +92,14 @@ impl<'a> HeaderWork<'a> {
 pub fn work_required<T: Config>(
     parent_hash: H256,
     height: u32,
-    params: &BtcParams,
+    params: &DogeParams,
 ) -> RequiredWork {
     let max_bits = params.max_bits();
     if height == 0 {
         return RequiredWork::Value(max_bits);
     }
 
-    let parent_header: BtcHeader = Pallet::<T>::headers(&parent_hash)
+    let parent_header: DogeHeader = Pallet::<T>::headers(&parent_hash)
         .expect("pre header must exist here")
         .header;
 
@@ -120,15 +120,15 @@ pub fn work_required<T: Config>(
     RequiredWork::Value(parent_header.bits)
 }
 
-fn is_retarget_height(height: u32, params: &BtcParams) -> bool {
+fn is_retarget_height(height: u32, params: &DogeParams) -> bool {
     height % params.retargeting_interval() == 0
 }
 
 /// Algorithm used for retargeting work every 2 weeks
 fn work_required_retarget<T: Config>(
-    parent_header: BtcHeader,
+    parent_header: DogeHeader,
     height: u32,
-    params: &BtcParams,
+    params: &DogeParams,
 ) -> RequiredWork {
     let retarget_num = height - params.retargeting_interval();
 
@@ -181,7 +181,7 @@ fn work_required_retarget<T: Config>(
 }
 
 /// Returns constrained number of seconds since last retarget
-fn retarget_timespan(retarget_timestamp: u32, last_timestamp: u32, params: &BtcParams) -> u32 {
+fn retarget_timespan(retarget_timestamp: u32, last_timestamp: u32, params: &DogeParams) -> u32 {
     // TODO i64??
     // subtract unsigned 32 bit numbers in signed 64 bit space in
     // order to prevent underflow before applying the range constraint.
@@ -198,15 +198,15 @@ fn range_constrain(value: i64, min: i64, max: i64) -> i64 {
 }
 
 pub struct HeaderProofOfWork<'a> {
-    header: &'a BtcHeader,
+    header: &'a DogeHeader,
 }
 
 impl<'a> HeaderProofOfWork<'a> {
-    fn new(header: &'a BtcHeader) -> Self {
+    fn new(header: &'a DogeHeader) -> Self {
         Self { header }
     }
 
-    fn check<T: Config>(&self, params: &BtcParams) -> DispatchResult {
+    fn check<T: Config>(&self, params: &DogeParams) -> DispatchResult {
         if is_valid_proof_of_work(params.max_bits(), self.header.bits, self.header.hash()) {
             Ok(())
         } else {
@@ -226,12 +226,12 @@ fn is_valid_proof_of_work(max_work_bits: Compact, bits: Compact, hash: H256) -> 
 }
 
 pub struct HeaderTimestamp<'a> {
-    header: &'a BtcHeader,
+    header: &'a DogeHeader,
     current_time: Option<u32>,
 }
 
 impl<'a> HeaderTimestamp<'a> {
-    fn new(header: &'a BtcHeader, current_time: Option<u32>) -> Self {
+    fn new(header: &'a DogeHeader, current_time: Option<u32>) -> Self {
         Self {
             header,
             current_time,
@@ -239,7 +239,7 @@ impl<'a> HeaderTimestamp<'a> {
     }
 
     #[allow(unused)]
-    fn check<T: Config>(&self, params: &BtcParams) -> DispatchResult {
+    fn check<T: Config>(&self, params: &DogeParams) -> DispatchResult {
         if let Some(current_time) = self.current_time {
             if self.header.time > current_time + params.block_max_future() {
                 error!(

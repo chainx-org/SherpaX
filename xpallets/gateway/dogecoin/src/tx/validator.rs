@@ -8,10 +8,10 @@ use sp_std::prelude::Vec;
 
 use light_bitcoin::{chain::Transaction, primitives::H256};
 
-use crate::{types::BtcRelayedTx, Config, Error};
+use crate::{types::DogeRelayedTx, Config, Error};
 
 pub fn validate_transaction<T: Config>(
-    tx: &BtcRelayedTx,
+    tx: &DogeRelayedTx,
     merkle_root: H256,
     prev_tx: Option<&Transaction>,
 ) -> DispatchResult {

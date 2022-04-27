@@ -24,7 +24,7 @@ use light_bitcoin::{
 };
 
 use xp_assets_registrar::Chain;
-use xp_gateway_bitcoin::extract_output_addr;
+use xp_gateway_dogecoin::extract_output_addr;
 use xpallet_gateway_common::{
     traits::{TrusteeForChain, TrusteeSession},
     trustees::dogecoin::{DogeTrusteeAddrInfo, DogeTrusteeType},
@@ -34,7 +34,7 @@ use xpallet_gateway_common::{
 
 use crate::{
     log,
-    types::{BtcWithdrawalProposal, VoteResult},
+    types::{DogeWithdrawalProposal, VoteResult},
     Config, Error, Event, Pallet, WithdrawalProposal,
 };
 
@@ -56,7 +56,7 @@ fn current_trustee_addr_pair<T: Config>(
 
 pub fn get_hot_trustee_address<T: Config>() -> Result<Address, DispatchError> {
     current_trustee_addr_pair::<T>()
-        .and_then(|(addr_info, _)| Pallet::<T>::verify_btc_address(&addr_info.addr))
+        .and_then(|(addr_info, _)| Pallet::<T>::verify_doge_address(&addr_info.addr))
 }
 
 pub fn get_hot_trustee_redeem_script<T: Config>() -> Result<Script, DispatchError> {
@@ -67,9 +67,9 @@ pub fn get_hot_trustee_redeem_script<T: Config>() -> Result<Script, DispatchErro
 pub fn get_current_trustee_address_pair<T: Config>() -> Result<(Address, Address), DispatchError> {
     current_trustee_addr_pair::<T>().map(|(hot_info, cold_info)| {
         (
-            Pallet::<T>::verify_btc_address(&hot_info.addr)
+            Pallet::<T>::verify_doge_address(&hot_info.addr)
                 .expect("should not parse error from storage data; qed"),
-            Pallet::<T>::verify_btc_address(&cold_info.addr)
+            Pallet::<T>::verify_doge_address(&cold_info.addr)
                 .expect("should not parse error from storage data; qed"),
         )
     })
@@ -79,9 +79,9 @@ pub fn get_current_trustee_address_pair<T: Config>() -> Result<(Address, Address
 pub fn get_last_trustee_address_pair<T: Config>() -> Result<(Address, Address), DispatchError> {
     T::TrusteeSessionProvider::last_trustee_session().map(|session_info| {
         (
-            Pallet::<T>::verify_btc_address(&session_info.hot_address.addr)
+            Pallet::<T>::verify_doge_address(&session_info.hot_address.addr)
                 .expect("should not parse error from storage data; qed"),
-            Pallet::<T>::verify_btc_address(&session_info.cold_address.addr)
+            Pallet::<T>::verify_doge_address(&session_info.cold_address.addr)
                 .expect("should not parse error from storage data; qed"),
         )
     })
@@ -333,7 +333,7 @@ impl<T: Config> Pallet<T> {
             Chain::Dogecoin,
         )?;
 
-        let proposal = BtcWithdrawalProposal::new(
+        let proposal = DogeWithdrawalProposal::new(
             VoteResult::Finish,
             withdrawal_id_list.clone(),
             tx,
@@ -356,7 +356,7 @@ impl<T: Config> Pallet<T> {
     }
 
     pub fn force_replace_withdraw_tx(tx: Transaction) -> DispatchResult {
-        let mut proposal: BtcWithdrawalProposal<T::AccountId> =
+        let mut proposal: DogeWithdrawalProposal<T::AccountId> =
             Self::withdrawal_proposal().ok_or(Error::<T>::NoProposal)?;
 
         ensure!(
@@ -464,22 +464,22 @@ fn check_withdraw_tx_impl<T: Config>(
         let record = xpallet_gateway_records::Pallet::<T>::pending_withdrawals(withdraw_index)
             .ok_or(Error::<T>::NoWithdrawalRecord)?;
         // record.addr() is base58
-        // verify btc address would conveRelayedTx a base58 addr to Address
-        let addr: Address = Pallet::<T>::verify_btc_address(record.addr())?;
+        // verify Doge address would conveRelayedTx a base58 addr to Address
+        let addr: Address = Pallet::<T>::verify_doge_address(record.addr())?;
 
         appl_withdrawal_list.push((addr, record.balance().saturated_into::<u64>()));
     }
     // not allow deposit directly to cold address, only hot address allow
     let hot_trustee_address: Address = get_hot_trustee_address::<T>()?;
     // withdrawal addr list for tx outputs
-    let btc_withdrawal_fee = Pallet::<T>::btc_withdrawal_fee();
-    let btc_network = Pallet::<T>::network_id();
+    let doge_withdrawal_fee = Pallet::<T>::doge_withdrawal_fee();
+    let doge_network = Pallet::<T>::network_id();
     let mut tx_withdraw_list = Vec::new();
     for output in &tx.outputs {
-        let addr = extract_output_addr(output, btc_network).ok_or("not found addr in this out")?;
+        let addr = extract_output_addr(output, doge_network).ok_or("not found addr in this out")?;
         if addr.hash != hot_trustee_address.hash {
             // expect change to trustee_addr output
-            tx_withdraw_list.push((addr, output.value + btc_withdrawal_fee));
+            tx_withdraw_list.push((addr, output.value + doge_withdrawal_fee));
         }
     }
 

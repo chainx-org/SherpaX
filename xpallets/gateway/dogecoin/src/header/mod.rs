@@ -9,7 +9,7 @@ use sp_std::{cmp::Ordering, prelude::*};
 use light_bitcoin::primitives::{hash_rev, H256};
 
 use crate::{
-    types::{BtcHeaderIndex, BtcHeaderInfo},
+    types::{DogeHeaderIndex, DogeHeaderInfo},
     Config, ConfirmedIndex, Error, MainChain, Pallet,
 };
 
@@ -26,21 +26,21 @@ pub use self::header_proof::HeaderVerifier;
 ///           97             98    99   100     (height)
 ///
 fn look_back_confirmed_header<T: Config>(
-    header_info: &BtcHeaderInfo,
-) -> (Option<BtcHeaderIndex>, Vec<BtcHeaderIndex>) {
+    header_info: &DogeHeaderInfo,
+) -> (Option<DogeHeaderIndex>, Vec<DogeHeaderIndex>) {
     let confirmations = Pallet::<T>::confirmation_number();
     let mut chain = Vec::with_capacity(confirmations as usize);
     let mut prev_hash = header_info.header.previous_header_hash;
 
     // put current header
-    chain.push(BtcHeaderIndex {
+    chain.push(DogeHeaderIndex {
         hash: header_info.header.hash(),
         height: header_info.height,
     });
     // e.g. when confirmations is 4, loop 3 times max
     for cnt in 1..confirmations {
         if let Some(current_info) = Pallet::<T>::headers(&prev_hash) {
-            chain.push(BtcHeaderIndex {
+            chain.push(DogeHeaderIndex {
                 hash: prev_hash,
                 height: current_info.height,
             });
@@ -66,7 +66,7 @@ fn look_back_confirmed_header<T: Config>(
     }
 }
 
-pub fn update_confirmed_header<T: Config>(header_info: &BtcHeaderInfo) -> Option<BtcHeaderIndex> {
+pub fn update_confirmed_header<T: Config>(header_info: &DogeHeaderInfo) -> Option<DogeHeaderIndex> {
     let (confirmed, chain) = look_back_confirmed_header::<T>(header_info);
     for index in chain {
         set_main_chain::<T>(index.height, index.hash);
@@ -92,7 +92,7 @@ fn set_main_chain<T: Config>(height: u32, main_hash: H256) {
     }
 }
 
-pub fn check_confirmed_header<T: Config>(header_info: &BtcHeaderInfo) -> DispatchResult {
+pub fn check_confirmed_header<T: Config>(header_info: &DogeHeaderInfo) -> DispatchResult {
     let (confirmed, _) = look_back_confirmed_header::<T>(header_info);
     if let Some(current_confirmed) = ConfirmedIndex::<T>::get() {
         if let Some(now_confirmed) = confirmed {

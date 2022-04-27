@@ -9,36 +9,36 @@ use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
 
 use light_bitcoin::{
-    chain::{BlockHeader as BtcHeader, Transaction as BtcTransaction},
+    chain::{BlockHeader as DogeHeader, Transaction as DogeTransaction},
     keys::Address,
     merkle::PartialMerkleTree,
     primitives::{Compact, H256},
 };
 
 use sherpax_primitives::ReferralId;
-use xp_gateway_bitcoin::BtcTxType;
+use xp_gateway_dogecoin::DogeTxType;
 
-/// BtcAddress is an bitcoin address encoded in base58
+/// DogeAddress is an bitcoin address encoded in base58
 /// like: "1Nekoo5VTe7yQQ8WFqrva2UbdyRMVYCP1t" or "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy"
 /// not layout state or public or else.
-pub type BtcAddress = Vec<u8>;
+pub type DogeAddress = Vec<u8>;
 
 #[derive(Clone, RuntimeDebug, TypeInfo)]
-pub struct BtcRelayedTx {
+pub struct DogeRelayedTx {
     pub block_hash: H256,
-    pub raw: BtcTransaction,
+    pub raw: DogeTransaction,
     pub merkle_proof: PartialMerkleTree,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct BtcRelayedTxInfo {
+pub struct DogeRelayedTxInfo {
     pub block_hash: H256,
     pub merkle_proof: PartialMerkleTree,
 }
 
-impl BtcRelayedTxInfo {
-    pub fn into_relayed_tx(self, tx: BtcTransaction) -> BtcRelayedTx {
-        BtcRelayedTx {
+impl DogeRelayedTxInfo {
+    pub fn into_relayed_tx(self, tx: DogeTransaction) -> DogeRelayedTx {
+        DogeRelayedTx {
             block_hash: self.block_hash,
             raw: tx,
             merkle_proof: self.merkle_proof,
@@ -48,26 +48,26 @@ impl BtcRelayedTxInfo {
 
 #[derive(PartialEq, Eq, Clone, Default, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct BtcHeaderInfo {
-    pub header: BtcHeader,
+pub struct DogeHeaderInfo {
+    pub header: DogeHeader,
     pub height: u32,
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Default, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct BtcHeaderIndex {
+pub struct DogeHeaderIndex {
     pub hash: H256,
     pub height: u32,
 }
 
 #[derive(PartialEq, Clone, Copy, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct BtcTxState {
-    pub tx_type: BtcTxType,
-    pub result: BtcTxResult,
+pub struct DogeTxState {
+    pub tx_type: DogeTxType,
+    pub result: DogeTxResult,
 }
 
 #[derive(PartialEq, Clone, Copy, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub enum BtcTxResult {
+pub enum DogeTxResult {
     Success,
     Failure,
 }
@@ -80,25 +80,25 @@ pub enum AccountInfo<AccountId> {
 }
 
 #[derive(PartialEq, Clone, Encode, Decode, Default, RuntimeDebug, TypeInfo)]
-pub struct BtcDepositCache {
+pub struct DogeDepositCache {
     pub txid: H256,
     pub balance: u64,
 }
 
 #[derive(PartialEq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct BtcWithdrawalProposal<AccountId> {
+pub struct DogeWithdrawalProposal<AccountId> {
     pub sig_state: VoteResult,
     pub withdrawal_id_list: Vec<u32>,
-    pub tx: BtcTransaction,
+    pub tx: DogeTransaction,
     pub trustee_list: Vec<(AccountId, bool)>,
 }
 
-impl<AccountId> BtcWithdrawalProposal<AccountId> {
+impl<AccountId> DogeWithdrawalProposal<AccountId> {
     pub fn new(
         sig_state: VoteResult,
         withdrawal_id_list: Vec<u32>,
-        tx: BtcTransaction,
+        tx: DogeTransaction,
         trustee_list: Vec<(AccountId, bool)>,
     ) -> Self {
         Self {
@@ -120,7 +120,7 @@ pub enum VoteResult {
 #[derive(PartialEq, Eq, Clone, Copy, Encode, Decode, Default, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
-pub struct BtcParams {
+pub struct DogeParams {
     max_bits: u32,
     block_max_future: u32,
 
@@ -133,14 +133,14 @@ pub struct BtcParams {
     max_timespan: u32,
 }
 
-impl BtcParams {
+impl DogeParams {
     pub fn new(
         max_bits: u32,
         block_max_future: u32,
         target_timespan_seconds: u32,
         target_spacing_seconds: u32,
         retargeting_factor: u32,
-    ) -> BtcParams {
+    ) -> DogeParams {
         Self {
             max_bits,
             block_max_future,
@@ -179,7 +179,7 @@ impl BtcParams {
 
 #[derive(PartialEq, Eq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum BtcTxVerifier {
+pub enum DogeTxVerifier {
     Recover,
     RuntimeInterface,
     #[cfg(any(feature = "runtime-benchmarks", test))]
@@ -187,7 +187,7 @@ pub enum BtcTxVerifier {
     Test,
 }
 
-impl Default for BtcTxVerifier {
+impl Default for DogeTxVerifier {
     fn default() -> Self {
         Self::Recover
     }

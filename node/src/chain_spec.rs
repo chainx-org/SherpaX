@@ -534,7 +534,7 @@ pub fn sherpax_genesis(
             confirmation_number: dogecoin.confirmation_number,
             genesis_hash: dogecoin.hash(),
             genesis_info: (dogecoin.header(), dogecoin.height),
-            params_info: xpallet_gateway_dogecoin::types::BtcParams::new(
+            params_info: xpallet_gateway_dogecoin::types::DogeParams::new(
                 // for dogecoin
                 545259519,            // max_bits
                 2 * 60 * 60,          // block_max_future
@@ -542,9 +542,9 @@ pub fn sherpax_genesis(
                 10 * 60,              // target_spacing_seconds
                 4,                    // retargeting_factor
             ), // retargeting_factor
-            btc_withdrawal_fee: 500000,
+            doge_withdrawal_fee: 500000,
             max_withdrawal_count: 100,
-            verifier: xpallet_gateway_dogecoin::types::BtcTxVerifier::Recover,
+            verifier: xpallet_gateway_dogecoin::types::DogeTxVerifier::Recover,
         },
         x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
             initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
