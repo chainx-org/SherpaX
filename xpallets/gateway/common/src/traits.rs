@@ -18,6 +18,12 @@ pub trait TotalSupply<Balance> {
     fn total_supply() -> Balance;
 }
 
+impl<Balance: Default> TotalSupply<Balance> for () {
+    fn total_supply() -> Balance {
+        Balance::default()
+    }
+}
+
 pub trait ProposalProvider {
     type WithdrawalProposal;
 

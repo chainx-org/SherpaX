@@ -178,6 +178,7 @@ impl xpallet_gateway_records::Config for Test {
     type Event = ();
     type Currency = Balances;
     type BtcAssetId = BtcAssetId;
+    type DogeAssetId = ();
     type WeightInfo = ();
 }
 
@@ -191,6 +192,11 @@ impl xpallet_gateway_common::Config for Test {
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type BitcoinTotalSupply = XGatewayBitcoin;
     type BitcoinWithdrawalProposal = XGatewayBitcoin;
+    type Dogecoin = ();
+    type DogecoinTrustee = ();
+    type DogecoinTrusteeSessionProvider = ();
+    type DogecoinTotalSupply = ();
+    type DogecoinWithdrawalProposal = ();
     type WeightInfo = ();
 }
 

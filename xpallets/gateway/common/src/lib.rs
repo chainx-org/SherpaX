@@ -7,8 +7,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::new_without_default, clippy::type_complexity)]
 
-#[cfg(any(feature = "runtime-benchmarks", test))]
-mod benchmarking;
+// #[cfg(any(feature = "runtime-benchmarks", test))]
+// mod benchmarking;
 // #[cfg(test)]
 // mod mock;
 // #[cfg(test)]
@@ -783,6 +783,11 @@ impl<T: Config> Pallet<T> {
             Chain::Bitcoin => {
                 let hot = T::BitcoinTrustee::check_trustee_entity(&hot_entity)?;
                 let cold = T::BitcoinTrustee::check_trustee_entity(&cold_entity)?;
+                (hot.into(), cold.into())
+            }
+            Chain::Dogecoin => {
+                let hot = T::DogecoinTrustee::check_trustee_entity(&hot_entity)?;
+                let cold = T::DogecoinTrustee::check_trustee_entity(&cold_entity)?;
                 (hot.into(), cold.into())
             }
             _ => return Err(Error::<T>::NotSupportedChain.into()),

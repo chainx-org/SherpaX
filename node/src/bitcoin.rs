@@ -104,7 +104,10 @@ pub fn dev_trustees() -> Vec<(Chain, TrusteeInfoConfig, Vec<BtcTrusteeParams>)> 
         ),
     ];
 
-    vec![(Chain::Bitcoin, btc_config, btc_trustees)]
+    vec![
+        (Chain::Bitcoin, btc_config.clone(), btc_trustees.clone()),
+        (Chain::Dogecoin, btc_config, btc_trustees),
+    ]
 }
 
 #[cfg(feature = "runtime-benchmarks")]
