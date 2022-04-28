@@ -86,7 +86,7 @@ fn test_opreturn_extractor() {
             "5VEW3R1T4LR3kDhYwXeeCnYrHRwRaH7E9V1KprypBe68XmY4".as_bytes(),
         );
         #[cfg(feature = "ss58check")]
-        assert_eq!(result, None);
+        assert_eq!(result, Some((addr.unchecked_into(), None)));
         #[cfg(not(feature = "ss58check"))]
         assert_eq!(result, Some((addr.unchecked_into(), None)));
     }

@@ -33,7 +33,7 @@ pub enum Ss58CheckError {
 #[runtime_interface]
 pub trait Ss58Codec {
     fn from_ss58check(addr: &[u8]) -> Result<AccountId32, Ss58CheckError> {
-        use sp_core::crypto::{default_ss58_version, PublicError, Ss58Codec};
+        use sp_core::crypto::{PublicError, Ss58Codec};
         let s = String::from_utf8_lossy(addr).into_owned();
         AccountId32::from_ss58check_with_version(&s)
             .map_err(|err| match err {
@@ -48,12 +48,10 @@ pub trait Ss58Codec {
                 PublicError::InvalidPath => Ss58CheckError::InvalidPath,
                 PublicError::FormatNotAllowed => Ss58CheckError::FormatNotAllowed,
             })
-            .and_then(|(account, ver)| match ver {
+            .and_then(|(account, _)|
                 // https://github.com/paritytech/substrate/blob/polkadot-v0.9.18/primitives/core/src/crypto.rs#L310
-                // Only support ChainX
-                ver if ver == default_ss58_version() => Ok(account),
-                _ => Err(Ss58CheckError::MismatchVersion),
-            })
+                // Support all ss58 versions.
+                Ok(account))
     }
 }
 
@@ -69,10 +67,10 @@ fn ss58_check() {
     set_default_ss58_version(Ss58AddressFormat::from(44u16));
     let account = ss_58_codec::from_ss58check(addr44).unwrap();
     assert_eq!(AsRef::<[u8]>::as_ref(&account), pubkey.as_slice());
-    assert!(ss_58_codec::from_ss58check(addr42).is_err());
+    assert!(ss_58_codec::from_ss58check(addr42).is_ok());
 
     set_default_ss58_version(Ss58AddressFormat::from(42u16));
     let account = ss_58_codec::from_ss58check(addr42).unwrap();
     assert_eq!(AsRef::<[u8]>::as_ref(&account), pubkey.as_slice());
-    assert!(ss_58_codec::from_ss58check(addr44).is_err());
+    assert!(ss_58_codec::from_ss58check(addr44).is_ok());
 }
