@@ -960,7 +960,7 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
-    CustomOnRuntimeUpgrades,
+    SchedulerMigrationV3,
 >;
 
 // Migration for scheduler pallet to move from a plain Call to a CallOrHash.
@@ -969,32 +969,6 @@ pub struct SchedulerMigrationV3;
 impl OnRuntimeUpgrade for SchedulerMigrationV3 {
     fn on_runtime_upgrade() -> frame_support::weights::Weight {
         Scheduler::migrate_v2_to_v3()
-    }
-}
-
-pub struct XGatewayCommonStorageMigration;
-
-impl OnRuntimeUpgrade for XGatewayCommonStorageMigration {
-    fn on_runtime_upgrade() -> frame_support::weights::Weight {
-        xpallet_gateway_common::migrations::taproot::apply::<Runtime>()
-    }
-}
-
-pub struct CustomOnRuntimeUpgrades;
-impl OnRuntimeUpgrade for CustomOnRuntimeUpgrades {
-    fn on_runtime_upgrade() -> Weight {
-        let mut weight = 0;
-        // 1. SchedulerMigrationV3
-        frame_support::log::info!("🔍️ SchedulerMigrationV3 start");
-        weight += <SchedulerMigrationV3 as OnRuntimeUpgrade>::on_runtime_upgrade();
-        frame_support::log::info!("🚀 SchedulerMigrationV3 end");
-
-        // 2. XGatewayCommonStorageMigration
-        frame_support::log::info!("🔍️ XGatewayCommonStorageMigration start");
-        weight += <XGatewayCommonStorageMigration as OnRuntimeUpgrade>::on_runtime_upgrade();
-        frame_support::log::info!("🚀 XGatewayCommonStorageMigration end");
-
-        weight
     }
 }
 
