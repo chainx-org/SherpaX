@@ -4,11 +4,9 @@ version = "1.3.0"
 authors = ["ChainX Developers"]
 edition = "2021"
 
-
 [dependencies]
 serde = { version = "1.0.136", optional = true }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false }
-libsecp256k1 = { version = "0.7", default-features = false, features = ["hmac", "static-context"], optional = true }
 scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
 
 sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.18", default-features = false }
@@ -33,8 +31,6 @@ default = ["std"]
 std = [
 	"serde",
 	"codec/std",
-	"libsecp256k1",
-	"libsecp256k1/std",
 	"scale-info/std",
 
 	"sp-core/std",
