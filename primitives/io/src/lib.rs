@@ -36,6 +36,11 @@ pub trait Ss58Codec {
         use sp_core::crypto::{PublicError, Ss58Codec};
         let s = String::from_utf8_lossy(addr).into_owned();
         AccountId32::from_ss58check_with_version(&s)
+            .map(|(account, _)|{
+                // https://github.com/paritytech/substrate/blob/polkadot-v0.9.18/primitives/core/src/crypto.rs#L310
+                // Support all ss58 versions.
+                account
+            })
             .map_err(|err| match err {
                 PublicError::BadBase58 => Ss58CheckError::BadBase58,
                 PublicError::BadLength => Ss58CheckError::BadLength,
@@ -48,10 +53,6 @@ pub trait Ss58Codec {
                 PublicError::InvalidPath => Ss58CheckError::InvalidPath,
                 PublicError::FormatNotAllowed => Ss58CheckError::FormatNotAllowed,
             })
-            .and_then(|(account, _)|
-                // https://github.com/paritytech/substrate/blob/polkadot-v0.9.18/primitives/core/src/crypto.rs#L310
-                // Support all ss58 versions.
-                Ok(account))
     }
 }
 

@@ -19,7 +19,6 @@ use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
 use maplit::hashmap;
-use sc_cli::SubstrateCli;
 use sc_client_api::BlockchainEvents;
 use sc_service::config::PrometheusConfig;
 use sc_service::BasePath;

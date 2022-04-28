@@ -266,138 +266,138 @@ pub fn development_config() -> Result<ChainSpec, String> {
     ))
 }
 
-// pub fn local_testnet_config() -> Result<ChainSpec, String> {
-//     let mut properties = Properties::new();
-//     properties.insert("tokenSymbol".into(), "KSX".into());
-//     properties.insert("tokenDecimals".into(), 18i32.into());
-//     properties.insert(
-//         "ss58Format".into(),
-//         sherpax_runtime::SS58Prefix::get().into(),
-//     );
-//
-//     Ok(ChainSpec::from_genesis(
-//         // Name
-//         "Local Testnet",
-//         // ID
-//         "local_testnet",
-//         ChainType::Local,
-//         move || {
-//             sherpax_genesis(
-//                 // Initial PoA authorities
-//                 vec![
-//                     authority_keys_from_seed("Alice"),
-//                     authority_keys_from_seed("Bob"),
-//                 ],
-//                 // Sudo account
-//                 get_account_id_from_seed::<sr25519::Public>("Alice"),
-//                 // Pre-funded accounts
-//                 vec![
-//                     get_account_id_from_seed::<sr25519::Public>("Alice"),
-//                     get_account_id_from_seed::<sr25519::Public>("Bob"),
-//                     get_account_id_from_seed::<sr25519::Public>("Charlie"),
-//                     get_account_id_from_seed::<sr25519::Public>("Dave"),
-//                     get_account_id_from_seed::<sr25519::Public>("Eve"),
-//                     get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-//                 ],
-//                 true,
-//                 btc_genesis_params(include_str!(
-//                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
-//                 )),
-//                 crate::bitcoin::mainnet_trustees(),
-//             )
-//         },
-//         // Bootnodes
-//         vec![],
-//         // Telemetry
-//         None,
-//         // Protocol ID
-//         None,
-//         None,
-//         // Properties
-//         Some(properties),
-//         // Extensions
-//         Default::default(),
-//     ))
-// }
-//
-// #[allow(unused)]
-// pub fn mainnet_config() -> Result<ChainSpec, String> {
-//     let bootnodes = bootnodes![
-//         "/ip4/52.77.243.26/tcp/10025/ws/p2p/12D3KooWK6zL4BFCFgcfCLn8xMmZcAp1wX6nTGfJx3gRzbq6qE3Y",
-//         "/ip4/47.114.74.52/tcp/40041/ws/p2p/12D3KooWJws7aM9euRhEM2CAvNTvKboiVi9wFRdHeWjtLUEiAJWo",
-//         "/ip4/116.62.46.8/tcp/40042/ws/p2p/12D3KooWSAeap3NaSihLuz85tX8uKn8f8Wfgo8iY9WFM1MRAvQiX",
-//     ];
-//
-//     let mut properties = Properties::new();
-//     properties.insert("tokenSymbol".into(), "KSX".into());
-//     properties.insert("tokenDecimals".into(), 18i32.into());
-//     properties.insert(
-//         "ss58Format".into(),
-//         sherpax_runtime::SS58Prefix::get().into(),
-//     );
-//
-//     Ok(ChainSpec::from_genesis(
-//         // Name
-//         "SherpaX",
-//         // ID
-//         "sherpax_singleton",
-//         ChainType::Live,
-//         move || {
-//             sherpax_genesis(
-//                 // Initial PoA authorities
-//                 vec![
-//                     (
-//                         // Ff3b3gdWT2nwC9BSjcys1S8Tth2XBayEgHZkX8pbCrErqgf
-//                         hex!("884f4d6638c1f70ed80537be200df124efc384e8177f74377a2be919513dcc3a")
-//                             .into(),
-//                         hex!("e07d42d9b6a3403be406efaaaf952981c2e124cabc305b49b179546d5cfe7f0e")
-//                             .unchecked_into(),
-//                         hex!("67b4639b336f7fcefc2b7696be57dbf5059208d01ad67e08ff9688d97efdb519")
-//                             .unchecked_into(),
-//                     ),
-//                     (
-//                         // J1SDJ7KvkESXfT8RjSP9Sy8TfUh2UMstRTh7CN7be9NipQB
-//                         hex!("f054d6fd1444f2e78f2839dc4ec5e4f35f0fc003cf006f3f712f659cdc2ecb63")
-//                             .into(),
-//                         hex!("86a185b97c75744c614355991d5faac5ea8a57eb6b24a4baf352246f5eb58221")
-//                             .unchecked_into(),
-//                         hex!("c17b592b9ccf92127726607881c51304df8b8bb002caff9cd864a046cc85d4d0")
-//                             .unchecked_into(),
-//                     ),
-//                 ],
-//                 // Sudo account
-//                 // FCcnKcbTe5EYDZXDCKwbhkPAoYyakG1iRBxS9Ai5m2uFTfn
-//                 hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
-//                 // Pre-funded accounts
-//                 vec![
-//                     hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
-//                 ],
-//                 true,
-//                 btc_genesis_params(include_str!(
-//                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
-//                 )),
-//                 crate::bitcoin::mainnet_trustees(),
-//             )
-//         },
-//         // Bootnodes
-//         bootnodes,
-//         // Telemetry
-//         Some(
-//             TelemetryEndpoints::new(vec![
-//                 (CHAINX_TELEMETRY_URL.to_string(), 0),
-//                 (POLKADOT_TELEMETRY_URL.to_string(), 0),
-//             ])
-//             .expect("SherpaX telemetry url is valid; qed"),
-//         ),
-//         // Protocol ID
-//         Some(DEFAULT_PROTOCOL_ID),
-//         None,
-//         // Properties
-//         Some(properties),
-//         // Extensions
-//         Default::default(),
-//     ))
-// }
+pub fn local_testnet_config() -> Result<ChainSpec, String> {
+    let mut properties = Properties::new();
+    properties.insert("tokenSymbol".into(), "KSX".into());
+    properties.insert("tokenDecimals".into(), 18i32.into());
+    properties.insert(
+        "ss58Format".into(),
+        sherpax_runtime::SS58Prefix::get().into(),
+    );
+
+    Ok(ChainSpec::from_genesis(
+        // Name
+        "Local Testnet",
+        // ID
+        "local_testnet",
+        ChainType::Local,
+        move || {
+            sherpax_genesis(
+                // Initial PoA authorities
+                vec![
+                    authority_keys_from_seed("Alice"),
+                    authority_keys_from_seed("Bob"),
+                ],
+                // Sudo account
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Pre-funded accounts
+                vec![
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob"),
+                    get_account_id_from_seed::<sr25519::Public>("Charlie"),
+                    get_account_id_from_seed::<sr25519::Public>("Dave"),
+                    get_account_id_from_seed::<sr25519::Public>("Eve"),
+                    get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+                ],
+                true,
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                crate::bitcoin::mainnet_trustees(),
+            )
+        },
+        // Bootnodes
+        vec![],
+        // Telemetry
+        None,
+        // Protocol ID
+        None,
+        None,
+        // Properties
+        Some(properties),
+        // Extensions
+        Default::default(),
+    ))
+}
+
+#[allow(unused)]
+pub fn mainnet_config() -> Result<ChainSpec, String> {
+    let bootnodes = bootnodes![
+        "/ip4/52.77.243.26/tcp/10025/ws/p2p/12D3KooWK6zL4BFCFgcfCLn8xMmZcAp1wX6nTGfJx3gRzbq6qE3Y",
+        "/ip4/47.114.74.52/tcp/40041/ws/p2p/12D3KooWJws7aM9euRhEM2CAvNTvKboiVi9wFRdHeWjtLUEiAJWo",
+        "/ip4/116.62.46.8/tcp/40042/ws/p2p/12D3KooWSAeap3NaSihLuz85tX8uKn8f8Wfgo8iY9WFM1MRAvQiX",
+    ];
+
+    let mut properties = Properties::new();
+    properties.insert("tokenSymbol".into(), "KSX".into());
+    properties.insert("tokenDecimals".into(), 18i32.into());
+    properties.insert(
+        "ss58Format".into(),
+        sherpax_runtime::SS58Prefix::get().into(),
+    );
+
+    Ok(ChainSpec::from_genesis(
+        // Name
+        "SherpaX",
+        // ID
+        "sherpax_singleton",
+        ChainType::Live,
+        move || {
+            sherpax_genesis(
+                // Initial PoA authorities
+                vec![
+                    (
+                        // Ff3b3gdWT2nwC9BSjcys1S8Tth2XBayEgHZkX8pbCrErqgf
+                        hex!("884f4d6638c1f70ed80537be200df124efc384e8177f74377a2be919513dcc3a")
+                            .into(),
+                        hex!("e07d42d9b6a3403be406efaaaf952981c2e124cabc305b49b179546d5cfe7f0e")
+                            .unchecked_into(),
+                        hex!("67b4639b336f7fcefc2b7696be57dbf5059208d01ad67e08ff9688d97efdb519")
+                            .unchecked_into(),
+                    ),
+                    (
+                        // J1SDJ7KvkESXfT8RjSP9Sy8TfUh2UMstRTh7CN7be9NipQB
+                        hex!("f054d6fd1444f2e78f2839dc4ec5e4f35f0fc003cf006f3f712f659cdc2ecb63")
+                            .into(),
+                        hex!("86a185b97c75744c614355991d5faac5ea8a57eb6b24a4baf352246f5eb58221")
+                            .unchecked_into(),
+                        hex!("c17b592b9ccf92127726607881c51304df8b8bb002caff9cd864a046cc85d4d0")
+                            .unchecked_into(),
+                    ),
+                ],
+                // Sudo account
+                // FCcnKcbTe5EYDZXDCKwbhkPAoYyakG1iRBxS9Ai5m2uFTfn
+                hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
+                // Pre-funded accounts
+                vec![
+                    hex!("74276b30236e3ffc822c0e5ec0ac8b02933dac11fcefc88733c8a61cdaa45a59").into(),
+                ],
+                true,
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                crate::bitcoin::mainnet_trustees(),
+            )
+        },
+        // Bootnodes
+        bootnodes,
+        // Telemetry
+        Some(
+            TelemetryEndpoints::new(vec![
+                (CHAINX_TELEMETRY_URL.to_string(), 0),
+                (POLKADOT_TELEMETRY_URL.to_string(), 0),
+            ])
+            .expect("SherpaX telemetry url is valid; qed"),
+        ),
+        // Protocol ID
+        Some(DEFAULT_PROTOCOL_ID),
+        None,
+        // Properties
+        Some(properties),
+        // Extensions
+        Default::default(),
+    ))
+}
 
 fn sherpax_session_keys(aura: AuraId, grandpa: GrandpaId) -> SessionKeys {
     SessionKeys { aura, grandpa }

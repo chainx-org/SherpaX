@@ -653,7 +653,7 @@ impl pallet_evm::GasWeightMapping for SherpaXGasWeightMapping {
         gas.saturating_mul(WEIGHT_PER_GAS)
     }
     fn weight_to_gas(weight: Weight) -> u64 {
-        u64::try_from(weight.wrapping_div(WEIGHT_PER_GAS)).unwrap_or(u32::MAX as u64)
+        weight.wrapping_div(WEIGHT_PER_GAS)
     }
 }
 
@@ -1228,7 +1228,7 @@ impl_runtime_apis! {
                 nonce,
                 access_list.unwrap_or_default(),
                 is_transactional,
-                config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config()),
+                config.as_ref().unwrap_or_else(|| <Runtime as pallet_evm::Config>::config()),
             ).map_err(|err| err.into())
         }
 
@@ -1263,7 +1263,7 @@ impl_runtime_apis! {
                 nonce,
                 access_list.unwrap_or_default(),
                 is_transactional,
-                config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config()),
+                config.as_ref().unwrap_or_else(|| <Runtime as pallet_evm::Config>::config()),
             ).map_err(|err| err.into())
         }
 
