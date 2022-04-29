@@ -30,10 +30,9 @@ sp-version = { git = 'https://github.com/paritytech/substrate', branch = "polkad
 frame-executive = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18", default-features = false }
 frame-support = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18", default-features = false }
 frame-system = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18", default-features = false }
-# Used for runtime benchmarking
+frame-try-runtime = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18", default-features = false, optional = true }
 frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18", default-features = false, optional = true }
 frame-system-benchmarking = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18", default-features = false, optional = true }
-# Used for the node template's RPCs
 frame-system-rpc-runtime-api = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18", default-features = false }
 
 pallet-aura = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.18", default-features = false }
@@ -120,6 +119,7 @@ std = [
 
     "frame-executive/std",
     "frame-support/std",
+    "frame-try-runtime/std",
     "frame-system/std",
     "frame-system-rpc-runtime-api/std",
     "pallet-aura/std",
@@ -184,4 +184,35 @@ runtime-benchmarks = [
     "xpallet-gateway-bitcoin/runtime-benchmarks",
     "xpallet-gateway-common/runtime-benchmarks",
     "xpallet-gateway-records/runtime-benchmarks",
+]
+try-runtime = [
+    "frame-executive/try-runtime",
+    "frame-try-runtime",
+    "frame-system/try-runtime",
+    "pallet-timestamp/try-runtime",
+    "pallet-sudo/try-runtime",
+    "pallet-balances/try-runtime",
+    "pallet-transaction-payment/try-runtime",
+    "pallet-assets/try-runtime",
+    "pallet-vesting/try-runtime",
+    "pallet-authorship/try-runtime",
+    "pallet-session/try-runtime",
+    "pallet-aura/try-runtime",
+    "pallet-grandpa/try-runtime",
+    "pallet-democracy/try-runtime",
+    "pallet-collective/try-runtime",
+    "pallet-elections-phragmen/try-runtime",
+    "pallet-membership/try-runtime",
+    "pallet-treasury/try-runtime",
+    "pallet-scheduler/try-runtime",
+    "pallet-identity/try-runtime",
+    "pallet-bounties/try-runtime",
+    "pallet-tips/try-runtime",
+    "pallet-utility/try-runtime",
+    "pallet-multisig/try-runtime",
+    "pallet-ethereum/try-runtime",
+    "pallet-assets-bridge/try-runtime",
+    "xpallet-gateway-bitcoin/try-runtime",
+    "xpallet-gateway-common/try-runtime",
+    "xpallet-gateway-records/try-runtime"
 ]
