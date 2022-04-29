@@ -36,6 +36,7 @@ use sp_runtime::{
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
 use sherpax_primitives::{AddrStr, ChainAddress, Text};
+use traits::BytesLike;
 use xp_assets_registrar::Chain;
 use xp_runtime::Memo;
 
@@ -44,7 +45,6 @@ use xpallet_support::traits::{MultisigAddressFor, Validator};
 
 use self::{
     traits::{ProposalProvider, TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession},
-    trustees::bitcoin::BtcTrusteeAddrInfo,
     types::{
         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, RewardInfo, ScriptInfo,
         TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo,
@@ -420,14 +420,17 @@ pub mod pallet {
 
         /// Assign trustee reward
         ///
-        /// Any trust can actively call this to receive the
-        /// award for the term the trust is in after the change
-        /// of term.
+        /// To allocate trust rewards through conuncil. If
+        /// trustees have not changed for a long time, the
+        /// current trustees' signature record will be
+        /// cleared after allocating the current trustees'
+        /// reward. The rewards that allocate the previous
+        /// session will not clear the trustees' signature
+        /// record.
         ///
-        /// If a trust has not renewed for a long period of time
-        /// (no change in council membership or no unusual
-        /// circumstances to not renew), but they want to receive
-        /// their award early, they can call this through the council.
+        /// All trust rewards will be allocated when calling.
+        /// I don't think it should be called by a trust. It
+        /// is best to call it through council.
         #[pallet::weight(< T as Config >::WeightInfo::claim_trustee_reward())]
         #[transactional]
         pub fn claim_trustee_reward(
@@ -435,6 +438,8 @@ pub mod pallet {
             chain: Chain,
             session_num: i32,
         ) -> DispatchResult {
+            T::CouncilOrigin::ensure_origin(origin)?;
+
             let session_num: u32 = if session_num < 0 {
                 match session_num {
                     -1i32 => Self::trustee_session_info_len(chain),
@@ -448,7 +453,6 @@ pub mod pallet {
             };
 
             if session_num == Self::trustee_session_info_len(chain) {
-                T::CouncilOrigin::ensure_origin(origin)?;
                 // update trustee sig record info (update reward weight)
                 TrusteeSessionInfoOf::<T>::mutate(chain, session_num, |info| {
                     if let Some(info) = info {
@@ -457,17 +461,25 @@ pub mod pallet {
                         });
                     }
                 });
-            } else {
-                // TODO： match chain
-                let session_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
-                let who = ensure_signed(origin)?;
-                ensure!(
-                    session_info.trustee_list.iter().any(|n| n.0 == who),
-                    Error::<T>::InvalidTrusteeHisMember
-                );
             }
 
-            Self::apply_claim_trustee_reward(session_num)
+            match chain {
+                Chain::Bitcoin => {
+                    let session_info =
+                        T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
+
+                    Self::apply_claim_trustee_reward(chain, session_num, session_info)?;
+                }
+                Chain::Dogecoin => {
+                    let session_info =
+                        T::DogecoinTrusteeSessionProvider::trustee_session(session_num)?;
+
+                    Self::apply_claim_trustee_reward(chain, session_num, session_info)?;
+                }
+                _ => return Err(Error::<T>::NotSupportedChain.into()),
+            }
+
+            Ok(())
         }
     }
 
@@ -1172,9 +1184,11 @@ impl<T: Config> Pallet<T> {
 
 /// Trustee Reward
 impl<T: Config> Pallet<T> {
-    pub fn apply_claim_trustee_reward(session_num: u32) -> DispatchResult {
-        // TODO: match chain
-        let trustee_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
+    pub fn apply_claim_trustee_reward<TrusteeAddrInfo: BytesLike>(
+        chain: Chain,
+        session_num: u32,
+        trustee_info: TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddrInfo>,
+    ) -> DispatchResult {
         let multi_account = match trustee_info.multi_account.clone() {
             None => return Err(Error::<T>::InvalidMultiAccount.into()),
             Some(n) => n,
@@ -1192,15 +1206,19 @@ impl<T: Config> Pallet<T> {
             }
             Err(e) => return Err(e),
         }
-
-        match Self::alloc_not_native_reward(&multi_account, T::BtcAssetId::get(), &trustee_info) {
-            Ok(total_btc_reward) => {
-                if !total_btc_reward.is_zero() {
+        let asset_id = match chain {
+            Chain::Bitcoin => T::BtcAssetId::get(),
+            Chain::Dogecoin => T::DogeAssetId::get(),
+            _ => return Err(Error::<T>::NotSupportedChain.into()),
+        };
+        match Self::alloc_not_native_reward(&multi_account, asset_id, &trustee_info) {
+            Ok(total_asset_reward) => {
+                if !total_asset_reward.is_zero() {
                     Self::deposit_event(Event::<T>::AllocNotNativeReward(
                         multi_account,
                         session_num,
-                        T::BtcAssetId::get(),
-                        total_btc_reward,
+                        asset_id,
+                        total_asset_reward,
                     ));
                 }
             }
@@ -1209,13 +1227,14 @@ impl<T: Config> Pallet<T> {
         Ok(())
     }
 
-    fn compute_reward<Balance>(
+    fn compute_reward<Balance, TrusteeAddrInfo>(
         reward: Balance,
-        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddrInfo>,
     ) -> Result<RewardInfo<T::AccountId, Balance>, DispatchError>
     where
         Balance: Saturating + CheckedDiv + Zero + Copy,
         u64: UniqueSaturatedInto<Balance>,
+        TrusteeAddrInfo: BytesLike,
     {
         let sum_weight = trustee_info
             .trustee_list
@@ -1245,9 +1264,9 @@ impl<T: Config> Pallet<T> {
         Ok(reward_info)
     }
 
-    fn alloc_native_reward(
+    fn alloc_native_reward<TrusteeAddrInfo: BytesLike>(
         from: &T::AccountId,
-        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddrInfo>,
     ) -> Result<Balanceof<T>, DispatchError> {
         let total_reward = <T as xpallet_gateway_records::Config>::Currency::free_balance(from);
         if total_reward.is_zero() {
@@ -1273,10 +1292,10 @@ impl<T: Config> Pallet<T> {
         Ok(total_reward)
     }
 
-    fn alloc_not_native_reward(
+    fn alloc_not_native_reward<TrusteeAddrInfo: BytesLike>(
         from: &T::AccountId,
         asset_id: T::AssetId,
-        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddrInfo>,
     ) -> Result<T::Balance, DispatchError> {
         let total_reward = pallet_assets::Pallet::<T>::balance(asset_id, from);
         if total_reward.is_zero() {

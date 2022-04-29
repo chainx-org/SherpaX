@@ -66,7 +66,7 @@ impl<T: Config, TrusteeAddress: BytesLike + ChainProvider>
             .trustee_list
             .iter()
             .filter_map(|info| {
-                match Pallet::<T>::trustee_intention_props_of(&info.0, Chain::Bitcoin) {
+                match Pallet::<T>::trustee_intention_props_of(&info.0, TrusteeAddress::chain()) {
                     None => None,
                     Some(n) => n.0.proxy_account,
                 }
@@ -127,7 +127,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
         // The renewal of the trustee is completed, the current trustee information is replaced
         // and the number of multiple signings is archived.
         if Self::trustee_transition_status(chain) && !status {
-            let last_session_num = Self::trustee_session_info_len(Chain::Bitcoin).saturating_sub(1);
+            let last_session_num = Self::trustee_session_info_len(chain).saturating_sub(1);
             TrusteeSessionInfoOf::<T>::mutate(chain, last_session_num, |info| match info {
                 None => {
                     warn!(
@@ -141,7 +141,12 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                         trustee.0.trustee_list[i].1 =
                             Self::trustee_sig_record(&trustee.0.trustee_list[i].0);
                     }
-                    let total_apply: T::Balance = Self::pre_total_supply(T::BtcAssetId::get());
+                    let asset_id = match chain {
+                        Chain::Bitcoin => T::BtcAssetId::get(),
+                        Chain::Dogecoin => T::DogeAssetId::get(),
+                        _ => T::BtcAssetId::get(),
+                    };
+                    let total_apply: T::Balance = Self::pre_total_supply(asset_id);
                     let reward_amount: T::Balance = trans_amount
                         .unwrap_or(0u64)
                         .saturated_into::<T::Balance>()
@@ -154,15 +159,15 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                     if let Some(multi_account) = trustee.0.multi_account.clone() {
                         if !reward_amount.is_zero() {
                             match pallet_assets::Pallet::<T>::mint_into(
-                                T::BtcAssetId::get(),
+                                asset_id,
                                 &multi_account,
                                 reward_amount,
                             ) {
                                 Ok(()) => {
-                                    PreTotalSupply::<T>::remove(T::BtcAssetId::get());
+                                    PreTotalSupply::<T>::remove(asset_id);
                                     Pallet::<T>::deposit_event(Event::<T>::TransferAssetReward(
                                         multi_account,
-                                        T::BtcAssetId::get(),
+                                        asset_id,
                                         reward_amount,
                                     ));
                                 }
@@ -187,6 +192,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
     }
 
     fn update_trustee_sig_record(script: &[u8], withdraw_amount: u64) {
+        // TODO：Consider whether to record the Dogecoin signature
         let signed_trustees = Self::agg_pubkey_info(script);
         signed_trustees.into_iter().for_each(|trustee| {
             let amount = if trustee == Self::trustee_admin() {
