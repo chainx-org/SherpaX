@@ -176,19 +176,3 @@ impl DogeParams {
         self.max_timespan
     }
 }
-
-#[derive(PartialEq, Eq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum DogeTxVerifier {
-    Recover,
-    RuntimeInterface,
-    #[cfg(any(feature = "runtime-benchmarks", test))]
-    /// Test would ignore sign check and always return true
-    Test,
-}
-
-impl Default for DogeTxVerifier {
-    fn default() -> Self {
-        Self::Recover
-    }
-}

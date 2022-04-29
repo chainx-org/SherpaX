@@ -550,7 +550,6 @@ pub fn sherpax_genesis(
             ), // retargeting_factor
             doge_withdrawal_fee: 500000,
             max_withdrawal_count: 100,
-            verifier: xpallet_gateway_dogecoin::types::DogeTxVerifier::Recover,
         },
         x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
             initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0), (doge_info.1, doge_info.0)],

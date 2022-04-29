@@ -52,7 +52,7 @@ use self::{
 };
 
 pub use self::{
-    types::{DogeAddress, DogeHeaderInfo, DogeParams, DogeTxVerifier, DogeWithdrawalProposal},
+    types::{DogeAddress, DogeHeaderInfo, DogeParams, DogeWithdrawalProposal},
     weights::WeightInfo,
 };
 
@@ -163,7 +163,7 @@ pub mod pallet {
 
         /// Trustee create a proposal for a withdrawal list. `tx` is the proposal withdrawal transaction.
         #[pallet::weight(<T as Config>::WeightInfo::create_taproot_withdraw_tx())]
-        pub fn create_taproot_withdraw_tx(
+        pub fn create_dogecoin_withdraw_tx(
             origin: OriginFor<T>,
             withdrawal_id_list: Vec<u32>,
             tx: Vec<u8>,
@@ -484,10 +484,6 @@ pub mod pallet {
     #[pallet::getter(fn max_withdrawal_count)]
     pub(crate) type MaxWithdrawalCount<T: Config> = StorageValue<_, u32, ValueQuery>;
 
-    #[pallet::storage]
-    #[pallet::getter(fn verifier)]
-    pub(crate) type Verifier<T: Config> = StorageValue<_, DogeTxVerifier, ValueQuery>;
-
     /// Coming bot helps update Doge withdrawal transaction status
     #[pallet::storage]
     #[pallet::getter(fn coming_bot)]
@@ -503,7 +499,6 @@ pub mod pallet {
         pub confirmation_number: u32,
         pub doge_withdrawal_fee: u64,
         pub max_withdrawal_count: u32,
-        pub verifier: DogeTxVerifier,
     }
 
     #[cfg(feature = "std")]
@@ -518,7 +513,6 @@ pub mod pallet {
                 confirmation_number: Default::default(),
                 doge_withdrawal_fee: Default::default(),
                 max_withdrawal_count: Default::default(),
-                verifier: Default::default(),
             }
         }
     }
@@ -548,7 +542,6 @@ pub mod pallet {
             ConfirmationNumber::<T>::put(self.confirmation_number);
             DogeWithdrawalFee::<T>::put(self.doge_withdrawal_fee);
             MaxWithdrawalCount::<T>::put(self.max_withdrawal_count);
-            Verifier::<T>::put(self.verifier);
 
             // init trustee (not this action should ha)
             if !self.genesis_trustees.is_empty() {

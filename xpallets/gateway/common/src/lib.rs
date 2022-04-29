@@ -215,7 +215,8 @@ pub mod pallet {
             );
 
             ensure!(
-                Self::ensure_not_current_trustee(&who) && !Self::trustee_transition_status(chain),
+                Self::ensure_not_current_trustee(chain, &who)
+                    && !Self::trustee_transition_status(chain),
                 Error::<T>::ExistCurrentTrustee
             );
 
@@ -654,13 +655,14 @@ pub mod pallet {
 
     /// How long each trustee is kept. This defines the next block number at which an
     /// trustee transition will happen. If set to zero, no trustee transition are ever triggered.
+    /// TODO: Consider deleting it
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_duration)]
     pub(crate) type TrusteeTransitionDuration<T: Config> =
         StorageValue<_, T::BlockNumber, ValueQuery>;
 
     /// The status of the of the trustee transition
-    /// TODO: need storage migration
+    /// TODO: StorageValue --> StorageMap
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_status)]
     pub(crate) type TrusteeTransitionStatus<T: Config> =
@@ -670,7 +672,7 @@ pub mod pallet {
     ///
     /// The current trustee members did not conduct multiple signings and put the members in the
     /// little black room. Filter out the member in the next trustee election
-    /// TODO: need storage migration
+    /// TODO: StorageValue --> StorageMap
     #[pallet::storage]
     #[pallet::getter(fn little_black_house)]
     pub(crate) type LittleBlackHouse<T: Config> =
@@ -754,6 +756,10 @@ impl<T: Config> Pallet<T> {
                 // bitcoin do not need memo
                 T::Bitcoin::check_addr(addr, b"")?;
             }
+            Chain::Dogecoin => {
+                // dogecoin do not need memo
+                T::Dogecoin::check_addr(addr, b"")?;
+            }
             _ => return Err(Error::<T>::NotSupportedChain.into()),
         };
         // we could only split withdrawal limit due to a runtime-api would call `withdrawal_limit`
@@ -831,11 +837,23 @@ impl<T: Config> Pallet<T> {
         ));
     }
 
-    pub fn ensure_not_current_trustee(who: &T::AccountId) -> bool {
-        if let Ok(info) = T::BitcoinTrusteeSessionProvider::current_trustee_session() {
-            !info.trustee_list.into_iter().any(|n| &n.0 == who)
-        } else {
-            true
+    pub fn ensure_not_current_trustee(chain: Chain, who: &T::AccountId) -> bool {
+        match chain {
+            Chain::Bitcoin => {
+                if let Ok(info) = T::BitcoinTrusteeSessionProvider::current_trustee_session() {
+                    !info.trustee_list.into_iter().any(|n| &n.0 == who)
+                } else {
+                    true
+                }
+            }
+            Chain::Dogecoin => {
+                if let Ok(info) = T::DogecoinTrusteeSessionProvider::current_trustee_session() {
+                    !info.trustee_list.into_iter().any(|n| &n.0 == who)
+                } else {
+                    true
+                }
+            }
+            _ => false,
         }
     }
 
@@ -1099,7 +1117,7 @@ impl<T: Config> Pallet<T> {
             }
             _ => {}
         }
-        // TODO! : Add Chain
+
         TrusteeAdmin::<T>::kill();
 
         Self::deposit_event(Event::<T>::TrusteeSetChanged(
