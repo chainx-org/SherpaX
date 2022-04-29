@@ -88,6 +88,11 @@ fn sbtc() -> (Chain, AssetId) {
     (Chain::Bitcoin, 1)
 }
 
+/// Asset registration
+fn doge() -> (Chain, AssetId) {
+    (Chain::Dogecoin, 9)
+}
+
 #[allow(clippy::type_complexity)]
 fn reserved_assets(
     root_key: &AccountId,
@@ -165,8 +170,8 @@ fn reserved_assets(
             ),
             (
                 9,
-                "Reserved9".to_string().into_bytes(),
-                "RSV9".to_string().into_bytes(),
+                "Dogecoin".to_string().into_bytes(),
+                "Doge".to_string().into_bytes(),
                 18,
             ),
         ],
@@ -459,6 +464,7 @@ pub fn sherpax_genesis(
         })
         .expect("bitcoin trustees generation can not fail; qed");
     let sbtc_info = sbtc();
+    let doge_info = doge();
     let assets_info = reserved_assets(&root_key);
     let wasm_binary = WASM_BINARY.unwrap();
     GenesisConfig {
@@ -547,7 +553,7 @@ pub fn sherpax_genesis(
             verifier: xpallet_gateway_dogecoin::types::DogeTxVerifier::Recover,
         },
         x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
-            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
+            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0), (doge_info.1, doge_info.0)],
         },
     }
 }
