@@ -18,7 +18,7 @@ pub mod weights;
 mod tests;
 
 use sp_runtime::SaturatedConversion;
-use sp_std::{marker::PhantomData, prelude::*, str::FromStr};
+use sp_std::{marker::PhantomData, prelude::*};
 
 use orml_utilities::with_transaction_result;
 
@@ -36,7 +36,10 @@ use xp_assets_registrar::Chain;
 use xp_gateway_common::AccountExtractor;
 
 use xpallet_gateway_common::{
-    traits::{AddressBinding, ProposalProvider, ReferralBinding, TotalSupply, TrusteeSession},
+    traits::{
+        AddressBinding, ProposalProvider, ReferralBinding, TotalSupply, TrusteeInfoUpdate,
+        TrusteeSession,
+    },
     trustees::dogecoin::DogeTrusteeAddrInfo,
 };
 use xpallet_gateway_records::{ChainT, WithdrawalLimit};
@@ -103,6 +106,9 @@ pub mod pallet {
             Self::BlockNumber,
             DogeTrusteeAddrInfo,
         >;
+
+        /// Update information about the trustee.
+        type TrusteeInfoUpdate: TrusteeInfoUpdate;
 
         /// Handle referral of assets across chains.
         type ReferralBinding: ReferralBinding<Self::AccountId, Self::AssetId>;

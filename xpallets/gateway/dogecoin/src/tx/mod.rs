@@ -19,6 +19,7 @@ use light_bitcoin::{
     keys::{Address, Network},
     primitives::{hash_rev, H256},
 };
+use xp_assets_registrar::Chain;
 
 pub use self::validator::validate_transaction;
 use crate::{
@@ -27,7 +28,7 @@ use crate::{
 };
 use xp_gateway_common::AccountExtractor;
 use xp_gateway_dogecoin::{DogeDepositInfo, DogeTxMetaType, DogeTxTypeDetector};
-use xpallet_gateway_common::traits::{AddressBinding, ReferralBinding};
+use xpallet_gateway_common::traits::{AddressBinding, ReferralBinding, TrusteeInfoUpdate};
 use xpallet_gateway_records::ChainT;
 use xpallet_support::try_str;
 
@@ -52,13 +53,21 @@ pub fn process_tx<T: Config>(
     let result = match meta_type {
         DogeTxMetaType::<_>::Deposit(deposit_info) => deposit::<T>(tx.hash(), deposit_info),
         DogeTxMetaType::<_>::Withdrawal => withdraw::<T>(tx),
-        DogeTxMetaType::TrusteeTransition => DogeTxResult::Success,
+        DogeTxMetaType::TrusteeTransition => trustee_transition::<T>(tx),
         DogeTxMetaType::HotAndCold => DogeTxResult::Success,
         // mark `Irrelevance` be `Failure` so that it could be replayed in the future
         DogeTxMetaType::<_>::Irrelevance => DogeTxResult::Failure,
     };
 
     DogeTxState { tx_type, result }
+}
+
+fn trustee_transition<T: Config>(tx: Transaction) -> DogeTxResult {
+    let amount = tx.outputs().iter().map(|output| output.value).sum::<u64>();
+
+    T::TrusteeInfoUpdate::update_transition_status(Chain::Dogecoin, false, Some(amount));
+
+    DogeTxResult::Success
 }
 
 fn deposit<T: Config>(txid: H256, deposit_info: DogeDepositInfo<T::AccountId>) -> DogeTxResult {

@@ -11,18 +11,18 @@ use sp_blockchain::HeaderBackend;
 use sp_runtime::{generic::BlockId, traits::Block as BlockT};
 
 use xp_rpc::{runtime_error_into_rpc_err, Result};
-use xpallet_gateway_bitcoin_rpc_runtime_api::{
-    BtcHeader, BtcHeaderInfo, BtcWithdrawalProposal,
-    XGatewayBitcoinApi as XGatewayBitcoinRuntimeApi, H256,
+use xpallet_gateway_dogecoin_rpc_runtime_api::{
+    DogeHeader, DogeHeaderInfo, DogeWithdrawalProposal,
+    XGatewayDogecoinApi as XGatewayDogecoinRuntimeApi, H256,
 };
 
-pub struct XGatewayBitcoin<C, B, AccountId> {
+pub struct XGatewayDogecoin<C, B, AccountId> {
     client: Arc<C>,
     _marker: std::marker::PhantomData<(B, AccountId)>,
 }
 
-impl<C, B, AccountId> XGatewayBitcoin<C, B, AccountId> {
-    /// Create new `XGatewayBitcoin` with the given reference to the client.
+impl<C, B, AccountId> XGatewayDogecoin<C, B, AccountId> {
+    /// Create new `XGatewayDogecoin` with the given reference to the client.
     pub fn new(client: Arc<C>) -> Self {
         Self {
             client,
@@ -32,9 +32,9 @@ impl<C, B, AccountId> XGatewayBitcoin<C, B, AccountId> {
 }
 
 #[rpc]
-pub trait XGatewayBitcoinApi<BlockHash, AccountId> {
+pub trait XGatewayDogecoinApi<BlockHash, AccountId> {
     /// Verify transaction is valid
-    #[rpc(name = "xgatewaybitcoin_verifyTxValid")]
+    #[rpc(name = "XGatewayDogecoin_verifyTxValid")]
     fn verify_tx_valid(
         &self,
         raw_tx: String,
@@ -44,31 +44,31 @@ pub trait XGatewayBitcoinApi<BlockHash, AccountId> {
     ) -> Result<bool>;
 
     /// Get withdrawal proposal
-    #[rpc(name = "xgatewaybitcoin_getWithdrawalProposal")]
+    #[rpc(name = "XGatewayDogecoin_getWithdrawalProposal")]
     fn get_withdrawal_proposal(
         &self,
         at: Option<BlockHash>,
-    ) -> Result<Option<BtcWithdrawalProposal<AccountId>>>;
+    ) -> Result<Option<DogeWithdrawalProposal<AccountId>>>;
 
     /// Get genesis info
-    #[rpc(name = "xgatewaybitcoin_getGenesisInfo")]
-    fn get_genesis_info(&self, at: Option<BlockHash>) -> Result<(BtcHeader, u32)>;
+    #[rpc(name = "XGatewayDogecoin_getGenesisInfo")]
+    fn get_genesis_info(&self, at: Option<BlockHash>) -> Result<(DogeHeader, u32)>;
 
     /// Get block header
-    #[rpc(name = "xgatewaybitcoin_getBtcBlockHeader")]
+    #[rpc(name = "XGatewayDogecoin_getDogeBlockHeader")]
     fn get_btc_block_header(
         &self,
         txid: H256,
         at: Option<BlockHash>,
-    ) -> Result<Option<BtcHeaderInfo>>;
+    ) -> Result<Option<DogeHeaderInfo>>;
 }
 
-impl<C, Block, AccountId> XGatewayBitcoinApi<<Block as BlockT>::Hash, AccountId>
-    for XGatewayBitcoin<C, Block, AccountId>
+impl<C, Block, AccountId> XGatewayDogecoinApi<<Block as BlockT>::Hash, AccountId>
+    for XGatewayDogecoin<C, Block, AccountId>
 where
     Block: BlockT,
     C: Send + Sync + 'static + ProvideRuntimeApi<Block> + HeaderBackend<Block>,
-    C::Api: XGatewayBitcoinRuntimeApi<Block, AccountId>,
+    C::Api: XGatewayDogecoinRuntimeApi<Block, AccountId>,
     AccountId: Codec + Send + Sync + 'static,
 {
     fn verify_tx_valid(
@@ -91,7 +91,7 @@ where
     fn get_withdrawal_proposal(
         &self,
         at: Option<<Block as BlockT>::Hash>,
-    ) -> Result<Option<BtcWithdrawalProposal<AccountId>>> {
+    ) -> Result<Option<DogeWithdrawalProposal<AccountId>>> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
         let result = api
@@ -100,7 +100,7 @@ where
         Ok(result)
     }
 
-    fn get_genesis_info(&self, at: Option<<Block as BlockT>::Hash>) -> Result<(BtcHeader, u32)> {
+    fn get_genesis_info(&self, at: Option<<Block as BlockT>::Hash>) -> Result<(DogeHeader, u32)> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
         let result = api
@@ -113,7 +113,7 @@ where
         &self,
         txid: H256,
         at: Option<<Block as BlockT>::Hash>,
-    ) -> Result<Option<BtcHeaderInfo>> {
+    ) -> Result<Option<DogeHeaderInfo>> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
         let reslut = api

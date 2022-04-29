@@ -6,10 +6,12 @@
 
 use sp_runtime::DispatchError;
 use sp_std::vec::Vec;
-pub use xpallet_gateway_bitcoin::{types::BtcHeaderInfo, BtcHeader, BtcWithdrawalProposal, H256};
+pub use xpallet_gateway_dogecoin::{
+    types::DogeHeaderInfo, DogeHeader, DogeWithdrawalProposal, H256,
+};
 
 sp_api::decl_runtime_apis! {
-    pub trait XGatewayBitcoinApi<AccountId>
+    pub trait XGatewayDogecoinApi<AccountId>
         where AccountId: codec::Codec
     {
         fn verify_tx_valid(
@@ -18,10 +20,10 @@ sp_api::decl_runtime_apis! {
             full_amount: bool,
         ) -> Result<bool, DispatchError>;
 
-        fn get_withdrawal_proposal() -> Option<BtcWithdrawalProposal<AccountId>>;
+        fn get_withdrawal_proposal() -> Option<DogeWithdrawalProposal<AccountId>>;
 
-        fn get_genesis_info() -> (BtcHeader, u32);
+        fn get_genesis_info() -> (DogeHeader, u32);
 
-        fn get_btc_block_header(txid: H256) -> Option<BtcHeaderInfo>;
+        fn get_Doge_block_header(txid: H256) -> Option<DogeHeaderInfo>;
     }
 }
