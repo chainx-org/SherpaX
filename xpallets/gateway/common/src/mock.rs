@@ -218,6 +218,7 @@ impl pallet_assets::Config for Test {
 // assets
 parameter_types! {
     pub const BtcAssetId: AssetId = 1;
+    pub const DogeAssetId: AssetId = 9;
 }
 
 impl xpallet_gateway_records::Config for Test {
@@ -225,6 +226,7 @@ impl xpallet_gateway_records::Config for Test {
     type Currency = Balances;
     type WeightInfo = ();
     type BtcAssetId = BtcAssetId;
+    type DogeAssetId = DogeAssetId;
 }
 
 thread_local! {
@@ -466,6 +468,11 @@ impl crate::Config for Test {
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type BitcoinTotalSupply = MockBitcoin<Test>;
     type BitcoinWithdrawalProposal = ();
+    type Dogecoin = ();
+    type DogecoinTrustee = ();
+    type DogecoinTrusteeSessionProvider = ();
+    type DogecoinTotalSupply = ();
+    type DogecoinWithdrawalProposal = ();
     type WeightInfo = ();
 }
 

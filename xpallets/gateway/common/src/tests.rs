@@ -13,7 +13,7 @@ fn test_do_trustee_election() {
     ExtBuilder::default().build().execute_with(|| {
         assert_eq!(TrusteeSessionInfoLen::<Test>::get(Chain::Bitcoin), 0);
 
-        assert_eq!(Pallet::<Test>::do_trustee_election(), Ok(()));
+        assert_eq!(Pallet::<Test>::do_trustee_election(Chain::Bitcoin), Ok(()));
 
         assert_eq!(TrusteeSessionInfoLen::<Test>::get(Chain::Bitcoin), 1);
     })
@@ -22,7 +22,7 @@ fn test_do_trustee_election() {
 #[test]
 fn test_claim_not_native_asset_reward() {
     ExtBuilder::default().build().execute_with(|| {
-        assert_ok!(XGatewayCommon::do_trustee_election());
+        assert_ok!(XGatewayCommon::do_trustee_election(Chain::Bitcoin));
 
         TrusteeSigRecord::<Test>::mutate(bob(), |record| *record = 9);
         TrusteeSigRecord::<Test>::mutate(charlie(), |record| *record = 1);
@@ -40,10 +40,13 @@ fn test_claim_not_native_asset_reward() {
                 info.0.trustee_list.iter_mut().for_each(|trustee| {
                     trustee.1 = XGatewayCommon::trustee_sig_record(&trustee.0);
                 });
+                assert_ok!(XGatewayCommon::apply_claim_trustee_reward(
+                    Chain::Bitcoin,
+                    1,
+                    info.0.clone()
+                ));
             }
         });
-
-        assert_ok!(XGatewayCommon::apply_claim_trustee_reward(1));
 
         assert_eq!(Assets::balance(X_BTC, &bob()), 9);
         assert_eq!(Assets::balance(X_BTC, &charlie()), 1);

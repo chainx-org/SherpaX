@@ -59,6 +59,27 @@ pub trait TrusteeForChain<
     >;
 }
 
+impl<AccountId, BlockNumber, TrusteeEntity: BytesLike, TrusteeAddress: BytesLike>
+    TrusteeForChain<AccountId, BlockNumber, TrusteeEntity, TrusteeAddress> for ()
+{
+    fn check_trustee_entity(_: &[u8]) -> Result<TrusteeEntity, DispatchError> {
+        Err("NoTrustee".into())
+    }
+
+    fn generate_trustee_session_info(
+        _: Vec<(AccountId, TrusteeIntentionProps<AccountId, TrusteeEntity>)>,
+        _: TrusteeInfoConfig,
+    ) -> Result<
+        (
+            TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>,
+            ScriptInfo<AccountId>,
+        ),
+        DispatchError,
+    > {
+        Err("NoTrustee".into())
+    }
+}
+
 pub trait TrusteeSession<AccountId, BlockNumber, TrusteeAddress: BytesLike> {
     fn trustee_session(
         number: u32,

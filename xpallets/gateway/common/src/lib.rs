@@ -9,10 +9,10 @@
 
 // #[cfg(any(feature = "runtime-benchmarks", test))]
 // mod benchmarking;
-// #[cfg(test)]
-// mod mock;
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
 
 mod binding;
 pub mod traits;

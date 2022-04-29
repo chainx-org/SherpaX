@@ -11,12 +11,26 @@ pub trait ChainT<AssetId, Balance: Default> {
     ///     if ChainT for Bitcoin, then ASSET is X_BTC
     ///     if ChainT for Ethereum, then ASSET is X_ETH
     ///     if ChainT for Polkadot, then ASSET is X_DOT
+    ///     if ChainT for Kusama, then ASSET is X_KSM
+    ///     if ChainT for Dogecoin, then ASSET is X_DOGE
     fn chain() -> Chain;
     fn check_addr(_addr: &[u8], _ext: &[u8]) -> DispatchResult {
         Ok(())
     }
     fn withdrawal_limit(_asset_id: &AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError> {
         Ok(WithdrawalLimit::default())
+    }
+}
+
+impl<AssetId, Balance: Default> ChainT<AssetId, Balance> for () {
+    fn chain() -> Chain {
+        Chain::default()
+    }
+    fn check_addr(_addr: &[u8], _ext: &[u8]) -> DispatchResult {
+        Ok(())
+    }
+    fn withdrawal_limit(_asset_id: &AssetId) -> Result<WithdrawalLimit<Balance>, DispatchError> {
+        Err("No withdrawal limit".into())
     }
 }
 
