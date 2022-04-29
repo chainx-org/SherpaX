@@ -493,8 +493,6 @@ pub mod pallet {
     #[pallet::getter(fn coming_bot)]
     pub(crate) type ComingBot<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
-    /// TODO： Add to Dogecoin Trust Address to store
-
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         pub genesis_hash: H256,

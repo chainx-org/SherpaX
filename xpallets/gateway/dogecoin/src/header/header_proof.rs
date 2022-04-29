@@ -218,8 +218,10 @@ impl<'a> HeaderProofOfWork<'a> {
 fn is_valid_proof_of_work(max_work_bits: Compact, bits: Compact, hash: H256) -> bool {
     match (max_work_bits.to_u256(), bits.to_u256()) {
         (Ok(maximum), Ok(target)) => {
-            let value = U256::from(hash_rev(hash).as_bytes());
-            target <= maximum && value <= target
+            // let value = U256::from(hash_rev(hash).as_bytes());
+            // target <= maximum && value <= target
+            // FIXME: Dogecoin uses Scrypt Technology in its proof of work
+            target <= maximum
         }
         _ => false,
     }
