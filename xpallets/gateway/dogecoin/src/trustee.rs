@@ -8,11 +8,7 @@ use frame_support::{
     ensure,
 };
 use sp_runtime::SaturatedConversion;
-use sp_std::{
-    cmp::max,
-    convert::{TryFrom, TryInto},
-    prelude::*,
-};
+use sp_std::{cmp::max, convert::TryFrom, prelude::*};
 
 use light_bitcoin::{
     chain::Transaction,
@@ -99,8 +95,8 @@ pub fn check_keys<T: Config>(keys: &[Public]) -> DispatchResult {
     let has_normal_pubkey = keys
         .iter()
         .any(|public: &Public| matches!(public, Public::Normal(_)));
-    if has_normal_pubkey {
-        return Err("Unexpect! All keys(bitcoin Public) should be compressed".into());
+    if !has_normal_pubkey {
+        return Err("Unexpect! All keys(bitcoin Public) should be full".into());
     }
     Ok(())
 }
@@ -120,25 +116,19 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, DogeTrusteeType, D
         let trustee_type = DogeTrusteeType::try_from(raw_addr.to_vec())
             .map_err(|_| Error::<T>::InvalidPublicKey)?;
         let public = trustee_type.0;
-        let public: musig2::PublicKey = public
-            .try_into()
-            .map_err(|_| Error::<T>::InvalidPublicKey)?;
 
-        let raw_addr = public.serialize_compressed();
-        let public = Public::from_slice(&raw_addr).map_err(|_| Error::<T>::InvalidPublicKey)?;
-
-        if 2 != raw_addr[0] && 3 != raw_addr[0] {
-            log!(error, "Not Compressed Public(prefix not 2|3)");
+        if 4 != raw_addr[0] {
+            log!(error, "Not Full Public(prefix not 4)");
             return Err(Error::<T>::InvalidPublicKey.into());
         }
 
         if ZERO_P == raw_addr[1..33] {
-            log!(error, "Not Compressed Public(Zero32)");
+            log!(error, "Not Public X(Zero32)");
             return Err(Error::<T>::InvalidPublicKey.into());
         }
 
         if raw_addr[1..33].to_vec() >= EC_P.to_vec() {
-            log!(error, "Not Compressed Public(EC_P)");
+            log!(error, "Not Public X(EC_P)");
             return Err(Error::<T>::InvalidPublicKey.into());
         }
 

@@ -172,7 +172,7 @@ fn reserved_assets(
                 9,
                 "Dogecoin".to_string().into_bytes(),
                 "Doge".to_string().into_bytes(),
-                18,
+                8,
             ),
         ],
     )
@@ -463,6 +463,21 @@ pub fn sherpax_genesis(
             }
         })
         .expect("bitcoin trustees generation can not fail; qed");
+    let doge_genesis_trustees = trustees
+        .iter()
+        .find_map(|(chain, _, trustee_params)| {
+            if *chain == Chain::Dogecoin {
+                Some(
+                    trustee_params
+                        .iter()
+                        .map(|i| (i.0).clone())
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                None
+            }
+        })
+        .expect("dogecoin trustees generation can not fail; qed");
     let sbtc_info = sbtc();
     let doge_info = doge();
     let assets_info = reserved_assets(&root_key);
@@ -517,7 +532,7 @@ pub fn sherpax_genesis(
             genesis_trustee_transition_status: false,
         },
         x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
-            genesis_trustees: btc_genesis_trustees.clone(),
+            genesis_trustees: btc_genesis_trustees,
             network_id: bitcoin.network,
             confirmation_number: bitcoin.confirmation_number,
             genesis_hash: bitcoin.hash(),
@@ -535,7 +550,7 @@ pub fn sherpax_genesis(
             verifier: BtcTxVerifier::Recover,
         },
         x_gateway_dogecoin: sherpax_runtime::XGatewayDogecoinConfig {
-            genesis_trustees: btc_genesis_trustees,
+            genesis_trustees: doge_genesis_trustees,
             network_id: dogecoin.network,
             confirmation_number: dogecoin.confirmation_number,
             genesis_hash: dogecoin.hash(),

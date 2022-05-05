@@ -23,21 +23,17 @@ use sp_runtime::{
 
 use sherpax_primitives::AssetId;
 use xp_assets_registrar::Chain;
-pub use xp_protocol::{X_BTC, X_ETH};
+pub use xp_protocol::{X_BTC, X_DOGE, X_ETH};
 use xpallet_gateway_common::{trustees, types::TrusteeInfoConfig};
 
 use light_bitcoin::{
-    chain::BlockHeader as BtcHeader,
-    keys::Network as BtcNetwork,
+    chain::BlockHeader,
+    keys::Network,
     primitives::{h256_rev, Compact},
     serialization::{self, Reader},
 };
 
-use crate::{
-    self as xpallet_gateway_bitcoin,
-    types::{BtcParams, BtcTxVerifier},
-    Config, Error,
-};
+use crate::{self as xpallet_gateway_dogecoin, types::DogeParams, Config, Error};
 
 /// The AccountId alias in this test module.
 pub(crate) type AccountId = AccountId32;
@@ -59,7 +55,7 @@ frame_support::construct_runtime!(
         Assets: pallet_assets::{Pallet, Call, Storage, Event<T>},
         XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>},
         XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>},
-        XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>},
+        XGatewayDogecoin: xpallet_gateway_dogecoin::{Pallet, Call, Storage, Event<T>, Config<T>},
     }
 );
 
@@ -171,13 +167,14 @@ impl pallet_assets::Config for Test {
 
 // assets
 parameter_types! {
-    pub const BtcAssetId: AssetId = 1;
+    pub const DogeAssetId: AssetId = 9;
 }
 
 impl xpallet_gateway_records::Config for Test {
     type Event = ();
     type Currency = Balances;
-    type BtcAssetId = BtcAssetId;
+    type BtcAssetId = ();
+    type DogeAssetId = DogeAssetId;
     type WeightInfo = ();
 }
 
@@ -186,14 +183,18 @@ impl xpallet_gateway_common::Config for Test {
     type Validator = ();
     type DetermineMultisigAddress = ();
     type CouncilOrigin = EnsureSigned<AccountId>;
-    type Bitcoin = XGatewayBitcoin;
-    type BitcoinTrustee = XGatewayBitcoin;
-    type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
-    type BitcoinTotalSupply = XGatewayBitcoin;
-    type BitcoinWithdrawalProposal = XGatewayBitcoin;
+    type Bitcoin = ();
+    type BitcoinTrustee = ();
+    type BitcoinTrusteeSessionProvider = ();
+    type BitcoinTotalSupply = ();
+    type BitcoinWithdrawalProposal = ();
+    type Dogecoin = XGatewayDogecoin;
+    type DogecoinTrustee = XGatewayDogecoin;
+    type DogecoinTrusteeSessionProvider = trustees::dogecoin::DogeTrusteeSessionManager<Test>;
+    type DogecoinTotalSupply = XGatewayDogecoin;
+    type DogecoinWithdrawalProposal = XGatewayDogecoin;
     type WeightInfo = ();
 }
-
 thread_local! {
     pub static NOW: RefCell<Option<Duration>> = RefCell::new(None);
 }
@@ -217,9 +218,10 @@ impl Config for Test {
     type Event = ();
     type UnixTime = Timestamp;
     type CouncilOrigin = EnsureSigned<AccountId>;
-    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type AccountExtractor = xp_gateway_dogecoin::OpReturnExtractor;
     type TrusteeSessionProvider =
-        xpallet_gateway_common::trustees::bitcoin::BtcTrusteeSessionManager<Test>;
+        xpallet_gateway_common::trustees::dogecoin::DogeTrusteeSessionManager<Test>;
+    type TrusteeInfoUpdate = XGatewayCommon;
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
     type WeightInfo = ();
@@ -236,8 +238,8 @@ impl Default for ExtBuilder {
 impl ExtBuilder {
     pub fn build_mock(
         self,
-        btc_genesis: (BtcHeader, u32),
-        btc_network: BtcNetwork,
+        btc_genesis: (BlockHeader, u32),
+        btc_network: Network,
     ) -> sp_io::TestExternalities {
         let mut storage = frame_system::GenesisConfig::default()
             .build_storage::<Test>()
@@ -246,21 +248,20 @@ impl ExtBuilder {
         // let (genesis_info, genesis_hash, network_id) = load_mock_btc_genesis_header_info();
         let genesis_hash = btc_genesis.0.hash();
         let network_id = btc_network;
-        let _ = xpallet_gateway_bitcoin::GenesisConfig::<Test> {
+        let _ = xpallet_gateway_dogecoin::GenesisConfig::<Test> {
             genesis_trustees: vec![],
             genesis_info: btc_genesis,
             genesis_hash,
             network_id,
-            params_info: BtcParams::new(
+            params_info: DogeParams::new(
                 545259519,            // max_bits
                 2 * 60 * 60,          // block_max_future
                 2 * 7 * 24 * 60 * 60, // target_timespan_seconds
                 10 * 60,              // target_spacing_seconds
                 4,                    // retargeting_factor
             ), // retargeting_factor
-            verifier: BtcTxVerifier::Recover,
             confirmation_number: 4,
-            btc_withdrawal_fee: 0,
+            doge_withdrawal_fee: 0,
             max_withdrawal_count: 100,
         }
         .assimilate_storage(&mut storage);
@@ -277,7 +278,7 @@ impl ExtBuilder {
         let genesis_trustees = info
             .iter()
             .find_map(|(chain, _, trustee_params)| {
-                if *chain == Chain::Bitcoin {
+                if *chain == Chain::Dogecoin {
                     Some(
                         trustee_params
                             .iter()
@@ -299,32 +300,39 @@ impl ExtBuilder {
 
         let (genesis_info, genesis_hash, network_id) = load_signet_btc_genesis_header_info();
 
-        let _ = xpallet_gateway_bitcoin::GenesisConfig::<Test> {
+        let _ = xpallet_gateway_dogecoin::GenesisConfig::<Test> {
             genesis_trustees,
             genesis_info,
             genesis_hash,
             network_id,
-            params_info: BtcParams::new(
+            params_info: DogeParams::new(
                 545259519,            // max_bits
                 2 * 60 * 60,          // block_max_future
                 2 * 7 * 24 * 60 * 60, // target_timespan_seconds
                 10 * 60,              // target_spacing_seconds
                 4,                    // retargeting_factor
             ), // retargeting_factor
-            verifier: BtcTxVerifier::Recover,
             confirmation_number: 4,
-            btc_withdrawal_fee: 0,
+            doge_withdrawal_fee: 0,
             max_withdrawal_count: 100,
         }
         .assimilate_storage(&mut storage);
 
         let _ = xpallet_gateway_records::GenesisConfig::<Test> {
-            initial_asset_chain: vec![(X_BTC, Chain::Bitcoin), (X_ETH, Chain::Ethereum)],
+            initial_asset_chain: vec![
+                (X_BTC, Chain::Bitcoin),
+                (X_ETH, Chain::Ethereum),
+                (X_DOGE, Chain::Dogecoin),
+            ],
         }
         .assimilate_storage(&mut storage);
 
         let _ = pallet_assets::GenesisConfig::<Test> {
-            assets: vec![(X_BTC, alice(), true, 1), (X_ETH, alice(), true, 1)],
+            assets: vec![
+                (X_BTC, alice(), true, 1),
+                (X_ETH, alice(), true, 1),
+                (X_DOGE, alice(), true, 1),
+            ],
             metadata: vec![
                 (
                     X_BTC,
@@ -337,6 +345,12 @@ impl ExtBuilder {
                     "XETH".to_string().into_bytes(),
                     "XETH".to_string().into_bytes(),
                     18,
+                ),
+                (
+                    X_DOGE,
+                    "XDOGE".to_string().into_bytes(),
+                    "XDOGE".to_string().into_bytes(),
+                    8,
                 ),
             ],
             accounts: vec![],
@@ -366,43 +380,43 @@ pub fn trustees() -> Vec<(AccountId32, Vec<u8>, Vec<u8>, Vec<u8>)> {
         (
             alice(),
             b"Alice".to_vec(),
-            hex!("0283f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2").to_vec(),
-            hex!("0300849497d4f88ebc3e1bc2583677c5abdbd3b63640b3c5c50cd4628a33a2a2ca").to_vec(),
+            hex!("042f7e2f0f3e912bf416234913b388393beb5092418fea986e45c0b9633adefd85168f3b1d13ae29651c29e424760b3795fc78152ac119e0dc4e2b9055329099b3").to_vec(),
+            hex!("0400849497d4f88ebc3e1bc2583677c5abdbd3b63640b3c5c50cd4628a33a2a2cab6b69094b5a213da80f9ef730fab39de770ca124f2d9a9cb161856be54b9adc5").to_vec(),
         ),
         (
             bob(),
             b"Bob".to_vec(),
-            hex!("027a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d").to_vec(),
-            hex!("032122032ae9656f9a133405ffe02101469a8d62002270a33ceccf0e40dda54d08").to_vec(),
+            hex!("0451e0dc3d9709d860c49785fc84b62909d991cffd81592f6994c452438f91b6a2e586541c4b3bc1ebeb5fb9fad2ed2e696b2175c54458ab6f103717cbeeb4e52c").to_vec(),
+            hex!("042122032ae9656f9a133405ffe02101469a8d62002270a33ceccf0e40dda54d08c989b55f1b6b46a8dee284cf6737de0a377e410bcfd361a015528ae80a349529").to_vec(),
         ),
         (
             charlie(),
             b"Charlie".to_vec(),
-            hex!("02c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565f").to_vec(),
+            hex!("04a09e8182977710bab64472c0ecaf9e52255a890554a00a62facd05c0b13817f8995bf590851c19914bfc939d53365b90cc2f0fcfddaca184f0c1e7ce1736f0b8").to_vec(),
             hex!("02b3cc747f572d33f12870fa6866aebbfd2b992ba606b8dc89b676b3697590ad63").to_vec(),
         ),
     ]
 }
 
-pub fn load_signet_btc_genesis_header_info() -> ((BtcHeader, u32), H256, BtcNetwork) {
+pub fn load_signet_btc_genesis_header_info() -> ((BlockHeader, u32), H256, Network) {
     (
         (
-            BtcHeader {
-                version: 536870912,
+            BlockHeader {
+                version: 6422788,
                 previous_header_hash: h256_rev(
-                    "00000010c44946edda38dda2df46c0e56be083e5370508102cb475ff22e21b17",
+                    "fdbc6c89882d0bcb003c96a849bbe8f739eec6e62c1e8a04ecaa2c6fc7f4c385",
                 ),
                 merkle_root_hash: h256_rev(
-                    "dbe3a8e027f045d4e50cc12770484b4f4273e248249578942fd77f84e3c3a7b7",
+                    "baf30c61780f84f4daa3653474680d96ba4ef318ad8a6f8b9537d994e1c00a2c",
                 ),
-                time: 1636330862,
-                bits: Compact::new(503404827),
-                nonce: 2456102,
+                time: 1651731133,
+                bits: Compact::new(471186995),
+                nonce: 0,
             },
-            63290,
+            3782200,
         ),
-        h256_rev("0000012504d3007ab7954a6baef767e522bb0d55771acb0fa46f9f4182fd0a0e"),
-        BtcNetwork::Testnet,
+        h256_rev("78450863d7503a8b8441510c5cecbad087aa03e5ce118f33e54aed542491aad1"),
+        Network::DogeCoinTestnet,
     )
 }
 
@@ -416,11 +430,11 @@ fn trustees_info() -> Vec<(
         min_trustee_count: 3,
         max_trustee_count: 15,
     };
-    vec![(Chain::Bitcoin, btc_config, btc_trustees)]
+    vec![(Chain::Dogecoin, btc_config, btc_trustees)]
 }
 
-pub fn generate_blocks_63290_63310() -> BTreeMap<u32, BtcHeader> {
-    let headers = include_str!("./res/headers-63290-63310.json");
+pub fn generate_blocks_3782200_3782230() -> BTreeMap<u32, BlockHeader> {
+    let headers = include_str!("./res/headers-3782200-3782230.json");
     let headers: Vec<(u32, String)> = serde_json::from_str(headers).unwrap();
     headers
         .into_iter()
@@ -432,8 +446,8 @@ pub fn generate_blocks_63290_63310() -> BTreeMap<u32, BtcHeader> {
         .collect()
 }
 
-pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) {
-    let b0 = BtcHeader {
+pub fn generate_blocks_478557_478563() -> (u32, Vec<BlockHeader>, Vec<BlockHeader>) {
+    let b0 = BlockHeader {
         version: 0x20000002,
         previous_header_hash: h256_rev(
             "0000000000000000004801aaa0db00c30a6c8d89d16fd30a2115dda5a9fc3469",
@@ -446,7 +460,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         nonce: 0x7a511539,
     }; // 478557  btc/bch common use
 
-    let b1: BtcHeader = BtcHeader {
+    let b1: BlockHeader = BlockHeader {
         version: 0x20000002,
         previous_header_hash: h256_rev(
             "000000000000000000eb9bc1f9557dc9e2cfe576f57a52f6be94720b338029e4",
@@ -459,7 +473,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         nonce: 0x7559dd16,
     }; //478558  bch forked from here
 
-    let b2: BtcHeader = BtcHeader {
+    let b2: BlockHeader = BlockHeader {
         version: 0x20000002,
         previous_header_hash: h256_rev(
             "0000000000000000011865af4122fe3b144e2cbeea86142e8ff2fb4107352d43",
@@ -472,7 +486,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         nonce: 0xb78dbdba,
     }; // 478559
 
-    let b3: BtcHeader = BtcHeader {
+    let b3: BlockHeader = BlockHeader {
         version: 0x20000002,
         previous_header_hash: h256_rev(
             "00000000000000000019f112ec0a9982926f1258cdcc558dd7c3b7e5dc7fa148",
@@ -485,7 +499,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         nonce: 0x43628196,
     }; // 478560
 
-    let b4: BtcHeader = BtcHeader {
+    let b4: BlockHeader = BlockHeader {
         version: 0x20000002,
         previous_header_hash: h256_rev(
             "000000000000000000e512213f7303f72c5f7446e6e295f73c28cb024dd79e34",
@@ -498,7 +512,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         nonce: 0xdabcc394,
     }; // 478561
 
-    let b5: BtcHeader = BtcHeader {
+    let b5: BlockHeader = BlockHeader {
         version: 0x20000002,
         previous_header_hash: h256_rev(
             "0000000000000000008876768068eea31f8f34e2f029765cd2ac998bdc3a2b2d",
@@ -511,7 +525,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         nonce: 0xa07f1745,
     }; // 478562
 
-    let b2_fork: BtcHeader = BtcHeader {
+    let b2_fork: BlockHeader = BlockHeader {
         version: 0x20000000,
         previous_header_hash: h256_rev(
             "0000000000000000011865af4122fe3b144e2cbeea86142e8ff2fb4107352d43",
@@ -524,7 +538,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         nonce: 0xe84aca22,
     }; // 478559
 
-    let b3_fork: BtcHeader = BtcHeader {
+    let b3_fork: BlockHeader = BlockHeader {
         version: 0x20000000,
         previous_header_hash: h256_rev(
             "000000000000000000651ef99cb9fcbe0dadde1d424bd9f15ff20136191a5eec",
@@ -536,7 +550,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         bits: Compact::new(0x18014735),
         nonce: 0xcb72a740,
     }; // 478560
-    let b4_fork: BtcHeader = BtcHeader {
+    let b4_fork: BlockHeader = BlockHeader {
         version: 0x20000002,
         previous_header_hash: h256_rev(
             "000000000000000000b15ad892af8f6aca4462d46d0b6e5884cadc033c8f257b",
@@ -548,7 +562,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         bits: Compact::new(0x18014735),
         nonce: 0x0310f5e2,
     }; // 478561
-    let b5_fork: BtcHeader = BtcHeader {
+    let b5_fork: BlockHeader = BlockHeader {
         version: 0x20000000,
         previous_header_hash: h256_rev(
             "00000000000000000013ee8874665f73862a3a0b6a30f895fe34f4c94d3e8a15",
@@ -560,7 +574,7 @@ pub fn generate_blocks_478557_478563() -> (u32, Vec<BtcHeader>, Vec<BtcHeader>) 
         bits: Compact::new(0x18014735),
         nonce: 0x0a24f4c4,
     }; // 478562
-    let b6_fork: BtcHeader = BtcHeader {
+    let b6_fork: BlockHeader = BlockHeader {
         version: 0x20000000,
         previous_header_hash: h256_rev(
             "0000000000000000005c6e82aa704d326a3a2d6a4aa09f1725f532da8bb8de4d",

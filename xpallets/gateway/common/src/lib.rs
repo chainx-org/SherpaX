@@ -7,8 +7,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::new_without_default, clippy::type_complexity)]
 
-// #[cfg(any(feature = "runtime-benchmarks", test))]
-// mod benchmarking;
+#[cfg(any(feature = "runtime-benchmarks", test))]
+mod benchmarking;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -631,6 +631,7 @@ pub mod pallet {
     >;
 
     /// Trustee intention properties of the corresponding account and chain.
+    /// TODO: Move the compressed public key to the full public key
     #[pallet::storage]
     #[pallet::getter(fn trustee_intention_props_of)]
     pub(crate) type TrusteeIntentionPropertiesOf<T: Config> = StorageDoubleMap<

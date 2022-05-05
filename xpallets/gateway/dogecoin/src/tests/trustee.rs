@@ -119,9 +119,9 @@ fn test_create_multi_address() {
 #[test]
 fn test_create_taproot_address() {
     let mut hot_keys = Vec::new();
-    let pubkey1_bytes = hex!("0283f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2");
-    let pubkey2_bytes = hex!("027a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d");
-    let pubkey3_bytes = hex!("02c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565f");
+    let pubkey1_bytes = hex!("0483f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2b16f3068e94333e11ee63770936eca9692a25f76012511d38ac30ece20f07dca");
+    let pubkey2_bytes = hex!("047a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d47c09531e4f2ca2ae7f9ed80c1f9df2edd8afa19188692724d2bc18c18d98c10");
+    let pubkey3_bytes = hex!("04c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565faced14acb5172ee19aee5417488fecdda33f4cfea9ff04f250e763e6f7458d5e");
     let pubkey4_bytes = hex!("0237322a5008a1b26ac72778167e770e1fa2272cfd9f9fe0f2c20bd41fe051da6c");
     let pubkey5_bytes = hex!("03227368d7168173229f1898b8448dc5c0640ce35eb574639e42ec515b73d5f2d3");
     let pubkey6_bytes = hex!("027196048a63ec7a3b9cb5a23a51952503e7fca8de2ec42388952e067d39fc83ff");

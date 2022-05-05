@@ -376,14 +376,14 @@ mod tests {
 
         const DEPOSIT_HOT_ADDR: &str = "3LFSUKkP26hun42J1Dy6RATsbgmBJb27NF";
         const DEPOSIT_COLD_ADDR: &str = "3FLBhPfEqmw4Wn5EQMeUzPLrQtJMprgwnw";
-        let Doge_tx_detector = DogeTxTypeDetector::new(Network::Mainnet, 0);
+        let doge_tx_detector = DogeTxTypeDetector::new(Network::Mainnet, 0);
 
         let current_trustee_pair = (
             DEPOSIT_HOT_ADDR.parse::<Address>().unwrap(),
             DEPOSIT_COLD_ADDR.parse::<Address>().unwrap(),
         );
         for (tx, expect) in cases {
-            let got = Doge_tx_detector.parse_deposit_transaction_outputs(
+            let got = doge_tx_detector.parse_deposit_transaction_outputs(
                 &tx,
                 OpReturnExtractor::extract_account,
                 current_trustee_pair,

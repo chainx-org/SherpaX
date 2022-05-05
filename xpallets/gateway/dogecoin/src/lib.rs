@@ -10,12 +10,12 @@ mod tx;
 pub mod types;
 pub mod weights;
 
-// #[cfg(any(feature = "runtime-benchmarks", test))]
-// mod benchmarking;
-// #[cfg(test)]
-// mod mock;
+#[cfg(any(feature = "runtime-benchmarks", test))]
+mod benchmarking;
 #[cfg(test)]
-mod tests;
+mod mock;
+// #[cfg(test)]
+// mod tests;
 
 use sp_runtime::SaturatedConversion;
 use sp_std::{marker::PhantomData, prelude::*};

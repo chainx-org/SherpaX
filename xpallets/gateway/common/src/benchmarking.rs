@@ -104,7 +104,7 @@ fn new_trustees<T: Config>() -> Vec<(T::AccountId, Vec<u8>, Vec<u8>, Vec<u8>)> {
 
 /// removes all the storage items to reverse any genesis state.
 fn clean<T: Config>() {
-    <LittleBlackHouse<T>>::kill();
+    <LittleBlackHouse<T>>::remove_all(None);
     <TrusteeSessionInfoLen<T>>::remove_all(None);
     <TrusteeSessionInfoOf<T>>::remove_all(None);
 }
@@ -159,7 +159,7 @@ benchmarks! {
         let caller: T::AccountId = alice::<T>();
         clean::<T>();
         <TrusteeIntentionPropertiesOf<T>>::remove(caller.clone(), Chain::Bitcoin);
-        LittleBlackHouse::<T>::append(caller.clone());
+        LittleBlackHouse::<T>::append(Chain::Bitcoin, caller.clone());
         let hot = hex::decode("02df92e88c4380778c9c48268460a124a8f4e7da883f80477deaa644ced486efc6")
                 .unwrap();
         let cold = hex::decode("0386b58f51da9b37e59c40262153173bdb59d7e4e45b73994b99eec4d964ee7e88")
@@ -190,13 +190,6 @@ benchmarks! {
     }: _(RawOrigin::Root, Chain::Bitcoin, config.clone())
     verify {
         assert_eq!(Pallet::<T>::trustee_info_config_of(Chain::Bitcoin), config);
-    }
-
-    change_trustee_transition_duration {
-        let duration: T::BlockNumber = 100u32.into();
-    }: _(RawOrigin::Root, duration)
-    verify {
-        assert_eq!(Pallet::<T>::trustee_transition_duration(), duration);
     }
 
     set_trustee_admin {
@@ -270,7 +263,6 @@ mod tests {
             assert_ok!(Pallet::<Test>::test_benchmark_setup_trustee());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_proxy());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_info_config());
-            assert_ok!(Pallet::<Test>::test_benchmark_change_trustee_transition_duration());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_admin());
             assert_ok!(Pallet::<Test>::test_benchmark_set_trustee_admin_multiply());
             assert_ok!(Pallet::<Test>::test_benchmark_claim_trustee_reward());

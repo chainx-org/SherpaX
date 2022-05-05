@@ -212,18 +212,6 @@ fn withdraw<T: Config>(tx: Transaction) -> DogeTxResult {
         let tx_hash = tx.hash();
 
         if proposal_hash == tx_hash {
-            // Check if the transaction is normal witness
-            let input = &tx.inputs()[0];
-            if input.script_witness.len() != 3 {
-                error!(
-                    target: "runtime::bitcoin",
-                    "[withdraw] Withdraw tx {:?} is not normal witness, proposal:{:?}",
-                    tx,
-                    proposal
-                );
-                return DogeTxResult::Failure;
-            }
-
             let mut total = T::Balance::zero();
             for number in proposal.withdrawal_id_list.iter() {
                 // just for event record
