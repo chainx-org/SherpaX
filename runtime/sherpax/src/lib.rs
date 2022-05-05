@@ -153,7 +153,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 36,
+    spec_version: 37,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 3,
@@ -657,13 +657,6 @@ impl pallet_evm::GasWeightMapping for SherpaXGasWeightMapping {
     }
 }
 
-pub struct FixedGasPrice;
-impl FeeCalculator for FixedGasPrice {
-    fn min_gas_price() -> U256 {
-        450_000_000_000u128.into()
-    }
-}
-
 pub struct FindAuthorTest;
 impl FindAuthor<H160> for FindAuthorTest {
     fn find_author<'a, I>(_digests: I) -> Option<H160>
@@ -675,7 +668,7 @@ impl FindAuthor<H160> for FindAuthorTest {
 }
 
 impl pallet_evm::Config for Runtime {
-    type FeeCalculator = FixedGasPrice;
+    type FeeCalculator = BaseFee;
     type GasWeightMapping = SherpaXGasWeightMapping;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
     type CallOrigin = EnsureAddressRoot<AccountId>;
@@ -968,7 +961,11 @@ pub struct SchedulerMigrationV3;
 
 impl OnRuntimeUpgrade for SchedulerMigrationV3 {
     fn on_runtime_upgrade() -> frame_support::weights::Weight {
-        Scheduler::migrate_v2_to_v3()
+        frame_support::log::info!("🔍️ SchedulerMigrationV3 start");
+        let w = Scheduler::migrate_v2_to_v3();
+        frame_support::log::info!("🚀 SchedulerMigrationV3 end");
+
+        w
     }
 }
 
