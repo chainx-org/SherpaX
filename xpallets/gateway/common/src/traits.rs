@@ -1,9 +1,10 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
-use frame_support::dispatch::DispatchError;
+use frame_support::dispatch::{DispatchError, DispatchResult};
 use sp_std::{convert::TryFrom, prelude::Vec};
 
 use crate::types::{ScriptInfo, TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo};
+use light_bitcoin::{chain::Transaction, script::Script};
 use sherpax_primitives::ReferralId;
 use xp_assets_registrar::Chain;
 
@@ -134,13 +135,25 @@ pub trait TrusteeInfoUpdate {
     /// Update the trustee trasition status when the renewal of the trustee is completed
     fn update_transition_status(chain: Chain, status: bool, trans_amount: Option<u64>);
     /// Each withdrawal is completed to record the weight of the signer
-    fn update_trustee_sig_record(script: &[u8], withdraw_amout: u64);
+    fn update_trustee_sig_record(
+        chain: Chain,
+        tx: Transaction,
+        withdraw_amout: u64,
+        redeem_script: Option<Script>,
+    ) -> DispatchResult;
 }
 
 impl TrusteeInfoUpdate for () {
     fn update_transition_status(_: Chain, _: bool, _: Option<u64>) {}
 
-    fn update_trustee_sig_record(_: &[u8], _: u64) {}
+    fn update_trustee_sig_record(
+        _: Chain,
+        _: Transaction,
+        _: u64,
+        _: Option<Script>,
+    ) -> DispatchResult {
+        Ok(())
+    }
 }
 
 pub trait ReferralBinding<AccountId, AssetId> {

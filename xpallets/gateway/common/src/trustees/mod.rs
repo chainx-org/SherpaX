@@ -3,12 +3,19 @@
 pub mod bitcoin;
 pub mod dogecoin;
 
-use frame_support::traits::fungibles::Mutate;
 use frame_support::{
-    dispatch::DispatchError,
+    dispatch::{DispatchError, DispatchResult},
     log::{error, warn},
     pallet_prelude::Get,
-    traits::SortedMembers,
+    traits::{fungibles::Mutate, SortedMembers},
+};
+use light_bitcoin::{
+    chain::Transaction,
+    keys::{Public, Signature},
+    script::{
+        Script, SignatureChecker, SignatureVersion, TransactionInputSigner,
+        TransactionSignatureChecker,
+    },
 };
 use sp_runtime::traits::Zero;
 use sp_std::{convert::TryFrom, marker::PhantomData, prelude::*};
@@ -139,7 +146,8 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                 Some(trustee) => {
                     for i in 0..trustee.0.trustee_list.len() {
                         trustee.0.trustee_list[i].1 =
-                            Self::trustee_sig_record(&trustee.0.trustee_list[i].0);
+                            Self::trustee_sig_record(chain, &trustee.0.trustee_list[i].0)
+                                .unwrap_or(0u64);
                     }
                     let asset_id = match chain {
                         Chain::Bitcoin => T::BtcAssetId::get(),
@@ -173,7 +181,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                                 }
                                 Err(err) => {
                                     error!(
-                                        target: "runtime::bitcoin",
+                                        target: "runtime::gateway::common",
                                         "[deposit_token] Deposit error:{:?}, must use root to fix it",
                                         err
                                     );
@@ -191,9 +199,59 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
         TrusteeTransitionStatus::<T>::insert(chain, status);
     }
 
-    fn update_trustee_sig_record(script: &[u8], withdraw_amount: u64) {
-        // TODO：Consider whether to record the Dogecoin signature
-        let signed_trustees = Self::agg_pubkey_info(script);
+    fn update_trustee_sig_record(
+        chain: Chain,
+        tx: Transaction,
+        withdraw_amount: u64,
+        redeem_script: Option<Script>,
+    ) -> DispatchResult {
+        let signed_trustees = match chain {
+            Chain::Bitcoin => {
+                let script = tx.inputs()[0].script_witness[1].as_slice();
+                Self::agg_pubkey_info(script)
+            }
+            Chain::Dogecoin => {
+                let mut signed_trustees = vec![];
+                if let Some(redeem_script) = redeem_script {
+                    let tx_signer: TransactionInputSigner = tx.clone().into();
+                    // when use WitnessV0, the `input_amount` must set value
+                    let checker = TransactionSignatureChecker {
+                        input_index: 0,
+                        input_amount: 0,
+                        signer: tx_signer,
+                    };
+                    let sighashtype = 1; // Sighsh all
+
+                    let script: Script = tx.inputs[0].script_sig.clone().into();
+                    let (sigs, _) = script
+                        .extract_multi_scriptsig()
+                        .map_err(|_| Error::<T>::InvalidScriptSig)?;
+                    if let Some((pubkeys, _, _)) = redeem_script.parse_redeem_script() {
+                        for sig in sigs.iter() {
+                            let signature: Signature = sig.as_slice().into();
+                            for p in pubkeys.iter() {
+                                let pubkey = Public::from_slice(p.as_slice())
+                                    .map_err(|_| Error::<T>::InvalidPublicKey)?;
+                                if checker.check_signature(
+                                    &signature,
+                                    &pubkey,
+                                    &script,
+                                    sighashtype,
+                                    SignatureVersion::Base,
+                                ) {
+                                    let trustee = Self::hot_pubkey_info(p.as_slice());
+                                    signed_trustees.push(trustee);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                signed_trustees
+            }
+            _ => vec![],
+        };
+
         signed_trustees.into_iter().for_each(|trustee| {
             let amount = if trustee == Self::trustee_admin() {
                 withdraw_amount
@@ -202,11 +260,16 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
             } else {
                 withdraw_amount
             };
-            if TrusteeSigRecord::<T>::contains_key(&trustee) {
-                TrusteeSigRecord::<T>::mutate(&trustee, |record| *record += amount);
+            if TrusteeSigRecord::<T>::contains_key(chain, &trustee) {
+                TrusteeSigRecord::<T>::mutate(chain, &trustee, |record| {
+                    if let Some(r) = record {
+                        *r += amount
+                    }
+                });
             } else {
-                TrusteeSigRecord::<T>::insert(trustee, amount);
+                TrusteeSigRecord::<T>::insert(chain, trustee, amount);
             }
         });
+        Ok(())
     }
 }

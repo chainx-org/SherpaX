@@ -23,6 +23,7 @@ use xp_assets_registrar::Chain;
 
 pub use self::validator::validate_transaction;
 use crate::{
+    trustee::get_hot_trustee_redeem_script,
     types::{AccountInfo, DogeAddress, DogeDepositCache, DogeTxResult, DogeTxState},
     Config, Event, Pallet, PendingDeposits, WithdrawalProposal,
 };
@@ -83,7 +84,7 @@ fn deposit<T: Config>(txid: H256, deposit_info: DogeDepositInfo<T::AccountId>) -
         (Some((account, referral)), None) => {
             // has opreturn but no input addr
             debug!(
-                target: "runtime::bitcoin",
+                target: "runtime::dogecoin",
                 "[deposit] Deposit tx ({:?}) has no input addr, but has opreturn, who:{:?}",
                 hash_rev(txid),
                 account
@@ -100,7 +101,7 @@ fn deposit<T: Config>(txid: H256, deposit_info: DogeDepositInfo<T::AccountId>) -
         }
         (None, None) => {
             warn!(
-                target: "runtime::bitcoin",
+                target: "runtime::dogecoin",
                 "[deposit] Process deposit tx ({:?}) but missing valid opreturn and input addr",
                 hash_rev(txid)
             );
@@ -114,7 +115,7 @@ fn deposit<T: Config>(txid: H256, deposit_info: DogeDepositInfo<T::AccountId>) -
             match deposit_token::<T>(txid, &account, deposit_info.deposit_value.saturated_into()) {
                 Ok(_) => {
                     info!(
-                        target: "runtime::bitcoin",
+                        target: "runtime::dogecoin",
                         "[deposit] Deposit tx ({:?}) success, who:{:?}, balance:{}",
                         hash_rev(txid),
                         account,
@@ -128,7 +129,7 @@ fn deposit<T: Config>(txid: H256, deposit_info: DogeDepositInfo<T::AccountId>) -
         AccountInfo::<_>::Address(input_addr) => {
             insert_pending_deposit::<T>(&input_addr, txid, deposit_info.deposit_value);
             info!(
-                target: "runtime::bitcoin",
+                target: "runtime::dogecoin",
                 "[deposit] Deposit tx ({:?}) into pending, addr:{:?}, balance:{}",
                 hash_rev(txid),
                 try_str(input_addr.to_string().into_bytes()),
@@ -149,7 +150,7 @@ fn deposit_token<T: Config>(txid: H256, who: &T::AccountId, balance: T::Balance)
         }
         Err(err) => {
             error!(
-                target: "runtime::bitcoin",
+                target: "runtime::dogecoin",
                 "[deposit_token] Deposit error:{:?}, must use root to fix it",
                 err
             );
@@ -165,7 +166,7 @@ pub fn remove_pending_deposit<T: Config>(input_address: &DogeAddress, who: &T::A
         // ignore error
         let _ = deposit_token::<T>(record.txid, who, record.balance.saturated_into());
         info!(
-            target: "runtime::bitcoin",
+            target: "runtime::dogecoin",
             "[remove_pending_deposit] Use pending info to re-deposit, who:{:?}, balance:{}, cached_tx:{:?}",
             who, record.balance, record.txid,
         );
@@ -187,7 +188,7 @@ fn insert_pending_deposit<T: Config>(input_addr: &Address, txid: H256, balance: 
     PendingDeposits::<T>::mutate(&addr_bytes, |list| {
         if !list.contains(&cache) {
             log::debug!(
-                target: "runtime::bitcoin",
+                target: "runtime::dogecoin",
                 "[insert_pending_deposit] Add pending deposit, address:{:?}, txhash:{:?}, balance:{}",
                 try_str(&addr_bytes),
                 txid,
@@ -203,7 +204,7 @@ fn insert_pending_deposit<T: Config>(input_addr: &Address, txid: H256, balance: 
 fn withdraw<T: Config>(tx: Transaction) -> DogeTxResult {
     if let Some(proposal) = WithdrawalProposal::<T>::take() {
         log::debug!(
-            target: "runtime::bitcoin",
+            target: "runtime::dogecoin",
             "[withdraw] Withdraw tx {:?}, proposal:{:?}",
             proposal,
             tx
@@ -223,11 +224,11 @@ fn withdraw<T: Config>(tx: Transaction) -> DogeTxResult {
 
                 match xpallet_gateway_records::Pallet::<T>::finish_withdrawal(*number, None) {
                     Ok(_) => {
-                        info!(target: "runtime::bitcoin", "[withdraw] Withdrawal ({}) completion", *number);
+                        info!(target: "runtime::dogecoin", "[withdraw] Withdrawal ({}) completion", *number);
                     }
                     Err(err) => {
                         error!(
-                            target: "runtime::bitcoin",
+                            target: "runtime::dogecoin",
                             "[withdraw] Withdrawal ({}) error:{:?}, must use root to fix it",
                             *number, err
                         );
@@ -240,6 +241,22 @@ fn withdraw<T: Config>(tx: Transaction) -> DogeTxResult {
             total -=
                 (proposal.withdrawal_id_list.len() as u64 * doge_withdrawal_fee).saturated_into();
 
+            let redeem_script = get_hot_trustee_redeem_script::<T>().ok();
+            // Record trustee signature
+            match T::TrusteeInfoUpdate::update_trustee_sig_record(
+                Chain::Dogecoin,
+                tx,
+                total.saturated_into(),
+                redeem_script,
+            ) {
+                Ok(_) => {
+                    info!(target: "runtime::dogecoin", "[withdraw] Withdrawal tx ({:?}) sig record success.", tx_hash);
+                }
+                Err(err) => {
+                    error!(target: "runtime::dogecoin", "[withdraw] Withdrawal tx ({:?}) sig record error:{:?}", tx_hash, err);
+                }
+            };
+
             Pallet::<T>::deposit_event(Event::<T>::Withdrawn(
                 tx_hash,
                 proposal.withdrawal_id_list,
@@ -248,7 +265,7 @@ fn withdraw<T: Config>(tx: Transaction) -> DogeTxResult {
             DogeTxResult::Success
         } else {
             error!(
-                target: "runtime::bitcoin",
+                target: "runtime::dogecoin",
                 "[withdraw] Withdraw error: mismatch (tx_hash:{:?}, proposal_hash:{:?}), id_list:{:?}, must use root to fix it",
                 tx_hash, proposal_hash, proposal.withdrawal_id_list
             );
@@ -260,7 +277,7 @@ fn withdraw<T: Config>(tx: Transaction) -> DogeTxResult {
         }
     } else {
         error!(
-            target: "runtime::bitcoin",
+            target: "runtime::dogecoin",
             "[withdraw] Withdrawal error: proposal is EMPTY (tx_hash:{:?}), but receive a withdrawal tx, must use root to fix it",
             tx.hash()
         );

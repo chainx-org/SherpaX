@@ -253,10 +253,19 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
                 (proposal.withdrawal_id_list.len() as u64 * btc_withdrawal_fee).saturated_into();
 
             // Record trustee signature
-            T::TrusteeInfoUpdate::update_trustee_sig_record(
-                input.script_witness[1].as_slice(),
+            match T::TrusteeInfoUpdate::update_trustee_sig_record(
+                Chain::Bitcoin,
+                tx,
                 total.saturated_into(),
-            );
+                None,
+            ) {
+                Ok(_) => {
+                    info!(target: "runtime::bitcoin", "[withdraw] Withdrawal tx ({:?}) sig record success.", tx_hash);
+                }
+                Err(err) => {
+                    error!(target: "runtime::bitcoin", "[withdraw] Withdrawal tx ({:?}) sig record error:{:?}", tx_hash, err);
+                }
+            };
 
             Pallet::<T>::deposit_event(Event::<T>::Withdrawn(
                 tx_hash,

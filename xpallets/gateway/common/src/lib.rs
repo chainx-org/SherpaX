@@ -284,8 +284,8 @@ pub mod pallet {
                     l.dedup();
                 });
                 trustees.into_iter().for_each(|trustee| {
-                    if TrusteeSigRecord::<T>::contains_key(&trustee) {
-                        TrusteeSigRecord::<T>::mutate(&trustee, |record| *record = 0);
+                    if TrusteeSigRecord::<T>::contains_key(chain, &trustee) {
+                        TrusteeSigRecord::<T>::mutate(chain, &trustee, |record| *record = Some(0));
                     }
                 });
             }
@@ -457,7 +457,7 @@ pub mod pallet {
                 TrusteeSessionInfoOf::<T>::mutate(chain, session_num, |info| {
                     if let Some(info) = info {
                         info.0.trustee_list.iter_mut().for_each(|trustee| {
-                            trustee.1 = Self::trustee_sig_record(&trustee.0);
+                            trustee.1 = Self::trustee_sig_record(chain, &trustee.0).unwrap_or(0u64);
                         });
                     }
                 });
@@ -523,10 +523,12 @@ pub mod pallet {
         InvalidTrusteeSession,
         /// exceed the maximum length of the about field of trustess session info
         InvalidAboutLen,
-        /// invalid multisig
-        InvalidMultisig,
+        /// invalid script signature
+        InvalidScriptSig,
         /// unsupported chain
         NotSupportedChain,
+        /// duplicated multisig
+        DuplicatedMultiAddress,
         /// existing duplicate account
         DuplicatedAccountId,
         /// not registered as trustee
@@ -591,10 +593,17 @@ pub mod pallet {
     pub(crate) type AggPubkeyInfo<T: Config> =
         StorageMap<_, Twox64Concat, Vec<u8>, Vec<T::AccountId>, ValueQuery>;
 
+    /// Storage trust address to the mapping of the hot pubkey
+    #[pallet::storage]
+    #[pallet::getter(fn hot_pubkey_info)]
+    pub(crate) type HotPubkeyInfo<T: Config> =
+        StorageMap<_, Twox64Concat, Vec<u8>, T::AccountId, ValueQuery>;
+
+    /// TODO: Storage Map --> Storage DoubleMap
     #[pallet::storage]
     #[pallet::getter(fn trustee_sig_record)]
     pub(crate) type TrusteeSigRecord<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, u64, ValueQuery>;
+        StorageDoubleMap<_, Twox64Concat, Chain, Twox64Concat, T::AccountId, u64>;
 
     /// Trustee info config of the corresponding chain.
     #[pallet::storage]
@@ -631,6 +640,7 @@ pub mod pallet {
     >;
 
     /// Trustee intention properties of the corresponding account and chain.
+    /// TODO: Storage Migration
     /// TODO: Move the compressed public key to the full public key
     #[pallet::storage]
     #[pallet::getter(fn trustee_intention_props_of)]
@@ -675,6 +685,7 @@ pub mod pallet {
         StorageValue<_, T::BlockNumber, ValueQuery>;
 
     /// The status of the of the trustee transition
+    /// TODO: Storage Migration
     /// TODO: StorageValue --> StorageMap
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_status)]
@@ -685,6 +696,7 @@ pub mod pallet {
     ///
     /// The current trustee members did not conduct multiple signings and put the members in the
     /// little black room. Filter out the member in the next trustee election
+    /// TODO: Storage Migration
     /// TODO: StorageValue --> StorageMap
     #[pallet::storage]
     #[pallet::getter(fn little_black_house)]
@@ -1118,14 +1130,27 @@ impl<T: Config> Pallet<T> {
         TrusteeSessionInfoOf::<T>::insert(chain, session_number, session_info.0.clone());
         TrusteeMultiSigAddr::<T>::insert(chain, multi_addr);
         // Remove the information of the previous aggregate public key，Withdrawal is prohibited at this time.
-        if Chain::Bitcoin == chain {
-            AggPubkeyInfo::<T>::remove_all(None);
-            for index in 0..session_info.1.agg_pubkeys.len() {
-                AggPubkeyInfo::<T>::insert(
-                    &session_info.1.agg_pubkeys[index],
-                    session_info.1.personal_accounts[index].clone(),
-                );
+        match chain {
+            Chain::Bitcoin => {
+                AggPubkeyInfo::<T>::remove_all(None);
+                for index in 0..session_info.1.agg_pubkeys.len() {
+                    AggPubkeyInfo::<T>::insert(
+                        &session_info.1.agg_pubkeys[index],
+                        session_info.1.personal_accounts[index].clone(),
+                    );
+                }
             }
+            Chain::Dogecoin => {
+                HotPubkeyInfo::<T>::remove_all(None);
+                let trustees = session_info.0 .0.trustee_list.clone();
+                for (trustee, _) in trustees {
+                    if let Some(trustee_info) = Self::trustee_intention_props_of(&trustee, chain) {
+                        let hot_key = trustee_info.0.hot_entity;
+                        HotPubkeyInfo::<T>::insert(hot_key, trustee.clone());
+                    }
+                }
+            }
+            _ => return Err(Error::<T>::NotSupportedChain.into()),
         }
 
         TrusteeAdmin::<T>::kill();
@@ -1170,7 +1195,7 @@ impl<T: Config> Pallet<T> {
             .into_iter()
             .any(|(c, multisig)| multi_addr == multisig && c == chain);
         if find_duplicated {
-            return Err(Error::<T>::InvalidMultisig.into());
+            return Err(Error::<T>::DuplicatedMultiAddress.into());
         }
         Ok(multi_addr)
     }
