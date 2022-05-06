@@ -122,6 +122,10 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, Bt
         // Unified use of the full public key
         let public = trustee_type.0;
 
+        if public.len() != 65 {
+            return Err(Error::<T>::InvalidPublicKey.into());
+        }
+
         if 4 != raw_addr[0] {
             log!(error, "Not Full Public(prefix not 4)");
             return Err(Error::<T>::InvalidPublicKey.into());

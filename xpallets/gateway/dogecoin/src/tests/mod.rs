@@ -11,14 +11,14 @@ use xp_gateway_common::AccountExtractor;
 use light_bitcoin::script::Script;
 
 use crate::{
-    mock::{Test, XGatewayBitcoin},
+    mock::{Test, XGatewayDogecoin},
     Config,
 };
 
 #[test]
-pub fn test_verify_btc_address() {
+pub fn test_verify_doge_address() {
     let address = b"mqVznxoxdeSNYgDCg6ZVE5pc6476BY6zHK".to_vec();
-    assert!(XGatewayBitcoin::verify_btc_address(&address).is_ok());
+    assert!(XGatewayDogecoin::verify_doge_address(&address).is_ok());
 }
 
 #[test]

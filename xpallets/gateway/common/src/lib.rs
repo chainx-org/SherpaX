@@ -1118,17 +1118,14 @@ impl<T: Config> Pallet<T> {
         TrusteeSessionInfoOf::<T>::insert(chain, session_number, session_info.0.clone());
         TrusteeMultiSigAddr::<T>::insert(chain, multi_addr);
         // Remove the information of the previous aggregate public key，Withdrawal is prohibited at this time.
-        match chain {
-            Chain::Bitcoin => {
-                AggPubkeyInfo::<T>::remove_all(None);
-                for index in 0..session_info.1.agg_pubkeys.len() {
-                    AggPubkeyInfo::<T>::insert(
-                        &session_info.1.agg_pubkeys[index],
-                        session_info.1.personal_accounts[index].clone(),
-                    );
-                }
+        if Chain::Bitcoin == chain {
+            AggPubkeyInfo::<T>::remove_all(None);
+            for index in 0..session_info.1.agg_pubkeys.len() {
+                AggPubkeyInfo::<T>::insert(
+                    &session_info.1.agg_pubkeys[index],
+                    session_info.1.personal_accounts[index].clone(),
+                );
             }
-            _ => {}
         }
 
         TrusteeAdmin::<T>::kill();

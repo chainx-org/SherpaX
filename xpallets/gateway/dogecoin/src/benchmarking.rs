@@ -153,8 +153,9 @@ benchmarks! {
 
         let withdrawal: T::Balance = 1_000_000u32.into();
 
+        // withdrawal + runtime-benchmark's withdrawal fee
         #[cfg(feature = "runtime-benchmarks")]
-        let withdrawal: T::Balance = 1_000_000u32.into();
+        let withdrawal: T::Balance = 1_500_000u32.into();
 
         XGatewayRecords::<T>::deposit(&caller, T::DogeAssetId::get(), amount).unwrap();
         XGatewayRecords::<T>::withdraw(&caller, T::DogeAssetId::get(), withdrawal, b"nbGodDo7pezD2LcKN8AFMc9nMPvT1YhXcc".to_vec(), b"".to_vec().into()).unwrap();

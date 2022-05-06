@@ -117,6 +117,10 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, DogeTrusteeType, D
             .map_err(|_| Error::<T>::InvalidPublicKey)?;
         let public = trustee_type.0;
 
+        if public.len() != 65 {
+            return Err(Error::<T>::InvalidPublicKey.into());
+        }
+
         if 4 != raw_addr[0] {
             log!(error, "Not Full Public(prefix not 4)");
             return Err(Error::<T>::InvalidPublicKey.into());

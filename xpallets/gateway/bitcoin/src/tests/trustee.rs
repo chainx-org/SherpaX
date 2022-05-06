@@ -21,10 +21,10 @@ use crate::{
 #[test]
 pub fn test_check_trustee_entity() {
     ExtBuilder::default().build_and_execute(|| {
-        let addr_ok_3 = hex!("0311252930af8ba766b9c7a6580d8dc4bbf9b0befd17a8ef7fabac275bba77ae40");
+        let addr_ok_3 = hex!("042f7e2f0f3e912bf416234913b388393beb5092418fea986e45c0b9633adefd85168f3b1d13ae29651c29e424760b3795fc78152ac119e0dc4e2b9055329099b3");
         let public3 = Public::from_slice(&addr_ok_3).unwrap();
         assert_eq!(XGatewayBitcoin::check_trustee_entity(&addr_ok_3).unwrap().0, public3);
-        let addr_ok_2 = hex!("0211252930af8ba766b9c7a6580d8dc4bbf9b0befd17a8ef7fabac275bba77ae40");
+        let addr_ok_2 = hex!("0451e0dc3d9709d860c49785fc84b62909d991cffd81592f6994c452438f91b6a2e586541c4b3bc1ebeb5fb9fad2ed2e696b2175c54458ab6f103717cbeeb4e52c");
         let public2 = Public::from_slice(&addr_ok_2).unwrap();
         assert_eq!(XGatewayBitcoin::check_trustee_entity(&addr_ok_2).unwrap().0, public2);
 

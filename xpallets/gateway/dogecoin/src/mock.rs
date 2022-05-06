@@ -227,7 +227,7 @@ impl Config for Test {
     type WeightInfo = ();
 }
 
-pub type XGatewayBitcoinErr = Error<Test>;
+pub type XGatewayDogecoinErr = Error<Test>;
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {
@@ -393,7 +393,7 @@ pub fn trustees() -> Vec<(AccountId32, Vec<u8>, Vec<u8>, Vec<u8>)> {
             charlie(),
             b"Charlie".to_vec(),
             hex!("04a09e8182977710bab64472c0ecaf9e52255a890554a00a62facd05c0b13817f8995bf590851c19914bfc939d53365b90cc2f0fcfddaca184f0c1e7ce1736f0b8").to_vec(),
-            hex!("02b3cc747f572d33f12870fa6866aebbfd2b992ba606b8dc89b676b3697590ad63").to_vec(),
+            hex!("04b3cc747f572d33f12870fa6866aebbfd2b992ba606b8dc89b676b3697590ad63d5ca398bdb6f8ee619f2e16997f21e5e8f0e0b00e2f275c7cb1253f381058d56").to_vec(),
         ),
     ]
 }

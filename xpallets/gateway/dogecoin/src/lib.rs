@@ -14,8 +14,8 @@ pub mod weights;
 mod benchmarking;
 #[cfg(test)]
 mod mock;
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 
 use sp_runtime::SaturatedConversion;
 use sp_std::{marker::PhantomData, prelude::*};

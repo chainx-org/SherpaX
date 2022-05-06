@@ -69,35 +69,35 @@ fn new_trustees<T: Config>() -> Vec<(T::AccountId, Vec<u8>, Vec<u8>, Vec<u8>)> {
     vec![
         (
             alice::<T>(),
-            b"Alice".to_vec(),
-            hex::decode("0386b58f51da9b37e59c40262153173bdb59d7e4e45b73994b99eec4d964ee7e88")
-                .unwrap(),
-            hex::decode("02df92e88c4380778c9c48268460a124a8f4e7da883f80477deaa644ced486efc6")
-                .unwrap(),
+            b"".to_vec(),
+            hex::decode("0483f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2b16f3068e94333e11ee63770936eca9692a25f76012511d38ac30ece20f07dca")
+                .expect("hex decode failed"),
+            hex::decode("0400849497d4f88ebc3e1bc2583677c5abdbd3b63640b3c5c50cd4628a33a2a2cab6b69094b5a213da80f9ef730fab39de770ca124f2d9a9cb161856be54b9adc5")
+                .expect("hex decode failed"),
         ),
         (
             bob::<T>(),
-            b"Bob".to_vec(),
-            hex::decode("0244d81efeb4171b1a8a433b87dd202117f94e44c909c49e42e77b69b5a6ce7d0d")
-                .unwrap(),
-            hex::decode("02e4631e46255571122d6e11cda75d5d601d5eb2585e65e4e87fe9f68c7838a278")
-                .unwrap(),
-        ),
-        (
-            dave::<T>(),
-            b"Charlie".to_vec(),
-            hex::decode("0263d46c760d3e04883d4b433c9ce2bc32130acd9faad0192a2b375dbba9f865c3")
-                .unwrap(),
-            hex::decode("03a36339f413da869df12b1ab0def91749413a0dee87f0bfa85ba7196e6cdad102")
-                .unwrap(),
+            b"".to_vec(),
+            hex::decode("047a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d47c09531e4f2ca2ae7f9ed80c1f9df2edd8afa19188692724d2bc18c18d98c10")
+                .expect("hex decode failed"),
+            hex::decode("042122032ae9656f9a133405ffe02101469a8d62002270a33ceccf0e40dda54d08c989b55f1b6b46a8dee284cf6737de0a377e410bcfd361a015528ae80a349529")
+                .expect("hex decode failed"),
         ),
         (
             charlie::<T>(),
-            b"Charlie".to_vec(),
-            hex::decode("03a36339f413da869df12b1ab0def91749413a0dee87f0bfa85ba7196e6cdad102")
-                .unwrap(),
-            hex::decode("0263d46c760d3e04883d4b433c9ce2bc32130acd9faad0192a2b375dbba9f865c3")
-                .unwrap(),
+            b"".to_vec(),
+            hex::decode("04c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565faced14acb5172ee19aee5417488fecdda33f4cfea9ff04f250e763e6f7458d5e")
+                .expect("hex decode failed"),
+            hex::decode("04b3cc747f572d33f12870fa6866aebbfd2b992ba606b8dc89b676b3697590ad63d5ca398bdb6f8ee619f2e16997f21e5e8f0e0b00e2f275c7cb1253f381058d56")
+                .expect("hex decode failed"),
+        ),
+        (
+            dave::<T>(),
+            b"".to_vec(),
+            hex::decode("042122032ae9656f9a133405ffe02101469a8d62002270a33ceccf0e40dda54d08c989b55f1b6b46a8dee284cf6737de0a377e410bcfd361a015528ae80a349529")
+                .expect("hex decode failed"),
+            hex::decode("047a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d47c09531e4f2ca2ae7f9ed80c1f9df2edd8afa19188692724d2bc18c18d98c10")
+                .expect("hex decode failed"),
         ),
     ]
 }
@@ -160,9 +160,9 @@ benchmarks! {
         clean::<T>();
         <TrusteeIntentionPropertiesOf<T>>::remove(caller.clone(), Chain::Bitcoin);
         LittleBlackHouse::<T>::append(Chain::Bitcoin, caller.clone());
-        let hot = hex::decode("02df92e88c4380778c9c48268460a124a8f4e7da883f80477deaa644ced486efc6")
+        let hot = hex::decode("0483f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2b16f3068e94333e11ee63770936eca9692a25f76012511d38ac30ece20f07dca")
                 .unwrap();
-        let cold = hex::decode("0386b58f51da9b37e59c40262153173bdb59d7e4e45b73994b99eec4d964ee7e88")
+        let cold = hex::decode("0400849497d4f88ebc3e1bc2583677c5abdbd3b63640b3c5c50cd4628a33a2a2cab6b69094b5a213da80f9ef730fab39de770ca124f2d9a9cb161856be54b9adc5")
                 .unwrap();
 
         assert!(Pallet::<T>::trustee_intention_props_of(caller.clone(), Chain::Bitcoin).is_none());
