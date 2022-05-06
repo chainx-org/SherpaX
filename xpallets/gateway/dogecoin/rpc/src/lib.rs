@@ -12,7 +12,7 @@ use sp_runtime::{generic::BlockId, traits::Block as BlockT};
 
 use xp_rpc::{runtime_error_into_rpc_err, Result};
 use xpallet_gateway_dogecoin_rpc_runtime_api::{
-    DogeHeader, DogeHeaderInfo, DogeWithdrawalProposal,
+    BlockHeader, DogeHeaderInfo, DogeWithdrawalProposal,
     XGatewayDogecoinApi as XGatewayDogecoinRuntimeApi, H256,
 };
 
@@ -52,7 +52,7 @@ pub trait XGatewayDogecoinApi<BlockHash, AccountId> {
 
     /// Get genesis info
     #[rpc(name = "XGatewayDogecoin_getGenesisInfo")]
-    fn get_genesis_info(&self, at: Option<BlockHash>) -> Result<(DogeHeader, u32)>;
+    fn get_genesis_info(&self, at: Option<BlockHash>) -> Result<(BlockHeader, u32)>;
 
     /// Get block header
     #[rpc(name = "XGatewayDogecoin_getDogeBlockHeader")]
@@ -100,7 +100,7 @@ where
         Ok(result)
     }
 
-    fn get_genesis_info(&self, at: Option<<Block as BlockT>::Hash>) -> Result<(DogeHeader, u32)> {
+    fn get_genesis_info(&self, at: Option<<Block as BlockT>::Hash>) -> Result<(BlockHeader, u32)> {
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
         let result = api
@@ -117,7 +117,7 @@ where
         let api = self.client.runtime_api();
         let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
         let reslut = api
-            .get_btc_block_header(&at, txid)
+            .get_doge_block_header(&at, txid)
             .map_err(runtime_error_into_rpc_err)?;
         Ok(reslut)
     }

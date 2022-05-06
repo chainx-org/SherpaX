@@ -7,7 +7,7 @@
 use sp_runtime::DispatchError;
 use sp_std::vec::Vec;
 pub use xpallet_gateway_dogecoin::{
-    types::DogeHeaderInfo, DogeHeader, DogeWithdrawalProposal, H256,
+    types::DogeHeaderInfo, BlockHeader, DogeWithdrawalProposal, H256,
 };
 
 sp_api::decl_runtime_apis! {
@@ -22,8 +22,8 @@ sp_api::decl_runtime_apis! {
 
         fn get_withdrawal_proposal() -> Option<DogeWithdrawalProposal<AccountId>>;
 
-        fn get_genesis_info() -> (DogeHeader, u32);
+        fn get_genesis_info() -> (BlockHeader, u32);
 
-        fn get_Doge_block_header(txid: H256) -> Option<DogeHeaderInfo>;
+        fn get_doge_block_header(txid: H256) -> Option<DogeHeaderInfo>;
     }
 }

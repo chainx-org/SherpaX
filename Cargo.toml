@@ -21,6 +21,8 @@ members = [
     "xpallets/gateway/bitcoin/rpc",
     "xpallets/gateway/bitcoin/rpc/runtime-api",
     "xpallets/gateway/dogecoin",
+    "xpallets/gateway/dogecoin/rpc",
+    "xpallets/gateway/dogecoin/rpc/runtime-api",
     "xpallets/gateway/common",
     "xpallets/gateway/common/rpc",
     "xpallets/gateway/common/rpc/runtime-api",

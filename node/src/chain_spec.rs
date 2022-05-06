@@ -555,7 +555,7 @@ pub fn sherpax_genesis(
             confirmation_number: dogecoin.confirmation_number,
             genesis_hash: dogecoin.hash(),
             genesis_info: (dogecoin.header(), dogecoin.height),
-            params_info: xpallet_gateway_dogecoin::types::DogeParams::new(
+            params_info: sherpax_runtime::DogeParams::new(
                 // for dogecoin
                 545259519,            // max_bits
                 2 * 60 * 60,          // block_max_future

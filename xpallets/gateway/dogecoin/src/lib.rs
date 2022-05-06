@@ -658,6 +658,64 @@ pub mod pallet {
             Ok(addr)
         }
 
+        pub fn verify_tx_valid(
+            raw_tx: Vec<u8>,
+            withdrawal_id_list: Vec<u32>,
+            full_amount: bool,
+        ) -> Result<bool, DispatchError> {
+            let tx = Self::deserialize_tx(raw_tx.as_slice())?;
+
+            let current_trustee_pair = get_current_trustee_address_pair::<T>()?;
+            let all_outputs_is_trustee = tx
+                .outputs
+                .iter()
+                .map(|output| {
+                    xp_gateway_dogecoin::extract_output_addr(output, NetworkId::<T>::get())
+                        .unwrap_or_default()
+                })
+                .all(|addr| xp_gateway_dogecoin::is_trustee_addr(addr, current_trustee_pair));
+
+            // check trustee transition status
+            if T::TrusteeSessionProvider::trustee_transition_state(Chain::Bitcoin) {
+                // check trustee transition tx
+                // tx output address = new hot address
+                let prev_trustee_pair = get_last_trustee_address_pair::<T>()?;
+                let all_outputs_is_current_cold_address = tx
+                    .outputs
+                    .iter()
+                    .map(|output| {
+                        xp_gateway_dogecoin::extract_output_addr(output, NetworkId::<T>::get())
+                            .unwrap_or_default()
+                    })
+                    .all(|addr| addr.hash == current_trustee_pair.1.hash);
+
+                let all_outputs_is_prev_cold_address = tx
+                    .outputs
+                    .iter()
+                    .map(|output| {
+                        xp_gateway_dogecoin::extract_output_addr(output, NetworkId::<T>::get())
+                            .unwrap_or_default()
+                    })
+                    .all(|addr| addr.hash == prev_trustee_pair.1.hash);
+
+                // Ensure that all outputs are cold addresses
+                ensure!(
+                    all_outputs_is_current_cold_address || all_outputs_is_prev_cold_address,
+                    Error::<T>::TxOutputNotColdAddr
+                );
+                // Ensure that all amounts are sent
+                ensure!(full_amount, Error::<T>::TxNotFullAmount);
+
+                Ok(true)
+            } else if all_outputs_is_trustee {
+                Ok(true)
+            } else {
+                // check normal withdrawal tx
+                trustee::check_withdraw_tx::<T>(&tx, &withdrawal_id_list)?;
+                Ok(true)
+            }
+        }
+
         /// Helper function for deserializing the slice of raw tx.
         #[inline]
         pub(crate) fn deserialize_tx(input: &[u8]) -> Result<Transaction, Error<T>> {

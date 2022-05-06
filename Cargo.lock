@@ -7162,7 +7162,8 @@ dependencies = [
  "xpallet-gateway-bitcoin-rpc-runtime-api",
  "xpallet-gateway-common-rpc",
  "xpallet-gateway-common-rpc-runtime-api",
- "xpallet-gateway-dogecoin",
+ "xpallet-gateway-dogecoin-rpc",
+ "xpallet-gateway-dogecoin-rpc-runtime-api",
  "xpallet-gateway-records-rpc",
  "xpallet-gateway-records-rpc-runtime-api",
 ]
@@ -7247,12 +7248,14 @@ dependencies = [
  "substrate-wasm-builder",
  "xp-assets-registrar",
  "xp-gateway-bitcoin",
+ "xp-gateway-dogecoin",
  "xp-runtime",
  "xpallet-gateway-bitcoin",
  "xpallet-gateway-bitcoin-rpc-runtime-api",
  "xpallet-gateway-common",
  "xpallet-gateway-common-rpc-runtime-api",
  "xpallet-gateway-dogecoin",
+ "xpallet-gateway-dogecoin-rpc-runtime-api",
  "xpallet-gateway-records",
  "xpallet-gateway-records-rpc-runtime-api",
  "xpallet-support",
@@ -9557,6 +9560,37 @@ dependencies = [
  "xpallet-gateway-common",
  "xpallet-gateway-records",
  "xpallet-support",
+]
+
+[[package]]
+name = "xpallet-gateway-dogecoin-rpc"
+version = "1.0.0"
+dependencies = [
+ "hex",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "parity-scale-codec",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+ "xp-rpc",
+ "xpallet-gateway-dogecoin-rpc-runtime-api",
+]
+
+[[package]]
+name = "xpallet-gateway-dogecoin-rpc-runtime-api"
+version = "1.0.0"
+dependencies = [
+ "parity-scale-codec",
+ "sherpax-primitives",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+ "xp-assets-registrar",
+ "xp-runtime",
+ "xpallet-gateway-dogecoin",
 ]
 
 [[package]]

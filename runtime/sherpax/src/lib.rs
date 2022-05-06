@@ -140,6 +140,9 @@ pub use xpallet_gateway_common::{
         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo, TrusteeInfoConfig,
     },
 };
+pub use xpallet_gateway_dogecoin::{
+    BlockHeader, DogeHeaderInfo, DogeParams, DogeWithdrawalProposal,
+};
 pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit, WithdrawalRecordId};
 use xpallet_support::traits::MultisigAddressFor;
 
@@ -1264,6 +1267,29 @@ impl_runtime_apis! {
 
         fn get_btc_block_header(txid: H256) -> Option<BtcHeaderInfo> {
             XGatewayBitcoin::get_btc_block_header(txid)
+        }
+    }
+
+    impl xpallet_gateway_dogecoin_rpc_runtime_api::XGatewayDogecoinApi<Block, AccountId> for Runtime {
+        fn verify_tx_valid(
+            raw_tx: Vec<u8>,
+            withdrawal_id_list: Vec<u32>,
+            full_amount: bool,
+        ) -> Result<bool, DispatchError> {
+            XGatewayDogecoin::verify_tx_valid(raw_tx, withdrawal_id_list, full_amount)
+        }
+
+
+        fn get_withdrawal_proposal() -> Option<DogeWithdrawalProposal<AccountId>> {
+            XGatewayDogecoin::get_withdrawal_proposal()
+        }
+
+        fn get_genesis_info() -> (BlockHeader, u32) {
+            XGatewayDogecoin::get_genesis_info()
+        }
+
+        fn get_doge_block_header(txid: H256) -> Option<DogeHeaderInfo> {
+            XGatewayDogecoin::get_doge_block_header(txid)
         }
     }
 
