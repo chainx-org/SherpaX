@@ -64,7 +64,7 @@ pub fn migrate_trustee_sig_record<T: Config>() -> Weight {
     let count = TrusteeSigRecord::<T>::iter_values().count();
     info!(
         target: "runtime::gateway::common",
-        "migrated trustee_intention_properties.",
+        "migrated trustee_sig_record.",
     );
     <T as frame_system::Config>::DbWeight::get().reads_writes(count as Weight, count as Weight)
 }

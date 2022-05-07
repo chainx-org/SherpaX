@@ -625,7 +625,7 @@ pub mod pallet {
 
     #[pallet::type_value]
     pub fn DefaultForTrusteeSessionInfoLen() -> u32 {
-        0
+        1
     }
 
     /// Trustee session info of the corresponding chain and number.
@@ -925,8 +925,7 @@ impl<T: Config> Pallet<T> {
         let new_trustee_pool: Vec<T::AccountId> = all_trustee_pool
             .iter()
             .filter_map(|who| {
-                match filter_members.contains(who) || !Self::ensure_set_address(who, Chain::Bitcoin)
-                {
+                match filter_members.contains(who) || !Self::ensure_set_address(who, chain) {
                     true => None,
                     false => Some(who.clone()),
                 }

@@ -111,7 +111,7 @@ fn reserved_assets(
             (6, root_key.clone(), true, 10_000_000_000u128),
             (7, root_key.clone(), true, 10_000_000_000u128),
             (8, root_key.clone(), true, 10_000_000_000u128),
-            (9, root_key.clone(), true, 10_000_000_000u128),
+            (9, root_key.clone(), true, 1u128),
         ],
         vec![
             (
@@ -250,8 +250,15 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 // Sudo account
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 // Pre-funded accounts
-                vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
-                true,
+                vec![
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob"),
+                    get_account_id_from_seed::<sr25519::Public>("Charlie"),
+                    get_account_id_from_seed::<sr25519::Public>("Dave"),
+                    get_account_id_from_seed::<sr25519::Public>("Eve"),
+                    get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+                ],
+                false,
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),

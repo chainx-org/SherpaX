@@ -12,10 +12,7 @@ use frame_support::{
 use light_bitcoin::{
     chain::Transaction,
     keys::{Public, Signature},
-    script::{
-        Script, SignatureChecker, SignatureVersion, TransactionInputSigner,
-        TransactionSignatureChecker,
-    },
+    script::{Script, SignatureVersion, TransactionInputSigner},
 };
 use sp_runtime::traits::Zero;
 use sp_std::{convert::TryFrom, marker::PhantomData, prelude::*};
@@ -214,13 +211,17 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                 let mut signed_trustees = vec![];
                 if let Some(redeem_script) = redeem_script {
                     let tx_signer: TransactionInputSigner = tx.clone().into();
-                    // when use WitnessV0, the `input_amount` must set value
-                    let checker = TransactionSignatureChecker {
-                        input_index: 0,
-                        input_amount: 0,
-                        signer: tx_signer,
-                    };
+
                     let sighashtype = 1; // Sighsh all
+
+                    // when use WitnessV0, the `input_amount` must set value
+                    let sighash = tx_signer.signature_hash(
+                        tx.inputs[0].previous_output.index as usize,
+                        0,
+                        &redeem_script,
+                        SignatureVersion::Base,
+                        sighashtype,
+                    );
 
                     let script: Script = tx.inputs[0].script_sig.clone().into();
                     let (sigs, _) = script
@@ -232,13 +233,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                             for p in pubkeys.iter() {
                                 let pubkey = Public::from_slice(p.as_slice())
                                     .map_err(|_| Error::<T>::InvalidPublicKey)?;
-                                if checker.check_signature(
-                                    &signature,
-                                    &pubkey,
-                                    &script,
-                                    sighashtype,
-                                    SignatureVersion::Base,
-                                ) {
+                                if pubkey.verify(&sighash, &signature).unwrap_or(false) {
                                     let trustee = Self::hot_pubkey_info(p.as_slice());
                                     signed_trustees.push(trustee);
                                 }
