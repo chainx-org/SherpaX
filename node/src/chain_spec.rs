@@ -528,7 +528,6 @@ pub fn sherpax_genesis(
         treasury: Default::default(),
         x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
             trustees,
-            genesis_trustee_transition_duration: 30 * DAYS,
             genesis_trustee_transition_status: false,
         },
         x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {

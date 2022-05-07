@@ -293,7 +293,6 @@ impl ExtBuilder {
 
         let _ = xpallet_gateway_common::GenesisConfig::<Test> {
             trustees: info,
-            genesis_trustee_transition_duration: Default::default(),
             genesis_trustee_transition_status: Default::default(),
         }
         .assimilate_storage(&mut storage);

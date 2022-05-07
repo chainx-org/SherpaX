@@ -677,14 +677,6 @@ pub mod pallet {
     pub(crate) type ReferralBindingOf<T: Config> =
         StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Twox64Concat, Chain, T::AccountId>;
 
-    /// How long each trustee is kept. This defines the next block number at which an
-    /// trustee transition will happen. If set to zero, no trustee transition are ever triggered.
-    /// TODO: Consider deleting it
-    #[pallet::storage]
-    #[pallet::getter(fn trustee_transition_duration)]
-    pub(crate) type TrusteeTransitionDuration<T: Config> =
-        StorageValue<_, T::BlockNumber, ValueQuery>;
-
     /// The status of the of the trustee transition
     /// TODO: Storage Migration
     /// TODO: StorageValue --> StorageMap
@@ -717,7 +709,6 @@ pub mod pallet {
             TrusteeInfoConfig,
             Vec<(T::AccountId, Text, Vec<u8>, Vec<u8>)>,
         )>,
-        pub genesis_trustee_transition_duration: T::BlockNumber,
         pub genesis_trustee_transition_status: bool,
     }
 
@@ -726,7 +717,6 @@ pub mod pallet {
         fn default() -> Self {
             Self {
                 trustees: Default::default(),
-                genesis_trustee_transition_duration: Default::default(),
                 genesis_trustee_transition_status: Default::default(),
             }
         }
