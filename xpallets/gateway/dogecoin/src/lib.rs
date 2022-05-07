@@ -193,7 +193,7 @@ pub mod pallet {
                 tx
             );
 
-            Self::apply_create_taproot_withdraw(from, tx, withdrawal_id_list)?;
+            Self::apply_create_dogecoin_withdraw(from, tx, withdrawal_id_list)?;
             Ok(Pays::No.into())
         }
 

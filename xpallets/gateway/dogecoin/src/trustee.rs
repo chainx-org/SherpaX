@@ -291,7 +291,7 @@ impl<T: Config> Pallet<T> {
         }
     }
 
-    pub fn apply_create_taproot_withdraw(
+    pub fn apply_create_dogecoin_withdraw(
         who: T::AccountId,
         tx: Transaction,
         withdrawal_id_list: Vec<u32>,

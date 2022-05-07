@@ -15,6 +15,7 @@ mod mock;
 mod tests;
 
 mod binding;
+pub mod migrations;
 pub mod traits;
 pub mod trustees;
 pub mod types;

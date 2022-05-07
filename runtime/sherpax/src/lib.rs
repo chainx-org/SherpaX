@@ -893,6 +893,13 @@ impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConve
     }
 }
 
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+    fn on_runtime_upgrade() -> frame_support::weights::Weight {
+        xpallet_gateway_common::migrations::chains::apply::<Runtime>()
+    }
+}
+
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
@@ -925,7 +932,7 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPallets,
-    (),
+    CustomOnRuntimeUpgrade,
 >;
 
 impl fp_self_contained::SelfContainedCall for Call {
@@ -1369,6 +1376,7 @@ impl_runtime_apis! {
             list_benchmark!(list, extra, xpallet_gateway_records, XGatewayRecords);
             list_benchmark!(list, extra, xpallet_gateway_common, XGatewayCommon);
             list_benchmark!(list, extra, xpallet_gateway_bitcoin, XGatewayBitcoin);
+            list_benchmark!(list, extra, xpallet_gateway_dogecoin, XGatewayDogecoin);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1402,6 +1410,7 @@ impl_runtime_apis! {
             add_benchmark!(params, batches, xpallet_gateway_records, XGatewayRecords);
             add_benchmark!(params, batches, xpallet_gateway_common, XGatewayCommon);
             add_benchmark!(params, batches, xpallet_gateway_bitcoin, XGatewayBitcoin);
+            add_benchmark!(params, batches, xpallet_gateway_dogecoin, XGatewayDogecoin);
 
             if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
             Ok(batches)
