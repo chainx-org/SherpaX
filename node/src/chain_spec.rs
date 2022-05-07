@@ -1,6 +1,5 @@
 use crate::bitcoin::{
-    btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, BtcTxVerifier, Chain,
-    TrusteeInfoConfig,
+    btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, Chain, TrusteeInfoConfig,
 };
 use frame_benchmarking::frame_support::PalletId;
 use hex_literal::hex;
@@ -553,7 +552,6 @@ pub fn sherpax_genesis(
             ), // retargeting_factor
             btc_withdrawal_fee: 500000,
             max_withdrawal_count: 100,
-            verifier: BtcTxVerifier::Recover,
         },
         x_gateway_dogecoin: sherpax_runtime::XGatewayDogecoinConfig {
             genesis_trustees: doge_genesis_trustees,
