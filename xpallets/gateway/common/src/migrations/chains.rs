@@ -1,40 +1,20 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
 use crate::{
-    traits::BytesLike, Config, GenericTrusteeIntentionProps, LittleBlackHouse,
-    TrusteeIntentionPropertiesOf, TrusteeIntentionProps, TrusteeSigRecord, TrusteeTransitionStatus,
+    Config, GenericTrusteeIntentionProps, LittleBlackHouse, TrusteeIntentionPropertiesOf,
+    TrusteeIntentionProps, TrusteeSigRecord, TrusteeTransitionStatus,
 };
-use codec::{Decode, Encode};
 use frame_support::{
     log::info,
     migration::{storage_key_iter, take_storage_value},
     traits::Get,
     weights::Weight,
-    RuntimeDebug, Twox64Concat,
+    Twox64Concat,
 };
 use musig2::PublicKey;
-use scale_info::TypeInfo;
-#[cfg(feature = "std")]
-use serde::{Deserialize, Serialize};
-use sherpax_primitives::Text;
+
 use sp_std::prelude::*;
 use xp_assets_registrar::Chain;
-
-/// The trustee intention properties.
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
-pub struct OldTrusteeIntentionProps<TrusteeEntity: BytesLike> {
-    #[cfg_attr(feature = "std", serde(with = "xp_rpc::serde_text"))]
-    pub about: Text,
-    pub hot_entity: TrusteeEntity,
-    pub cold_entity: TrusteeEntity,
-}
-/// The generic trustee intention properties.
-#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(rename_all = "camelCase"))]
-pub struct OldGenericTrusteeIntentionProps(pub OldTrusteeIntentionProps<Vec<u8>>);
 
 /// Apply all of the migrations due to taproot.
 ///
@@ -44,7 +24,7 @@ pub struct OldGenericTrusteeIntentionProps(pub OldTrusteeIntentionProps<Vec<u8>>
 pub fn apply<T: Config>() -> Weight {
     info!(
         target: "runtime::gateway::common",
-        "Running migration for gateway common pallet"
+        "✅ Running migration for gateway common pallet"
     );
 
     migrate_trustee_sig_record::<T>()
@@ -64,7 +44,7 @@ pub fn migrate_trustee_sig_record<T: Config>() -> Weight {
     let count = TrusteeSigRecord::<T>::iter_values().count();
     info!(
         target: "runtime::gateway::common",
-        "migrated trustee_sig_record.",
+        "✅ migrated trustee_sig_record.",
     );
     <T as frame_system::Config>::DbWeight::get().reads_writes(count as Weight, count as Weight)
 }
@@ -79,7 +59,7 @@ pub fn migrate_trustee_transition_status<T: Config>() -> Weight {
 
     info!(
         target: "runtime::gateway::common",
-        "migrated trustee_transition_status.",
+        "✅ migrated trustee_transition_status.",
     );
     <T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 }
@@ -93,14 +73,14 @@ pub fn migrate_little_black_house<T: Config>() -> Weight {
     }
     info!(
         target: "runtime::gateway::common",
-        "migrated little_black_house.",
+        "✅ migrated little_black_house .",
     );
     <T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 }
 
 /// Migrate from the old trustee intention properties.
 pub fn migrate_trustee_intention_properties<T: Config>() -> Weight {
-    TrusteeIntentionPropertiesOf::<T>::translate::<OldGenericTrusteeIntentionProps, _>(
+    TrusteeIntentionPropertiesOf::<T>::translate::<GenericTrusteeIntentionProps<T::AccountId>, _>(
         |_, _, props| {
             let hot_key = &props.0.hot_entity;
             let cold_key = &props.0.cold_entity;
@@ -110,7 +90,7 @@ pub fn migrate_trustee_intention_properties<T: Config>() -> Weight {
                 PublicKey::parse_slice(cold_key).expect("must be success, or panic; qed");
             // Unified use of the full public key
             Some(GenericTrusteeIntentionProps(TrusteeIntentionProps {
-                proxy_account: None,
+                proxy_account: props.0.proxy_account,
                 about: props.0.about,
                 hot_entity: hot_pubkey.serialize().to_vec(),
                 cold_entity: cold_pubkey.serialize().to_vec(),
@@ -120,7 +100,7 @@ pub fn migrate_trustee_intention_properties<T: Config>() -> Weight {
     let count = TrusteeIntentionPropertiesOf::<T>::iter_values().count();
     info!(
         target: "runtime::gateway::common",
-        "migrated {} trustee_intention_properties.",
+        "✅ migrated {} trustee_intention_properties.",
         count,
     );
     <T as frame_system::Config>::DbWeight::get()
