@@ -594,13 +594,13 @@ pub mod pallet {
     pub(crate) type AggPubkeyInfo<T: Config> =
         StorageMap<_, Twox64Concat, Vec<u8>, Vec<T::AccountId>, ValueQuery>;
 
-    /// Storage trust address to the mapping of the hot pubkey
+    /// Storage trust address to the mapping of the hot pubkey.
     #[pallet::storage]
     #[pallet::getter(fn hot_pubkey_info)]
     pub(crate) type HotPubkeyInfo<T: Config> =
         StorageMap<_, Twox64Concat, Vec<u8>, T::AccountId, ValueQuery>;
 
-    /// TODO: Storage Map --> Storage DoubleMap
+    /// Record the amount of the trust signature, which is easy to allocate rewards.
     #[pallet::storage]
     #[pallet::getter(fn trustee_sig_record)]
     pub(crate) type TrusteeSigRecord<T: Config> =
@@ -641,8 +641,6 @@ pub mod pallet {
     >;
 
     /// Trustee intention properties of the corresponding account and chain.
-    /// TODO: Storage Migration
-    /// TODO: Move the compressed public key to the full public key
     #[pallet::storage]
     #[pallet::getter(fn trustee_intention_props_of)]
     pub(crate) type TrusteeIntentionPropertiesOf<T: Config> = StorageDoubleMap<
@@ -678,8 +676,6 @@ pub mod pallet {
         StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Twox64Concat, Chain, T::AccountId>;
 
     /// The status of the of the trustee transition
-    /// TODO: Storage Migration
-    /// TODO: StorageValue --> StorageMap
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_status)]
     pub(crate) type TrusteeTransitionStatus<T: Config> =
@@ -689,8 +685,6 @@ pub mod pallet {
     ///
     /// The current trustee members did not conduct multiple signings and put the members in the
     /// little black room. Filter out the member in the next trustee election
-    /// TODO: Storage Migration
-    /// TODO: StorageValue --> StorageMap
     #[pallet::storage]
     #[pallet::getter(fn little_black_house)]
     pub(crate) type LittleBlackHouse<T: Config> =

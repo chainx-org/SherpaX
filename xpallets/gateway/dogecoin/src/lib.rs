@@ -1,6 +1,6 @@
 // Copyright 2019-2021 ChainX Project Authors. Licensed under GPL-3.0.
 
-//! this module is for Doge-bridge
+//! this module is for dogecoin-bridge
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -188,7 +188,7 @@ pub mod pallet {
             let tx = Self::deserialize_tx(tx.as_slice())?;
             log!(
                 debug,
-                "[create_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}",
+                "[create_dogecoin_withdraw_tx] from:{:?}, withdrawal list:{:?}, tx:{:?}",
                 from,
                 withdrawal_id_list,
                 tx
@@ -255,9 +255,9 @@ pub mod pallet {
             Self::apply_remove_proposal()
         }
 
-        /// Set bitcoin withdrawal fee
-        #[pallet::weight(<T as Config>::WeightInfo::set_btc_withdrawal_fee())]
-        pub fn set_btc_withdrawal_fee(
+        /// Set dogecoin withdrawal fee
+        #[pallet::weight(<T as Config>::WeightInfo::set_doge_withdrawal_fee())]
+        pub fn set_doge_withdrawal_fee(
             origin: OriginFor<T>,
             #[pallet::compact] fee: u64,
         ) -> DispatchResult {
@@ -268,9 +268,9 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Set bitcoin deposit limit
-        #[pallet::weight(<T as Config>::WeightInfo::set_btc_deposit_limit())]
-        pub fn set_btc_deposit_limit(
+        /// Set dogecoin deposit limit
+        #[pallet::weight(<T as Config>::WeightInfo::set_doge_deposit_limit())]
+        pub fn set_doge_deposit_limit(
             origin: OriginFor<T>,
             #[pallet::compact] value: u64,
         ) -> DispatchResult {
@@ -491,7 +491,7 @@ pub mod pallet {
     #[pallet::getter(fn max_withdrawal_count)]
     pub(crate) type MaxWithdrawalCount<T: Config> = StorageValue<_, u32, ValueQuery>;
 
-    /// Coming bot helps update Doge withdrawal transaction status
+    /// Coming bot helps update dogecoin withdrawal transaction status
     #[pallet::storage]
     #[pallet::getter(fn coming_bot)]
     pub(crate) type ComingBot<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
@@ -699,12 +699,12 @@ pub mod pallet {
                     })
                     .all(|addr| addr.hash == prev_trustee_pair.1.hash);
 
-                // Ensure that all outputs are cold addresses
+                // ensure that all outputs are cold addresses
                 ensure!(
                     all_outputs_is_current_cold_address || all_outputs_is_prev_cold_address,
                     Error::<T>::TxOutputNotColdAddr
                 );
-                // Ensure that all amounts are sent
+                // ensure that all amounts are sent
                 ensure!(full_amount, Error::<T>::TxNotFullAmount);
 
                 Ok(true)
@@ -740,7 +740,7 @@ pub mod pallet {
             if Self::headers(&header.hash()).is_some() {
                 log!(
                     error,
-                    "[apply_push_header] The Doge header already exists, hash:{:?}",
+                    "[apply_push_header] The doge header already exists, hash:{:?}",
                     header.hash()
                 );
                 return Err(Error::<T>::ExistingHeader.into());
@@ -755,7 +755,7 @@ pub mod pallet {
                 Error::<T>::PrevHeaderNotExisted
             })?;
 
-            // convert Doge header to self header info
+            // convert dogecoin header to self header info
             let header_info = DogeHeaderInfo {
                 header,
                 height: prev_info.height + 1,

@@ -237,13 +237,13 @@ benchmarks! {
         assert!(WithdrawalProposal::<T>::get().is_none());
     }
 
-    set_btc_withdrawal_fee {
+    set_doge_withdrawal_fee {
         let caller = alice::<T>();
     }: _(RawOrigin::Root,  2000000)
     verify {
     }
 
-    set_btc_deposit_limit {
+    set_doge_deposit_limit {
         let caller = alice::<T>();
     }: _(RawOrigin::Root,  2000000)
     verify {
@@ -271,8 +271,8 @@ mod tests {
             assert_ok!(Pallet::<Test>::test_benchmark_set_best_index());
             assert_ok!(Pallet::<Test>::test_benchmark_set_confirmed_index());
             assert_ok!(Pallet::<Test>::test_benchmark_remove_pending());
-            assert_ok!(Pallet::<Test>::test_benchmark_set_btc_withdrawal_fee());
-            assert_ok!(Pallet::<Test>::test_benchmark_set_btc_deposit_limit());
+            assert_ok!(Pallet::<Test>::test_benchmark_set_doge_withdrawal_fee());
+            assert_ok!(Pallet::<Test>::test_benchmark_set_doge_deposit_limit());
             assert_ok!(Pallet::<Test>::test_benchmark_set_coming_bot());
         });
     }

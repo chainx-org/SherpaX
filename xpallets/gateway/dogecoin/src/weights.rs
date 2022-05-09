@@ -38,8 +38,8 @@ pub trait WeightInfo {
     fn set_confirmed_index() -> Weight;
     fn remove_pending() -> Weight;
     fn remove_proposal() -> Weight;
-    fn set_btc_withdrawal_fee() -> Weight;
-    fn set_btc_deposit_limit() -> Weight;
+    fn set_doge_withdrawal_fee() -> Weight;
+    fn set_doge_deposit_limit() -> Weight;
     fn set_coming_bot() -> Weight;
 }
 
@@ -77,10 +77,10 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
             .saturating_add(T::DbWeight::get().reads(5 as Weight))
             .saturating_add(T::DbWeight::get().writes(2 as Weight))
     }
-    fn set_btc_withdrawal_fee() -> Weight {
+    fn set_doge_withdrawal_fee() -> Weight {
         (2_308_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
-    fn set_btc_deposit_limit() -> Weight {
+    fn set_doge_deposit_limit() -> Weight {
         (2_285_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn set_coming_bot() -> Weight {
@@ -121,10 +121,10 @@ impl WeightInfo for () {
             .saturating_add(RocksDbWeight::get().reads(5 as Weight))
             .saturating_add(RocksDbWeight::get().writes(2 as Weight))
     }
-    fn set_btc_withdrawal_fee() -> Weight {
+    fn set_doge_withdrawal_fee() -> Weight {
         (2_308_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
-    fn set_btc_deposit_limit() -> Weight {
+    fn set_doge_deposit_limit() -> Weight {
         (2_285_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn set_coming_bot() -> Weight {
