@@ -5,6 +5,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod header;
+pub mod migrations;
 pub mod trustee;
 mod tx;
 pub mod types;
@@ -485,7 +486,7 @@ pub mod pallet {
     pub(crate) type DogeMinDeposit<T: Config> =
         StorageValue<_, u64, ValueQuery, DefaultForMinDeposit<T>>;
 
-    /// max withdraw account count in bitcoin withdrawal transaction
+    /// max withdraw account count in dogeocin withdrawal transaction
     #[pallet::storage]
     #[pallet::getter(fn max_withdrawal_count)]
     pub(crate) type MaxWithdrawalCount<T: Config> = StorageValue<_, u32, ValueQuery>;

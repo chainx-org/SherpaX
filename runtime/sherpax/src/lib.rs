@@ -896,7 +896,14 @@ impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConve
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
     fn on_runtime_upgrade() -> frame_support::weights::Weight {
-        xpallet_gateway_common::migrations::chains::apply::<Runtime>()
+        let mut weight = 0;
+
+        // Add multi-chain to some storage
+        weight += xpallet_gateway_common::migrations::chains::apply::<Runtime>();
+        // Initialization dogecoin storage
+        weight += xpallet_gateway_dogecoin::migrations::genesis::apply::<Runtime>();
+
+        weight
     }
 }
 

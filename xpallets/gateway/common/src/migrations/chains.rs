@@ -16,7 +16,7 @@ use musig2::PublicKey;
 use sp_std::prelude::*;
 use xp_assets_registrar::Chain;
 
-/// Apply all of the migrations due to taproot.
+/// Apply all of the migrations due to dogecoin.
 ///
 /// ### Warning
 ///
@@ -24,7 +24,7 @@ use xp_assets_registrar::Chain;
 pub fn apply<T: Config>() -> Weight {
     info!(
         target: "runtime::gateway::common",
-        "✅ Running migration for gateway common pallet"
+        "✅ Running migration for gateway common pallet..."
     );
 
     migrate_trustee_sig_record::<T>()
@@ -44,7 +44,7 @@ pub fn migrate_trustee_sig_record<T: Config>() -> Weight {
     let count = TrusteeSigRecord::<T>::iter_values().count();
     info!(
         target: "runtime::gateway::common",
-        "✅ migrated trustee_sig_record.",
+        "✅ Migration for trustee_sig_record done.",
     );
     <T as frame_system::Config>::DbWeight::get().reads_writes(count as Weight, count as Weight)
 }
@@ -59,7 +59,7 @@ pub fn migrate_trustee_transition_status<T: Config>() -> Weight {
 
     info!(
         target: "runtime::gateway::common",
-        "✅ migrated trustee_transition_status.",
+        "✅ Migration for trustee_transition_status done.",
     );
     <T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 }
@@ -73,7 +73,7 @@ pub fn migrate_little_black_house<T: Config>() -> Weight {
     }
     info!(
         target: "runtime::gateway::common",
-        "✅ migrated little_black_house .",
+        "✅ Migration for little_black_house done.",
     );
     <T as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
 }
@@ -100,7 +100,7 @@ pub fn migrate_trustee_intention_properties<T: Config>() -> Weight {
     let count = TrusteeIntentionPropertiesOf::<T>::iter_values().count();
     info!(
         target: "runtime::gateway::common",
-        "✅ migrated {} trustee_intention_properties.",
+        "✅ Migration for trustee_intention_properties done. Migrated count -> {}.",
         count,
     );
     <T as frame_system::Config>::DbWeight::get()
