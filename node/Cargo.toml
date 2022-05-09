@@ -57,7 +57,7 @@ frame-benchmarking = { git = 'https://github.com/paritytech/substrate', branch =
 frame-benchmarking-cli = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }
 
 # SherpaX
-sherpax-runtime = { version = "1.0.0", path = "../runtime/sherpax" }
+sherpax-runtime = { path = "../runtime/sherpax" }
 
 # EVM
 futures = { version = "0.3", features = ["compat"] }
@@ -83,6 +83,8 @@ xpallet-gateway-common-rpc-runtime-api = { path = "../xpallets/gateway/common/rp
 xpallet-gateway-records-rpc = { path = "../xpallets/gateway/records/rpc" }
 xpallet-gateway-records-rpc-runtime-api = { path = "../xpallets/gateway/records/rpc/runtime-api" }
 
+# CLI-specific dependencies
+try-runtime-cli = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11", optional = true }
 
 [build-dependencies]
 substrate-build-script-utils = { git = 'https://github.com/paritytech/substrate', branch = "polkadot-v0.9.11" }
@@ -92,3 +94,7 @@ default = []
 runtime-benchmarks = [
     "sherpax-runtime/runtime-benchmarks",
 ]
+
+# Enable features that allow the runtime to be tried and debugged. Name might be subject to change
+# in the near future.
+try-runtime = ["sherpax-runtime/try-runtime", "try-runtime-cli"]

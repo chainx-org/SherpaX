@@ -27,6 +27,12 @@ build:
 release:
 	@cargo build --release #--features "${ENABLE_FEATURES}"
 
+benchmarks:
+	@cargo build --release --features="runtime-benchmarks"
+
+try-runtime:
+	@cargo build --release --features="try-runtime"
+
 test:
 	export LOG_LEVEL=DEBUG && \
 	export RUST_BACKTRACE=1 && \

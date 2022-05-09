@@ -78,3 +78,4 @@ std = [
   "pallet-elections-phragmen/std"
 ]
 runtime-benchmarks = ["hex", "sp-core", "frame-benchmarking"]
+try-runtime = ["frame-support/try-runtime"]
