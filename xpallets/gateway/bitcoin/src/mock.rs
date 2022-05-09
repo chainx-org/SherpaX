@@ -33,11 +33,7 @@ use light_bitcoin::{
     serialization::{self, Reader},
 };
 
-use crate::{
-    self as xpallet_gateway_bitcoin,
-    types::{BtcParams, BtcTxVerifier},
-    Config, Error,
-};
+use crate::{self as xpallet_gateway_bitcoin, types::BtcParams, Config, Error};
 
 /// The AccountId alias in this test module.
 pub(crate) type AccountId = AccountId32;
@@ -265,7 +261,6 @@ impl ExtBuilder {
                 10 * 60,              // target_spacing_seconds
                 4,                    // retargeting_factor
             ), // retargeting_factor
-            verifier: BtcTxVerifier::Recover,
             confirmation_number: 4,
             btc_withdrawal_fee: 0,
             max_withdrawal_count: 100,
@@ -317,7 +312,6 @@ impl ExtBuilder {
                 10 * 60,              // target_spacing_seconds
                 4,                    // retargeting_factor
             ), // retargeting_factor
-            verifier: BtcTxVerifier::Recover,
             confirmation_number: 4,
             btc_withdrawal_fee: 0,
             max_withdrawal_count: 100,

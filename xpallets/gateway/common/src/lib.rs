@@ -625,7 +625,7 @@ pub mod pallet {
 
     #[pallet::type_value]
     pub fn DefaultForTrusteeSessionInfoLen() -> u32 {
-        1
+        0
     }
 
     /// Trustee session info of the corresponding chain and number.
