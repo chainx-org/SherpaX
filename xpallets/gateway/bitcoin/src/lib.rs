@@ -54,7 +54,7 @@ use self::{
 };
 
 pub use self::{
-    types::{BtcAddress, BtcHeaderInfo, BtcParams, BtcTxVerifier, BtcWithdrawalProposal},
+    types::{BtcAddress, BtcHeaderInfo, BtcParams, BtcWithdrawalProposal},
     weights::WeightInfo,
 };
 

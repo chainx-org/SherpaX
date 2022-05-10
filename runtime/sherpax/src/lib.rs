@@ -131,8 +131,8 @@ pub use xp_runtime::Memo;
 #[cfg(feature = "std")]
 pub use xpallet_gateway_bitcoin::h256_rev;
 pub use xpallet_gateway_bitcoin::{
-    hash_rev, BtcHeader, BtcHeaderInfo, BtcNetwork, BtcParams, BtcTxVerifier,
-    BtcWithdrawalProposal, Compact as BtcCompact, H256 as BtcHash,
+    hash_rev, BtcHeader, BtcHeaderInfo, BtcNetwork, BtcParams, BtcWithdrawalProposal,
+    Compact as BtcCompact, H256 as BtcHash,
 };
 pub use xpallet_gateway_common::{
     trustees,

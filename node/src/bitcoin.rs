@@ -8,8 +8,8 @@ use sp_core::sr25519;
 
 use sherpax_primitives::AccountId;
 pub use sherpax_runtime::{
-    h256_rev, trustees, BtcCompact, BtcHash, BtcHeader, BtcNetwork, BtcParams, BtcTxVerifier,
-    Chain, TrusteeInfoConfig,
+    h256_rev, trustees, BtcCompact, BtcHash, BtcHeader, BtcNetwork, BtcParams, Chain,
+    TrusteeInfoConfig,
 };
 
 use crate::chain_spec::get_account_id_from_seed;
