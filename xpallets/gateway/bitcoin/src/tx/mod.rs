@@ -257,7 +257,6 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
                 Chain::Bitcoin,
                 tx,
                 total.saturated_into(),
-                None,
             ) {
                 Ok(_) => {
                     info!(target: "runtime::bitcoin", "[withdraw] Withdrawal tx ({:?}) sig record success.", tx_hash);

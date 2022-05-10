@@ -526,6 +526,8 @@ pub mod pallet {
         InvalidAboutLen,
         /// invalid script signature
         InvalidScriptSig,
+        /// invalid redeem script
+        InvalidRedeemScript,
         /// unsupported chain
         NotSupportedChain,
         /// duplicated multisig
@@ -542,8 +544,6 @@ pub mod pallet {
         NotTrusteePreselectedMember,
         /// invalid public key
         InvalidPublicKey,
-        /// invalid relayer
-        InvalidRelayer,
         /// invalid session number
         InvalidSessionNum,
         /// invalid trustee history member
@@ -594,7 +594,7 @@ pub mod pallet {
     pub(crate) type AggPubkeyInfo<T: Config> =
         StorageMap<_, Twox64Concat, Vec<u8>, Vec<T::AccountId>, ValueQuery>;
 
-    /// Storage trust address to the mapping of the hot pubkey.
+    /// Storage trustee pubkey to account.
     #[pallet::storage]
     #[pallet::getter(fn hot_pubkey_info)]
     pub(crate) type HotPubkeyInfo<T: Config> =

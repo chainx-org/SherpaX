@@ -23,7 +23,6 @@ use xp_assets_registrar::Chain;
 
 pub use self::validator::validate_transaction;
 use crate::{
-    trustee::get_hot_trustee_redeem_script,
     types::{AccountInfo, DogeAddress, DogeDepositCache, DogeTxResult, DogeTxState},
     Config, Event, Pallet, PendingDeposits, WithdrawalProposal,
 };
@@ -241,13 +240,11 @@ fn withdraw<T: Config>(tx: Transaction) -> DogeTxResult {
             total -=
                 (proposal.withdrawal_id_list.len() as u64 * doge_withdrawal_fee).saturated_into();
 
-            let redeem_script = get_hot_trustee_redeem_script::<T>().ok();
             // Record trustee signature
             match T::TrusteeInfoUpdate::update_trustee_sig_record(
                 Chain::Dogecoin,
                 tx,
                 total.saturated_into(),
-                redeem_script,
             ) {
                 Ok(_) => {
                     info!(target: "runtime::dogecoin", "[withdraw] Withdrawal tx ({:?}) sig record success.", tx_hash);

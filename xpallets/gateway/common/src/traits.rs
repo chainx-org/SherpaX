@@ -139,19 +139,13 @@ pub trait TrusteeInfoUpdate {
         chain: Chain,
         tx: Transaction,
         withdraw_amout: u64,
-        redeem_script: Option<Script>,
     ) -> DispatchResult;
 }
 
 impl TrusteeInfoUpdate for () {
     fn update_transition_status(_: Chain, _: bool, _: Option<u64>) {}
 
-    fn update_trustee_sig_record(
-        _: Chain,
-        _: Transaction,
-        _: u64,
-        _: Option<Script>,
-    ) -> DispatchResult {
+    fn update_trustee_sig_record(_: Chain, _: Transaction, _: u64) -> DispatchResult {
         Ok(())
     }
 }

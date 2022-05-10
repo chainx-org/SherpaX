@@ -200,7 +200,6 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
         chain: Chain,
         tx: Transaction,
         withdraw_amount: u64,
-        redeem_script: Option<Script>,
     ) -> DispatchResult {
         let signed_trustees = match chain {
             Chain::Bitcoin => {
@@ -209,35 +208,35 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
             }
             Chain::Dogecoin => {
                 let mut signed_trustees = vec![];
-                if let Some(redeem_script) = redeem_script {
-                    let tx_signer: TransactionInputSigner = tx.clone().into();
+                let script: Script = tx.inputs[0].script_sig.clone().into();
+                let (sigs, redeem_script) = script
+                    .extract_multi_scriptsig()
+                    .map_err(|_| Error::<T>::InvalidScriptSig)?;
+                let (pubkeys, _, _) = redeem_script
+                    .parse_redeem_script()
+                    .ok_or(Error::<T>::InvalidRedeemScript)?;
 
-                    let sighashtype = 1; // Sighsh all
+                let tx_signer: TransactionInputSigner = tx.clone().into();
 
-                    // when use WitnessV0, the `input_amount` must set value
-                    let sighash = tx_signer.signature_hash(
-                        tx.inputs[0].previous_output.index as usize,
-                        0,
-                        &redeem_script,
-                        SignatureVersion::Base,
-                        sighashtype,
-                    );
+                let sighashtype = 1; // Sighsh all
 
-                    let script: Script = tx.inputs[0].script_sig.clone().into();
-                    let (sigs, _) = script
-                        .extract_multi_scriptsig()
-                        .map_err(|_| Error::<T>::InvalidScriptSig)?;
-                    if let Some((pubkeys, _, _)) = redeem_script.parse_redeem_script() {
-                        for sig in sigs.iter() {
-                            let signature: Signature = sig.as_slice().into();
-                            for p in pubkeys.iter() {
-                                let pubkey = Public::from_slice(p.as_slice())
-                                    .map_err(|_| Error::<T>::InvalidPublicKey)?;
-                                if pubkey.verify(&sighash, &signature).unwrap_or(false) {
-                                    let trustee = Self::hot_pubkey_info(p.as_slice());
-                                    signed_trustees.push(trustee);
-                                }
-                            }
+                // when use WitnessV0, the `input_amount` must set value
+                let sighash = tx_signer.signature_hash(
+                    tx.inputs[0].previous_output.index as usize,
+                    0,
+                    &redeem_script,
+                    SignatureVersion::Base,
+                    sighashtype,
+                );
+
+                for sig in sigs.iter() {
+                    let signature: Signature = sig.as_slice().into();
+                    for p in pubkeys.iter() {
+                        let pubkey = Public::from_slice(p.as_slice())
+                            .map_err(|_| Error::<T>::InvalidPublicKey)?;
+                        if pubkey.verify(&sighash, &signature).unwrap_or(false) {
+                            let trustee = Self::hot_pubkey_info(p.as_slice());
+                            signed_trustees.push(trustee);
                         }
                     }
                 }
