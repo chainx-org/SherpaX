@@ -96,10 +96,10 @@ pub fn check_keys<T: Config>(keys: &[Public]) -> DispatchResult {
         );
         return Err(Error::<T>::DuplicatedKeys.into());
     }
-    let has_normal_pubkey = keys
+    let has_compressed_pubkey = keys
         .iter()
-        .any(|public: &Public| matches!(public, Public::Normal(_)));
-    if !has_normal_pubkey {
+        .any(|public: &Public| matches!(public, Public::Compressed(_)));
+    if has_compressed_pubkey {
         return Err("Unexpect! All keys(bitcoin Public) should be Normal".into());
     }
     Ok(())
