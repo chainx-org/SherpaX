@@ -657,16 +657,6 @@ impl pallet_evm::GasWeightMapping for SherpaXGasWeightMapping {
     }
 }
 
-pub struct FindAuthorTest;
-impl FindAuthor<H160> for FindAuthorTest {
-    fn find_author<'a, I>(_digests: I) -> Option<H160>
-    where
-        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-    {
-        Some(H160::from_slice(&[17u8; 20][..]))
-    }
-}
-
 impl pallet_evm::Config for Runtime {
     type FeeCalculator = BaseFee;
     type GasWeightMapping = SherpaXGasWeightMapping;
@@ -682,7 +672,7 @@ impl pallet_evm::Config for Runtime {
     type ChainId = EthereumChainId;
     type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, impls::DealWithFees>;
     type BlockGasLimit = BlockGasLimit;
-    type FindAuthor = FindAuthorTest;
+    type FindAuthor = ();
     type WeightInfo = pallet_evm::weights::SubstrateWeight<Self>;
 }
 
