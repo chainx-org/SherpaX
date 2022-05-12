@@ -56,7 +56,7 @@ pub trait XGatewayDogecoinApi<BlockHash, AccountId> {
 
     /// Get block header
     #[rpc(name = "XGatewayDogecoin_getDogeBlockHeader")]
-    fn get_btc_block_header(
+    fn get_doge_block_header(
         &self,
         txid: H256,
         at: Option<BlockHash>,
@@ -109,7 +109,7 @@ where
         Ok(result)
     }
 
-    fn get_btc_block_header(
+    fn get_doge_block_header(
         &self,
         txid: H256,
         at: Option<<Block as BlockT>::Hash>,
