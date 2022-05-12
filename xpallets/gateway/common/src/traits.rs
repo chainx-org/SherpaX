@@ -4,7 +4,7 @@ use frame_support::dispatch::{DispatchError, DispatchResult};
 use sp_std::{convert::TryFrom, prelude::Vec};
 
 use crate::types::{ScriptInfo, TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo};
-use light_bitcoin::{chain::Transaction, script::Script};
+use light_bitcoin::chain::Transaction;
 use sherpax_primitives::ReferralId;
 use xp_assets_registrar::Chain;
 
