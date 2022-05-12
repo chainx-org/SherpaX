@@ -56,10 +56,9 @@ pub use self::weights::WeightInfo;
 
 pub use pallet::*;
 
-type Balanceof<T> =
-    <<T as xpallet_gateway_records::Config>::Currency as frame_support::traits::Currency<
-        <T as frame_system::Config>::AccountId,
-    >>::Balance;
+type Balanceof<T> = <<T as xpallet_gateway_records::Config>::Currency as Currency<
+    <T as frame_system::Config>::AccountId,
+>>::Balance;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -238,10 +237,12 @@ pub mod pallet {
 
         /// Force cancel trustee transition
         ///
-        /// This is called by the root.
+        /// This is called by the root or council.
         #[pallet::weight(0u64)]
         pub fn cancel_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
-            ensure_root(origin)?;
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             Self::cancel_trustee_transition_impl(chain)?;
             TrusteeTransitionStatus::<T>::insert(chain, false);
@@ -570,15 +571,18 @@ pub mod pallet {
         ExistCurrentTrustee,
     }
 
+    /// The trustee multi substrate account.
     #[pallet::storage]
     #[pallet::getter(fn trustee_multisig_addr)]
     pub(crate) type TrusteeMultiSigAddr<T: Config> =
         StorageMap<_, Twox64Concat, Chain, T::AccountId, ValueQuery>;
 
+    /// The trustee administrator.
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin)]
     pub(crate) type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
 
+    /// The trustee multiply for signature record.
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin_multiply)]
     pub(crate) type TrusteeAdminMultiply<T: Config> =
@@ -589,12 +593,13 @@ pub mod pallet {
         11
     }
 
+    /// Storage trustee aggregate pubkey to related accounts for bitcoin taproot.
     #[pallet::storage]
     #[pallet::getter(fn agg_pubkey_info)]
     pub(crate) type AggPubkeyInfo<T: Config> =
         StorageMap<_, Twox64Concat, Vec<u8>, Vec<T::AccountId>, ValueQuery>;
 
-    /// Storage trustee pubkey to account.
+    /// Storage trustee pubkey to account for dogecoin p2sh.
     #[pallet::storage]
     #[pallet::getter(fn hot_pubkey_info)]
     pub(crate) type HotPubkeyInfo<T: Config> =
