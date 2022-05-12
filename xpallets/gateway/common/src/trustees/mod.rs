@@ -149,7 +149,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                     let asset_id = match chain {
                         Chain::Bitcoin => T::BtcAssetId::get(),
                         Chain::Dogecoin => T::DogeAssetId::get(),
-                        _ => T::BtcAssetId::get(),
+                        _ => return,
                     };
                     let total_apply: T::Balance = Self::pre_total_supply(asset_id);
                     let reward_amount: T::Balance = trans_amount
@@ -250,7 +250,8 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
             let amount = if trustee == Self::trustee_admin() {
                 withdraw_amount
                     .saturating_mul(Self::trustee_admin_multiply())
-                    .saturating_div(10)
+                    .checked_div(10)
+                    .unwrap_or(withdraw_amount)
             } else {
                 withdraw_amount
             };
