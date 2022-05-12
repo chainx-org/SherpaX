@@ -199,9 +199,11 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
         let signed_trustees = Self::agg_pubkey_info(script);
         signed_trustees.into_iter().for_each(|trustee| {
             let amount = if Some(trustee.clone()) == Self::trustee_admin() {
+                let origin_withdraw = withdraw_amount;
                 withdraw_amount
                     .saturating_mul(Self::trustee_admin_multiply())
-                    .saturating_div(10)
+                    .checked_div(10)
+                    .unwrap_or(origin_withdraw)
             } else {
                 withdraw_amount
             };
