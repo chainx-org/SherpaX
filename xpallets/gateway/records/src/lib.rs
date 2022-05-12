@@ -18,13 +18,12 @@ use frame_support::{
     ensure,
     log::{error, info},
     traits::fungibles::{Inspect, Mutate},
+    transactional,
 };
 use frame_system::ensure_root;
 
 use sp_runtime::traits::{CheckedSub, StaticLookup};
 use sp_std::{cmp::Ordering, collections::btree_map::BTreeMap, prelude::*};
-
-use orml_utilities::with_transaction_result;
 
 use sherpax_primitives::AddrStr;
 use xp_assets_registrar::Chain;
@@ -54,7 +53,6 @@ pub mod pallet {
     use frame_support::{
         pallet_prelude::*,
         traits::{LockableCurrency, ReservableCurrency},
-        transactional,
     };
     use frame_system::pallet_prelude::*;
 
@@ -77,6 +75,7 @@ pub mod pallet {
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(crate) trait Store)]
+    #[pallet::without_storage_info]
     pub struct Pallet<T>(PhantomData<T>);
 
     #[pallet::call]
@@ -385,13 +384,12 @@ impl<T: Config> Pallet<T> {
     }
 
     /// Process withdrawal in batches.
+    #[transactional]
     pub fn process_withdrawals(ids: &[WithdrawalRecordId], chain: Chain) -> DispatchResult {
-        with_transaction_result(|| {
-            for id in ids {
-                Self::process_withdrawal(*id, chain)?;
-            }
-            Ok(())
-        })
+        for id in ids {
+            Self::process_withdrawal(*id, chain)?;
+        }
+        Ok(())
     }
 
     /// Recover withdrawal.
@@ -516,16 +514,15 @@ impl<T: Config> Pallet<T> {
     }
 
     /// Finish withdrawal in batches.
+    #[transactional]
     pub fn finish_withdrawals(
         ids: &[WithdrawalRecordId],
         expected_chain: Option<Chain>,
     ) -> DispatchResult {
-        with_transaction_result(|| {
-            for id in ids {
-                Self::finish_withdrawal(*id, expected_chain)?;
-            }
-            Ok(())
-        })
+        for id in ids {
+            Self::finish_withdrawal(*id, expected_chain)?;
+        }
+        Ok(())
     }
 
     pub fn set_withdrawal_state_by_root(

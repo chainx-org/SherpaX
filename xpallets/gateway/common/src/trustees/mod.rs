@@ -110,14 +110,18 @@ impl<T: Config, C: ChainProvider> TrusteeMultisigProvider<T, C> {
 }
 
 impl<T: Config, C: ChainProvider> MultiSig<T::AccountId> for TrusteeMultisigProvider<T, C> {
-    fn multisig() -> T::AccountId {
+    fn multisig() -> Option<T::AccountId> {
         Pallet::<T>::trustee_multisig_addr(C::chain())
     }
 }
 
 impl<T: Config, C: ChainProvider> SortedMembers<T::AccountId> for TrusteeMultisigProvider<T, C> {
     fn sorted_members() -> Vec<T::AccountId> {
-        vec![Self::multisig()]
+        if let Some(n) = Self::multisig() {
+            vec![n]
+        } else {
+            vec![]
+        }
     }
 }
 
@@ -194,7 +198,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
     fn update_trustee_sig_record(script: &[u8], withdraw_amount: u64) {
         let signed_trustees = Self::agg_pubkey_info(script);
         signed_trustees.into_iter().for_each(|trustee| {
-            let amount = if trustee == Self::trustee_admin() {
+            let amount = if Some(trustee.clone()) == Self::trustee_admin() {
                 withdraw_amount
                     .saturating_mul(Self::trustee_admin_multiply())
                     .saturating_div(10)

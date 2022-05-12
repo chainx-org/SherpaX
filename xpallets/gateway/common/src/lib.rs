@@ -108,6 +108,7 @@ pub mod pallet {
 
     #[pallet::pallet]
     #[pallet::generate_store(pub (super) trait Store)]
+    #[pallet::without_storage_info]
     pub struct Pallet<T>(PhantomData<T>);
 
     #[pallet::call]
@@ -546,11 +547,11 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn trustee_multisig_addr)]
     pub(crate) type TrusteeMultiSigAddr<T: Config> =
-        StorageMap<_, Twox64Concat, Chain, T::AccountId, ValueQuery>;
+        StorageMap<_, Twox64Concat, Chain, T::AccountId, OptionQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin)]
-    pub(crate) type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
+    pub(crate) type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin_multiply)]
@@ -1217,7 +1218,7 @@ impl<T: Config> Pallet<T> {
     fn try_ensure_trustee_admin(origin: OriginFor<T>) -> Result<(), OriginFor<T>> {
         match ensure_signed(origin.clone()) {
             Ok(who) => {
-                if who != Self::trustee_admin() {
+                if Some(who) != Self::trustee_admin() {
                     return Err(origin);
                 }
             }

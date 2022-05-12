@@ -1,0 +1,3 @@
+./sherpax-old --dev --tmp --ws-port 9944 --ws-max-out-buffer-capacity 1000 --rpc-max-payload 1000 --rpc-cors all
+
+./sherpax-new try-runtime --no-spec-name-check  on-runtime-upgrade live -u ws://127.0.0.1:9944

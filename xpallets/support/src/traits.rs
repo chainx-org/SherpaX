@@ -11,7 +11,7 @@ impl<AccountId: Default> MultisigAddressFor<AccountId> for () {
 }
 
 pub trait MultiSig<AccountId: PartialEq> {
-    fn multisig() -> AccountId;
+    fn multisig() -> Option<AccountId>;
 }
 
 pub trait Validator<AccountId> {
