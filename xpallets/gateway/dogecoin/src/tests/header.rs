@@ -10,7 +10,7 @@ use light_bitcoin::{
 
 use crate::{
     mock::{
-        generate_blocks_3782200_3782230, generate_blocks_478557_478563, ExtBuilder,
+        alice, generate_blocks_3782200_3782230, generate_blocks_478557_478563, ExtBuilder,
         XGatewayDogecoin, XGatewayDogecoinErr,
     },
     types::DogeHeaderIndex,
@@ -212,7 +212,7 @@ fn test_change_difficulty() {
 fn test_call() {
     ExtBuilder::default().build_and_execute(|| {
         let headers = generate_blocks_3782200_3782230();
-        let origin = frame_system::RawOrigin::Signed(Default::default()).into();
+        let origin = frame_system::RawOrigin::Signed(alice()).into();
         let v = serialization::serialize(&headers[&(3782200 + 1)]);
         let v = v.take();
         assert_ok!(XGatewayDogecoin::push_header(origin, v));
