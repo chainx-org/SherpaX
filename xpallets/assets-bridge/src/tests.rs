@@ -40,7 +40,7 @@ pub fn mint_into_abi() -> Function {
             },
         ],
         outputs: vec![],
-        constant: false,
+        constant: Some(false),
         state_mutability: Default::default(),
     }
 }
@@ -62,7 +62,7 @@ pub fn burn_from_abi() -> Function {
             },
         ],
         outputs: vec![],
-        constant: false,
+        constant: Some(false),
         state_mutability: Default::default(),
     }
 }
@@ -93,7 +93,7 @@ fn test_to_ascii_hex() {
 #[test]
 fn recover_eth_address() {
     new_test_ext().execute_with(|| {
-        let s = EcdsaSignature::from_slice(&SIGNATURE);
+        let s = EcdsaSignature::from_slice(&SIGNATURE).unwrap();
         let p = PUBKEY.as_bytes();
         let address = crate::eth_recover(&s, p, &[][..]).unwrap();
 

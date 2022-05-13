@@ -1,6 +1,7 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
 #![allow(clippy::type_complexity)]
+use codec::{Decode, Encode};
 use std::{cell::RefCell, collections::BTreeMap, time::Duration};
 
 use hex_literal::hex;
@@ -13,7 +14,7 @@ use frame_support::{
     weights::Weight,
 };
 use frame_system::{EnsureRoot, EnsureSigned};
-use sp_core::H256;
+use sp_core::{blake2_256, H256};
 use sp_keyring::sr25519;
 use sp_runtime::{
     testing::Header,
@@ -32,6 +33,7 @@ use light_bitcoin::{
     primitives::{h256_rev, Compact},
     serialization::{self, Reader},
 };
+use xpallet_support::traits::MultisigAddressFor;
 
 use crate::{self as xpallet_gateway_bitcoin, types::BtcParams, Config, Error};
 
@@ -91,6 +93,7 @@ impl frame_system::Config for Test {
     type SystemWeightInfo = ();
     type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
+    type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
 parameter_types! {
@@ -156,6 +159,7 @@ impl pallet_assets::Config for Test {
     type Currency = Balances;
     type ForceOrigin = EnsureRoot<AccountId>;
     type AssetDeposit = AssetDeposit;
+    type AssetAccountDeposit = ();
     type MetadataDepositBase = MetadataDepositBase;
     type MetadataDepositPerByte = MetadataDepositPerByte;
     type ApprovalDeposit = ApprovalDeposit;
@@ -178,10 +182,18 @@ impl xpallet_gateway_records::Config for Test {
     type WeightInfo = ();
 }
 
+pub struct MultisigAddr;
+impl MultisigAddressFor<AccountId> for MultisigAddr {
+    fn calc_multisig(who: &[AccountId], threshold: u16) -> AccountId {
+        let entropy = (b"modlpy/utilisuba", who, threshold).using_encoded(blake2_256);
+        AccountId::decode(&mut &entropy[..]).unwrap()
+    }
+}
+
 impl xpallet_gateway_common::Config for Test {
     type Event = ();
     type Validator = ();
-    type DetermineMultisigAddress = ();
+    type DetermineMultisigAddress = MultisigAddr;
     type CouncilOrigin = EnsureSigned<AccountId>;
     type Bitcoin = XGatewayBitcoin;
     type BitcoinTrustee = XGatewayBitcoin;

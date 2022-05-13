@@ -2,8 +2,8 @@
 
 //! Weights for xpallet_gateway_common
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
-//! DATE: 2022-04-15, STEPS: 50, REPEAT: 20, LOW RANGE: [], HIGH RANGE: []
-//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("benchmarks"), DB CACHE: 128
+//! DATE: 2022-04-28, STEPS: 50, REPEAT: 20, LOW RANGE: [], HIGH RANGE: []
+//! EXECUTION: Some(Wasm), WASM-EXECUTION: Compiled, CHAIN: Some("benchmarks"), DB CACHE: 1024
 
 // Executed Command:
 // ./target/release/sherpax
@@ -45,36 +45,36 @@ pub trait WeightInfo {
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
     fn withdraw() -> Weight {
-        (100_827_000 as Weight)
+        (102_426_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(8 as Weight))
             .saturating_add(T::DbWeight::get().writes(4 as Weight))
     }
     fn cancel_withdrawal() -> Weight {
-        (35_281_000 as Weight)
+        (38_160_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(3 as Weight))
             .saturating_add(T::DbWeight::get().writes(3 as Weight))
     }
     fn setup_trustee() -> Weight {
-        (81_660_000 as Weight)
+        (88_827_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(7 as Weight))
             .saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_proxy() -> Weight {
-        (25_285_000 as Weight)
+        (26_447_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(1 as Weight))
             .saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_info_config() -> Weight {
-        (3_454_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
+        (3_407_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_admin() -> Weight {
-        (3_477_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
+        (3_525_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_admin_multiply() -> Weight {
-        (2_291_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
+        (2_299_000 as Weight).saturating_add(T::DbWeight::get().writes(1 as Weight))
     }
     fn claim_trustee_reward() -> Weight {
-        (157_754_000 as Weight)
+        (124_737_000 as Weight)
             .saturating_add(T::DbWeight::get().reads(7 as Weight))
             .saturating_add(T::DbWeight::get().writes(4 as Weight))
     }
@@ -83,36 +83,36 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 // For backwards compatibility and tests
 impl WeightInfo for () {
     fn withdraw() -> Weight {
-        (100_827_000 as Weight)
+        (102_426_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(8 as Weight))
             .saturating_add(RocksDbWeight::get().writes(4 as Weight))
     }
     fn cancel_withdrawal() -> Weight {
-        (35_281_000 as Weight)
+        (38_160_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(3 as Weight))
             .saturating_add(RocksDbWeight::get().writes(3 as Weight))
     }
     fn setup_trustee() -> Weight {
-        (81_660_000 as Weight)
+        (88_827_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(7 as Weight))
             .saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_proxy() -> Weight {
-        (25_285_000 as Weight)
+        (26_447_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(1 as Weight))
             .saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_info_config() -> Weight {
-        (3_454_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
+        (3_407_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_admin() -> Weight {
-        (3_477_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
+        (3_525_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn set_trustee_admin_multiply() -> Weight {
-        (2_291_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
+        (2_299_000 as Weight).saturating_add(RocksDbWeight::get().writes(1 as Weight))
     }
     fn claim_trustee_reward() -> Weight {
-        (157_754_000 as Weight)
+        (124_737_000 as Weight)
             .saturating_add(RocksDbWeight::get().reads(7 as Weight))
             .saturating_add(RocksDbWeight::get().writes(4 as Weight))
     }

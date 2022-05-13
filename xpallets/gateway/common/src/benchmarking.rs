@@ -199,7 +199,7 @@ benchmarks! {
         }
     }: _(RawOrigin::Root, who.clone())
     verify {
-        assert_eq!(Pallet::<T>::trustee_admin(), who);
+        assert_eq!(Pallet::<T>::trustee_admin().unwrap(), who);
     }
 
     set_trustee_admin_multiply {

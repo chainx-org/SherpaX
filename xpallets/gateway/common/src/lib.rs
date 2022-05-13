@@ -130,6 +130,7 @@ pub mod pallet {
 
     #[pallet::pallet]
     #[pallet::generate_store(pub (super) trait Store)]
+    #[pallet::without_storage_info]
     pub struct Pallet<T>(PhantomData<T>);
 
     #[pallet::call]
@@ -575,12 +576,12 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn trustee_multisig_addr)]
     pub(crate) type TrusteeMultiSigAddr<T: Config> =
-        StorageMap<_, Twox64Concat, Chain, T::AccountId, ValueQuery>;
+        StorageMap<_, Twox64Concat, Chain, T::AccountId, OptionQuery>;
 
     /// The trustee administrator.
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin)]
-    pub(crate) type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
+    pub(crate) type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
     /// The trustee multiply for signature record.
     #[pallet::storage]
@@ -603,7 +604,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn hot_pubkey_info)]
     pub(crate) type HotPubkeyInfo<T: Config> =
-        StorageMap<_, Twox64Concat, Vec<u8>, T::AccountId, ValueQuery>;
+        StorageMap<_, Twox64Concat, Vec<u8>, T::AccountId, OptionQuery>;
 
     /// Record the amount of the trust signature, which is easy to allocate rewards.
     #[pallet::storage]
@@ -1336,7 +1337,7 @@ impl<T: Config> Pallet<T> {
     fn try_ensure_trustee_admin(origin: OriginFor<T>) -> Result<(), OriginFor<T>> {
         match ensure_signed(origin.clone()) {
             Ok(who) => {
-                if who != Self::trustee_admin() {
+                if Some(who) != Self::trustee_admin() {
                     return Err(origin);
                 }
             }

@@ -93,6 +93,7 @@ impl frame_system::Config for Test {
     type SystemWeightInfo = ();
     type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
+    type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
 parameter_types! {
@@ -206,6 +207,7 @@ impl pallet_assets::Config for Test {
     type Currency = Balances;
     type ForceOrigin = EnsureRoot<AccountId>;
     type AssetDeposit = AssetDeposit;
+    type AssetAccountDeposit = ();
     type MetadataDepositBase = MetadataDepositBase;
     type MetadataDepositPerByte = MetadataDepositPerByte;
     type ApprovalDeposit = ApprovalDeposit;
@@ -263,7 +265,7 @@ pub struct MultisigAddr;
 impl MultisigAddressFor<AccountId> for MultisigAddr {
     fn calc_multisig(who: &[AccountId], threshold: u16) -> AccountId {
         let entropy = (b"modlpy/utilisuba", who, threshold).using_encoded(blake2_256);
-        AccountId::decode(&mut &entropy[..]).unwrap_or_default()
+        AccountId::decode(&mut &entropy[..]).unwrap()
     }
 }
 pub struct AlwaysValidator;
@@ -444,7 +446,7 @@ impl<T: xpallet_gateway_bitcoin::Config>
                     .into_iter()
                     .zip(vec![1u64; trustee_num])
                     .collect::<Vec<_>>(),
-                multi_account: Some(T::AccountId::default()),
+                multi_account: None,
                 start_height: Some(start_height),
                 threshold: sig_num as u16,
                 hot_address: hot_trustee_addr_info,
@@ -514,7 +516,7 @@ impl ExtBuilder {
         .assimilate_storage(&mut storage);
 
         let _ = pallet_assets::GenesisConfig::<Test> {
-            assets: vec![(X_BTC, Default::default(), true, 1)],
+            assets: vec![(X_BTC, alice(), true, 1)],
             metadata: vec![(
                 X_BTC,
                 "XBTC".to_string().into_bytes(),

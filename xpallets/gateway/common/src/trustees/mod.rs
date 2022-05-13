@@ -115,14 +115,18 @@ impl<T: Config, C: ChainProvider> TrusteeMultisigProvider<T, C> {
 }
 
 impl<T: Config, C: ChainProvider> MultiSig<T::AccountId> for TrusteeMultisigProvider<T, C> {
-    fn multisig() -> T::AccountId {
+    fn multisig() -> Option<T::AccountId> {
         Pallet::<T>::trustee_multisig_addr(C::chain())
     }
 }
 
 impl<T: Config, C: ChainProvider> SortedMembers<T::AccountId> for TrusteeMultisigProvider<T, C> {
     fn sorted_members() -> Vec<T::AccountId> {
-        vec![Self::multisig()]
+        if let Some(n) = Self::multisig() {
+            vec![n]
+        } else {
+            vec![]
+        }
     }
 }
 
@@ -235,8 +239,9 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                         let pubkey = Public::from_slice(p.as_slice())
                             .map_err(|_| Error::<T>::InvalidPublicKey)?;
                         if pubkey.verify(&sighash, &signature).unwrap_or(false) {
-                            let trustee = Self::hot_pubkey_info(p.as_slice());
-                            signed_trustees.push(trustee);
+                            if let Some(trustee) = Self::hot_pubkey_info(p.as_slice()) {
+                                signed_trustees.push(trustee);
+                            }
                         }
                     }
                 }
@@ -247,7 +252,7 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
         };
 
         signed_trustees.into_iter().for_each(|trustee| {
-            let amount = if trustee == Self::trustee_admin() {
+            let amount = if Some(trustee.clone()) == Self::trustee_admin() {
                 withdraw_amount
                     .saturating_mul(Self::trustee_admin_multiply())
                     .checked_div(10)

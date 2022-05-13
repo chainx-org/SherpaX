@@ -10,9 +10,10 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 pub use sherpax_runtime::{
     constants::currency::UNITS, opaque::SessionKeys, AccountId, AssetsBridgeConfig, AssetsConfig,
-    AuraConfig, Balance, BalancesConfig, BlockNumber, EthereumChainIdConfig, EthereumConfig,
-    EvmConfig, GenesisAccount, GenesisConfig, GrandpaConfig, SessionConfig, Signature, SudoConfig,
-    SystemConfig, TechnicalMembershipConfig, VestingConfig, DAYS, WASM_BINARY,
+    AuraConfig, Balance, BalancesConfig, BaseFeeConfig, BlockNumber, DefaultBaseFeePerGas,
+    EthereumChainIdConfig, EthereumConfig, EvmConfig, GenesisConfig, GrandpaConfig, SessionConfig,
+    Signature, SudoConfig, SystemConfig, TechnicalMembershipConfig, VestingConfig, DAYS,
+    WASM_BINARY,
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::crypto::UncheckedInto;
@@ -221,6 +222,7 @@ pub fn benchmarks_config() -> Result<ChainSpec, String> {
         // Protocol ID
         None,
         // Properties
+        None,
         Some(properties),
         // Extensions
         Default::default(),
@@ -272,6 +274,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
         // Telemetry
         None,
         // Protocol ID
+        None,
         None,
         // Properties
         Some(properties),
@@ -328,6 +331,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         // Telemetry
         None,
         // Protocol ID
+        None,
         None,
         // Properties
         Some(properties),
@@ -410,6 +414,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
         ),
         // Protocol ID
         Some(DEFAULT_PROTOCOL_ID),
+        None,
         // Properties
         Some(properties),
         // Extensions
@@ -492,7 +497,6 @@ pub fn sherpax_genesis(
         system: SystemConfig {
             // Add Wasm runtime to storage.
             code: wasm_binary.to_vec(),
-            changes_trie_config: Default::default(),
         },
         balances: BalancesConfig { balances },
         aura: Default::default(),
@@ -511,12 +515,17 @@ pub fn sherpax_genesis(
         },
         sudo: SudoConfig {
             // Assign network admin rights.
-            key: root_key,
+            key: Some(root_key),
         },
         vesting: VestingConfig { vesting },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1506u64 },
         evm: Default::default(),
         ethereum: Default::default(),
+        base_fee: BaseFeeConfig::new(
+            DefaultBaseFeePerGas::get(),
+            false,
+            sp_runtime::Permill::from_parts(125_000),
+        ),
         assets: sherpax_runtime::AssetsConfig {
             assets: assets_info.0,
             metadata: assets_info.1,

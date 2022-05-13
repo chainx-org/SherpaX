@@ -11,7 +11,7 @@ use frame_support::{
     weights::Weight,
     Twox64Concat,
 };
-use musig2::PublicKey;
+use light_bitcoin::mast::key::PublicKey;
 
 use sp_std::prelude::*;
 use xp_assets_registrar::Chain;

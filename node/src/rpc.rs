@@ -16,12 +16,12 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 // EVM
 use fc_rpc::{
-    EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
-    SchemaV2Override, StorageOverride,
+    EthBlockDataCacheTask, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
+    SchemaV2Override, SchemaV3Override, StorageOverride,
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
+use fp_storage::EthereumStorageSchema;
 use jsonrpc_pubsub::manager::SubscriptionManager;
-use pallet_ethereum::EthereumStorageSchema;
 use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
@@ -60,6 +60,10 @@ pub struct FullDeps<C, P, A: ChainApi> {
     pub fee_history_limit: u64,
     /// Fee history cache.
     pub fee_history_cache: FeeHistoryCache,
+    /// Ethereum data access overrides.
+    pub overrides: Arc<OverrideHandle<Block>>,
+    /// Cache for Ethereum block data.
+    pub block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
 }
 
 pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
@@ -67,7 +71,9 @@ where
     C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
     C: Send + Sync + 'static,
-    C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    C::Api: sp_api::ApiExt<Block>
+        + fp_rpc::EthereumRuntimeRPCApi<Block>
+        + fp_rpc::ConvertTransactionRuntimeApi<Block>,
     BE: Backend<Block> + 'static,
     BE::State: StateBackend<BlakeTwo256>,
 {
@@ -83,6 +89,12 @@ where
             as Box<dyn StorageOverride<_> + Send + Sync>,
     );
 
+    overrides_map.insert(
+        EthereumStorageSchema::V3,
+        Box::new(SchemaV3Override::new(client.clone()))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+
     Arc::new(OverrideHandle {
         schemas: overrides_map,
         fallback: Box::new(RuntimeApiStorageOverride::new(client)),
@@ -93,7 +105,6 @@ where
 pub fn create_full<C, P, BE, A>(
     deps: FullDeps<C, P, A>,
     subscription_task_executor: SubscriptionTaskExecutor,
-    overrides: Arc<OverrideHandle<Block>>,
 ) -> RpcExtension
 where
     BE: Backend<Block> + 'static,
@@ -103,9 +114,10 @@ where
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
     C: Send + Sync + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
-    C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     C::Api: BlockBuilder<Block>,
+    C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
     C::Api: xpallet_gateway_bitcoin_rpc_runtime_api::XGatewayBitcoinApi<Block, AccountId>,
     C::Api: xpallet_gateway_dogecoin_rpc_runtime_api::XGatewayDogecoinApi<Block, AccountId>,
     C::Api: xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<
@@ -123,10 +135,6 @@ where
     P: TransactionPool<Block = Block> + Sync + Send + 'static,
     A: ChainApi<Block = Block> + 'static,
 {
-    use fc_rpc::{
-        EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
-        HexEncodedIdProvider, NetApi, NetApiServer, Web3Api, Web3ApiServer,
-    };
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
     use xpallet_gateway_bitcoin_rpc::{XGatewayBitcoin, XGatewayBitcoinApi};
@@ -135,6 +143,7 @@ where
     use xpallet_gateway_records_rpc::{XGatewayRecords, XGatewayRecordsApi};
 
     let mut io = jsonrpc_core::IoHandler::default();
+
     let FullDeps {
         client,
         pool,
@@ -147,6 +156,8 @@ where
         max_past_logs,
         fee_history_limit,
         fee_history_cache,
+        overrides,
+        block_data_cache,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -159,14 +170,18 @@ where
         client.clone(),
     )));
 
+    // eth api
     {
-        let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
+        use fc_rpc::{
+            EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi,
+            EthPubSubApiServer, HexEncodedIdProvider, NetApi, NetApiServer, Web3Api, Web3ApiServer,
+        };
 
         io.extend_with(EthApiServer::to_delegate(EthApi::new(
             client.clone(),
             pool.clone(),
             graph,
-            sherpax_runtime::TransactionConverter,
+            Some(sherpax_runtime::TransactionConverter),
             network.clone(),
             Vec::new(),
             overrides.clone(),
@@ -174,7 +189,7 @@ where
             is_authority,
             max_past_logs,
             block_data_cache.clone(),
-            fc_rpc::format::Legacy,
+            fc_rpc::format::Geth,
             fee_history_limit,
             fee_history_cache,
         )));
@@ -185,7 +200,6 @@ where
                 backend,
                 filter_pool,
                 500_usize, // max stored filters
-                overrides.clone(),
                 max_past_logs,
                 block_data_cache,
             )));
@@ -210,18 +224,18 @@ where
             ),
             overrides,
         )));
-
-        io.extend_with(XGatewayBitcoinApi::to_delegate(XGatewayBitcoin::new(
-            client.clone(),
-        )));
-        io.extend_with(XGatewayDogecoinApi::to_delegate(XGatewayDogecoin::new(
-            client.clone(),
-        )));
-        io.extend_with(XGatewayRecordsApi::to_delegate(XGatewayRecords::new(
-            client.clone(),
-        )));
-        io.extend_with(XGatewayCommonApi::to_delegate(XGatewayCommon::new(client)));
     }
+
+    io.extend_with(XGatewayBitcoinApi::to_delegate(XGatewayBitcoin::new(
+        client.clone(),
+    )));
+    io.extend_with(XGatewayDogecoinApi::to_delegate(XGatewayDogecoin::new(
+        client.clone(),
+    )));
+    io.extend_with(XGatewayRecordsApi::to_delegate(XGatewayRecords::new(
+        client.clone(),
+    )));
+    io.extend_with(XGatewayCommonApi::to_delegate(XGatewayCommon::new(client)));
 
     io
 }

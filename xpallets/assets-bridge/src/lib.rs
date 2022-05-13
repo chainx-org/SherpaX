@@ -55,6 +55,11 @@ pub mod pallet {
     use frame_support::traits::ReservableCurrency;
     use frame_system::pallet_prelude::*;
 
+    #[pallet::pallet]
+    #[pallet::generate_store(pub(super) trait Store)]
+    #[pallet::without_storage_info]
+    pub struct Pallet<T>(_);
+
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_assets::Config + pallet_evm::Config {
         /// The overarching event type.
@@ -199,9 +204,6 @@ pub mod pallet {
         /// Zero balance
         ZeroBalance,
     }
-
-    #[pallet::pallet]
-    pub struct Pallet<T>(_);
 
     #[pallet::call]
     impl<T: Config> Pallet<T>
@@ -625,6 +627,7 @@ where
             None,
             None,
             Vec::new(),
+            false,
             T::config(),
         )?;
 
