@@ -297,11 +297,11 @@ pub mod pallet {
     /// Error for the XBridge Bitcoin module
     #[pallet::error]
     pub enum Error<T> {
-        /// parse base58 addr error
+        /// Parse base58 addr error
         InvalidBase58,
-        /// load addr from bytes error
+        /// Load addr from bytes error
         InvalidAddr,
-        /// can't find the best header in chain or it's invalid
+        /// Can't find the best header in chain or it's invalid
         InvalidBestIndex,
         /// Invalid proof-of-work (Block hash does not satisfy nBits)
         InvalidPoW,
@@ -325,51 +325,51 @@ pub mod pallet {
         PrevHeaderNotExisted,
         /// Cannot deserialize the header or tx vec
         DeserializeErr,
-        ///
+        /// Merkle proof is invalid
         BadMerkleProof,
         /// The tx is not yet confirmed, i.e, the block of which is not confirmed.
         UnconfirmedTx,
-        /// reject replay proccessed tx
+        /// Reject replay proccessed tx
         ReplayedTx,
-        /// process tx failed
+        /// Process tx failed
         ProcessTxFailed,
-        /// withdraw tx not match expected tx
+        /// Withdraw tx not match expected tx
         MismatchedTx,
-        /// invalid bitcoin address
+        /// Invalid bitcoin address
         InvalidAddress,
-        /// verify tx signature failed
+        /// Verify tx signature failed
         VerifySignFailed,
-        /// invalid sign count in trustee withdrawal tx proposal
+        /// Invalid sign count in trustee withdrawal tx proposal
         InvalidSignCount,
-        /// invalid bitcoin public key
+        /// Invalid bitcoin public key
         InvalidPublicKey,
-        /// construct bad signature
+        /// Construct bad signature
         ConstructBadSign,
         /// Invalid signature
         BadSignature,
         /// Parse redeem script failed
         BadRedeemScript,
-        /// not set trustee yet
+        /// Not set trustee yet
         NotTrustee,
-        /// duplicated pubkey for trustees
+        /// Duplicated pubkey for trustees
         DuplicatedKeys,
-        /// can't generate multisig address
+        /// Can't generate multisig address
         GenerateMultisigFailed,
-        /// invalid trustee count
+        /// Invalid trustee count
         InvalidTrusteeCount,
-        /// unexpected withdraw records count
+        /// Unexpected withdraw records count
         WroungWithdrawalCount,
-        /// reject sig for current proposal
+        /// Reject sig for current proposal
         RejectSig,
-        /// no proposal for current withdrawal
+        /// No proposal for current withdrawal
         NoProposal,
-        /// tx's outputs not match withdrawal id list
+        /// Tx's outputs not match withdrawal id list
         TxOutputsNotMatch,
-        /// last proposal not finished yet
+        /// Last proposal not finished yet
         NotFinishProposal,
-        /// no withdrawal record for this id
+        /// No withdrawal record for this id
         NoWithdrawalRecord,
-        /// already vote for this withdrawal proposal
+        /// Already vote for this withdrawal proposal
         DuplicateVote,
         /// Trustee transition period
         TrusteeTransitionPeriod,
@@ -734,6 +734,7 @@ pub mod pallet {
             Ok(())
         }
 
+        #[transactional]
         pub(crate) fn apply_push_header(header: BlockHeader) -> DispatchResult {
             // current should not exist
             if Self::headers(&header.hash()).is_some() {
