@@ -50,15 +50,15 @@ impl AccountExtractor<AccountId32, ReferralId> for OpReturnExtractor {
 #[test]
 fn test_opreturn_extractor() {
     use sp_core::{
-        crypto::{set_default_ss58_version, Ss58AddressFormat, UncheckedInto},
+        crypto::{set_default_ss58_version, Ss58AddressFormatRegistry, UncheckedInto},
         H256,
     };
 
     let addr = "f778a69d4166401048acb0f7b2625e9680609f8859c78e3d28e2549f84f0269a"
         .parse::<H256>()
         .unwrap();
-    let mainnet = Ss58AddressFormat::ChainXAccount;
-    let testnet = Ss58AddressFormat::SubstrateAccount;
+    let mainnet = Ss58AddressFormatRegistry::ChainxAccount.into();
+    let testnet = Ss58AddressFormatRegistry::SubstrateAccount.into();
 
     {
         set_default_ss58_version(mainnet);
