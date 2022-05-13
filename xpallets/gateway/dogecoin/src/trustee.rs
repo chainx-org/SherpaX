@@ -12,11 +12,10 @@ use sp_std::{cmp::max, convert::TryFrom, prelude::*};
 
 use light_bitcoin::{
     chain::Transaction,
-    crypto::dhash160,
-    keys::{Address, AddressTypes, Public, Type},
+    keys::{Address, Public},
     mast::compute_min_threshold,
     primitives::Bytes,
-    script::{generate_p2sh_address, generate_redeem_script, Builder, Opcode, Script},
+    script::{generate_p2sh_address, generate_redeem_script, Script},
 };
 
 use xp_assets_registrar::Chain;

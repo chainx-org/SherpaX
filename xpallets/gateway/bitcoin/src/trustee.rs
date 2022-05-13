@@ -16,8 +16,7 @@ use sp_std::{
 
 use light_bitcoin::{
     chain::Transaction,
-    crypto::dhash160,
-    keys::{Address, AddressTypes, Public, Type},
+    keys::{Address, Public},
     mast::{compute_min_threshold, Mast},
     primitives::Bytes,
     script::{generate_p2sh_address, generate_redeem_script, Builder, Opcode, Script},
