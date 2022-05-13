@@ -16,7 +16,7 @@ use light_bitcoin::{
     keys::{Address, AddressTypes, Public, Type},
     mast::compute_min_threshold,
     primitives::Bytes,
-    script::{Builder, Opcode, Script},
+    script::{generate_p2sh_address, generate_redeem_script, Builder, Opcode, Script},
 };
 
 use xp_assets_registrar::Chain;
@@ -391,50 +391,17 @@ pub(crate) fn create_multi_address<T: Config>(
     pubkeys: &[Public],
     sig_num: u32,
 ) -> Option<DogeTrusteeAddrInfo> {
-    let mut pubkeys = pubkeys.to_vec();
-    pubkeys.sort_unstable();
+    if let Ok(redeem_script) = generate_redeem_script(pubkeys.to_vec(), sig_num) {
+        let addr = generate_p2sh_address(&redeem_script, Pallet::<T>::network_id());
 
-    let sum = pubkeys.len() as u32;
-    if sig_num > sum {
-        panic!("required sig num should less than trustee_num; qed")
+        let script_bytes: Bytes = redeem_script.into();
+        Some(DogeTrusteeAddrInfo {
+            addr: addr.into_bytes(),
+            redeem_script: script_bytes.into(),
+        })
+    } else {
+        None
     }
-    if sum > 15 {
-        log!(
-            error,
-            "Bitcoin's multisig can't more than 15, current:{}",
-            sum
-        );
-        return None;
-    }
-
-    let opcode = match Opcode::from_u8(Opcode::OP_1 as u8 + sig_num as u8 - 1) {
-        Some(o) => o,
-        None => return None,
-    };
-    let mut build = Builder::default().push_opcode(opcode);
-    for pubkey in pubkeys.iter() {
-        build = build.push_bytes(pubkey);
-    }
-
-    let opcode = match Opcode::from_u8(Opcode::OP_1 as u8 + sum as u8 - 1) {
-        Some(o) => o,
-        None => return None,
-    };
-    let redeem_script = build
-        .push_opcode(opcode)
-        .push_opcode(Opcode::OP_CHECKMULTISIG)
-        .into_script();
-
-    let addr = Address {
-        kind: Type::P2SH,
-        network: Pallet::<T>::network_id(),
-        hash: AddressTypes::Legacy(dhash160(&redeem_script)),
-    };
-    let script_bytes: Bytes = redeem_script.into();
-    Some(DogeTrusteeAddrInfo {
-        addr: addr.to_string().into_bytes(),
-        redeem_script: script_bytes.into(),
-    })
 }
 
 /// Check that the cash withdrawal transaction is correct

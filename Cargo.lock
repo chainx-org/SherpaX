@@ -3761,7 +3761,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "light-bitcoin-chain",
  "light-bitcoin-crypto",
@@ -3776,7 +3776,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-chain"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "hex",
  "light-bitcoin-crypto",
@@ -3790,7 +3790,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-crypto"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "digest 0.9.0",
  "light-bitcoin-primitives",
@@ -3803,7 +3803,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-keys"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "arrayref",
  "bitcoin-bech32",
@@ -3823,7 +3823,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-mast"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "arrayref",
  "bitcoin-bech32",
@@ -3847,7 +3847,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-merkle"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "light-bitcoin-chain",
  "light-bitcoin-primitives",
@@ -3859,7 +3859,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-primitives"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "byteorder",
  "fixed-hash",
@@ -3875,7 +3875,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-script"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "hex",
  "libsecp256k1 0.7.0 (git+https://github.com/chainx-org/libsecp256k1?branch=develop-2022)",
@@ -3892,7 +3892,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-serialization"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "light-bitcoin-primitives",
  "light-bitcoin-serialization-derive",
@@ -3903,7 +3903,7 @@ dependencies = [
 [[package]]
 name = "light-bitcoin-serialization-derive"
 version = "0.2.0"
-source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#eb706fa95184b5f05fb4365b79b54e52995d4d6c"
+source = "git+https://github.com/chainx-org/light-bitcoin?branch=develop-2022#f4607f4eff6759eec3f1d1c15e0d0400201f569d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -8938,9 +8938,9 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "digest 0.10.3",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 
