@@ -17,9 +17,13 @@ use sp_std::{
 use light_bitcoin::{
     chain::Transaction,
     keys::{Address, Public},
-    mast::{compute_min_threshold, Mast, p2sh::{generate_p2sh_address, generate_redeem_script}},
+    mast::{
+        compute_min_threshold,
+        p2sh::{generate_p2sh_address, generate_redeem_script},
+        Mast,
+    },
     primitives::Bytes,
-    script::{ Builder, Opcode, Script},
+    script::{Builder, Opcode, Script},
 };
 
 use xp_assets_registrar::Chain;
