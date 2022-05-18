@@ -12,6 +12,7 @@ use frame_support::{
 use light_bitcoin::{
     chain::Transaction,
     keys::{Public, Signature},
+    mast::key::PublicKey,
     script::{Script, SignatureVersion, TransactionInputSigner},
 };
 use sp_runtime::traits::Zero;
@@ -239,7 +240,9 @@ impl<T: Config> TrusteeInfoUpdate for Pallet<T> {
                         let pubkey = Public::from_slice(p.as_slice())
                             .map_err(|_| Error::<T>::InvalidPublicKey)?;
                         if pubkey.verify(&sighash, &signature).unwrap_or(false) {
-                            if let Some(trustee) = Self::hot_pubkey_info(p.as_slice()) {
+                            let p = PublicKey::parse_slice(p.as_slice())
+                                .map_err(|_| Error::<T>::InvalidPublicKey)?;
+                            if let Some(trustee) = Self::hot_pubkey_info(p.serialize().to_vec()) {
                                 signed_trustees.push(trustee);
                             }
                         }
