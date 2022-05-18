@@ -111,11 +111,13 @@ impl pallet_assets::Config for Test {
 // assets
 parameter_types! {
     pub const BtcAssetId: AssetId = 1;
+    pub const DogeAssetId: AssetId = 10;
 }
 
 impl Config for Test {
     type Event = ();
     type BtcAssetId = BtcAssetId;
+    type DogeAssetId = DogeAssetId;
     type Currency = Balances;
     type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Test>;
 }

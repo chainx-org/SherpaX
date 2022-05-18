@@ -52,7 +52,7 @@ use self::{
 };
 
 pub use self::{
-    types::{BtcAddress, BtcHeaderInfo, BtcParams, BtcTxVerifier, BtcWithdrawalProposal},
+    types::{BtcAddress, BtcHeaderInfo, BtcParams, BtcWithdrawalProposal},
     weights::WeightInfo,
 };
 
@@ -175,7 +175,7 @@ pub mod pallet {
             let from = ensure_signed(origin)?;
 
             ensure!(
-                !T::TrusteeSessionProvider::trustee_transition_state(),
+                !T::TrusteeSessionProvider::trustee_transition_state(Chain::Bitcoin),
                 Error::<T>::TrusteeTransitionPeriod
             );
 
@@ -488,10 +488,6 @@ pub mod pallet {
     #[pallet::getter(fn max_withdrawal_count)]
     pub(crate) type MaxWithdrawalCount<T: Config> = StorageValue<_, u32, ValueQuery>;
 
-    #[pallet::storage]
-    #[pallet::getter(fn verifier)]
-    pub(crate) type Verifier<T: Config> = StorageValue<_, BtcTxVerifier, ValueQuery>;
-
     /// Coming bot helps update btc withdrawal transaction status
     #[pallet::storage]
     #[pallet::getter(fn coming_bot)]
@@ -507,7 +503,6 @@ pub mod pallet {
         pub confirmation_number: u32,
         pub btc_withdrawal_fee: u64,
         pub max_withdrawal_count: u32,
-        pub verifier: BtcTxVerifier,
     }
 
     #[cfg(feature = "std")]
@@ -522,7 +517,6 @@ pub mod pallet {
                 confirmation_number: Default::default(),
                 btc_withdrawal_fee: Default::default(),
                 max_withdrawal_count: Default::default(),
-                verifier: Default::default(),
             }
         }
     }
@@ -552,7 +546,6 @@ pub mod pallet {
             ConfirmationNumber::<T>::put(self.confirmation_number);
             BtcWithdrawalFee::<T>::put(self.btc_withdrawal_fee);
             MaxWithdrawalCount::<T>::put(self.max_withdrawal_count);
-            Verifier::<T>::put(self.verifier);
 
             // init trustee (not this action should ha)
             if !self.genesis_trustees.is_empty() {
@@ -694,7 +687,7 @@ pub mod pallet {
                 .all(|addr| xp_gateway_bitcoin::is_trustee_addr(addr, current_trustee_pair));
 
             // check trustee transition status
-            if T::TrusteeSessionProvider::trustee_transition_state() {
+            if T::TrusteeSessionProvider::trustee_transition_state(Chain::Bitcoin) {
                 // check trustee transition tx
                 // tx output address = new hot address
                 let prev_trustee_pair = get_last_trustee_address_pair::<T>()?;

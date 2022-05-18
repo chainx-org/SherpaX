@@ -176,19 +176,3 @@ impl BtcParams {
         self.max_timespan
     }
 }
-
-#[derive(PartialEq, Eq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum BtcTxVerifier {
-    Recover,
-    RuntimeInterface,
-    #[cfg(any(feature = "runtime-benchmarks", test))]
-    /// Test would ignore sign check and always return true
-    Test,
-}
-
-impl Default for BtcTxVerifier {
-    fn default() -> Self {
-        Self::Recover
-    }
-}

@@ -130,14 +130,17 @@ pub use xp_runtime::Memo;
 #[cfg(feature = "std")]
 pub use xpallet_gateway_bitcoin::h256_rev;
 pub use xpallet_gateway_bitcoin::{
-    hash_rev, BtcHeader, BtcHeaderInfo, BtcNetwork, BtcParams, BtcTxVerifier,
-    BtcWithdrawalProposal, Compact as BtcCompact, H256 as BtcHash,
+    hash_rev, BtcHeader, BtcHeaderInfo, BtcNetwork, BtcParams, BtcWithdrawalProposal,
+    Compact as BtcCompact, H256 as BtcHash,
 };
 pub use xpallet_gateway_common::{
     trustees,
     types::{
         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, ScriptInfo, TrusteeInfoConfig,
     },
+};
+pub use xpallet_gateway_dogecoin::{
+    BlockHeader, DogeHeaderInfo, DogeParams, DogeWithdrawalProposal,
 };
 pub use xpallet_gateway_records::{Withdrawal, WithdrawalLimit, WithdrawalRecordId};
 use xpallet_support::traits::MultisigAddressFor;
@@ -153,7 +156,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 38,
+    spec_version: 39,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 3,
@@ -774,11 +777,13 @@ impl pallet_multisig::Config for Runtime {
 
 parameter_types! {
     pub const BtcAssetId: AssetId = 1;
+    pub const DogeAssetId: AssetId = 9;
 }
 
 impl xpallet_gateway_records::Config for Runtime {
     type Event = Event;
     type BtcAssetId = BtcAssetId;
+    type DogeAssetId = DogeAssetId;
     type Currency = Balances;
     type WeightInfo = xpallet_gateway_records::weights::SubstrateWeight<Runtime>;
 }
@@ -801,6 +806,11 @@ impl xpallet_gateway_common::Config for Runtime {
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Runtime>;
     type BitcoinTotalSupply = XGatewayBitcoin;
     type BitcoinWithdrawalProposal = XGatewayBitcoin;
+    type Dogecoin = XGatewayDogecoin;
+    type DogecoinTrustee = XGatewayDogecoin;
+    type DogecoinTrusteeSessionProvider = trustees::dogecoin::DogeTrusteeSessionManager<Runtime>;
+    type DogecoinTotalSupply = XGatewayDogecoin;
+    type DogecoinWithdrawalProposal = XGatewayDogecoin;
     type WeightInfo = xpallet_gateway_common::weights::SubstrateWeight<Runtime>;
 }
 
@@ -815,6 +825,19 @@ impl xpallet_gateway_bitcoin::Config for Runtime {
     type ReferralBinding = XGatewayCommon;
     type AddressBinding = XGatewayCommon;
     type WeightInfo = xpallet_gateway_bitcoin::weights::SubstrateWeight<Runtime>;
+}
+
+impl xpallet_gateway_dogecoin::Config for Runtime {
+    type Event = Event;
+    type UnixTime = Timestamp;
+    type CouncilOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
+    type AccountExtractor = xp_gateway_bitcoin::OpReturnExtractor;
+    type TrusteeSessionProvider = trustees::dogecoin::DogeTrusteeSessionManager<Runtime>;
+    type TrusteeInfoUpdate = XGatewayCommon;
+    type ReferralBinding = XGatewayCommon;
+    type AddressBinding = XGatewayCommon;
+    type WeightInfo = xpallet_gateway_dogecoin::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -868,6 +891,7 @@ construct_runtime!(
         XGatewayRecords: xpallet_gateway_records::{Pallet, Call, Storage, Event<T>, Config<T>} = 60,
         XGatewayCommon: xpallet_gateway_common::{Pallet, Call, Storage, Event<T>, Config<T>} = 61,
         XGatewayBitcoin: xpallet_gateway_bitcoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 62,
+        XGatewayDogecoin: xpallet_gateway_dogecoin::{Pallet, Call, Storage, Event<T>, Config<T>} = 63,
     }
 );
 
@@ -910,6 +934,20 @@ impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConve
     }
 }
 
+pub struct CustomOnRuntimeUpgrade;
+impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
+    fn on_runtime_upgrade() -> frame_support::weights::Weight {
+        let mut weight = 0;
+
+        // Add multi-chain to some storage
+        weight += xpallet_gateway_common::migrations::chains::apply::<Runtime>();
+        // Initialization dogecoin storage
+        weight += xpallet_gateway_dogecoin::migrations::genesis::apply::<Runtime>();
+
+        weight
+    }
+}
+
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
@@ -943,7 +981,7 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
-    SchedulerMigrationV3,
+    CustomOnRuntimeUpgrade,
 >;
 
 // Migration for scheduler pallet to move from a plain Call to a CallOrHash.
@@ -1315,6 +1353,29 @@ impl_runtime_apis! {
         }
     }
 
+    impl xpallet_gateway_dogecoin_rpc_runtime_api::XGatewayDogecoinApi<Block, AccountId> for Runtime {
+        fn verify_tx_valid(
+            raw_tx: Vec<u8>,
+            withdrawal_id_list: Vec<u32>,
+            full_amount: bool,
+        ) -> Result<bool, DispatchError> {
+            XGatewayDogecoin::verify_tx_valid(raw_tx, withdrawal_id_list, full_amount)
+        }
+
+
+        fn get_withdrawal_proposal() -> Option<DogeWithdrawalProposal<AccountId>> {
+            XGatewayDogecoin::get_withdrawal_proposal()
+        }
+
+        fn get_genesis_info() -> (BlockHeader, u32) {
+            XGatewayDogecoin::get_genesis_info()
+        }
+
+        fn get_doge_block_header(txid: H256) -> Option<DogeHeaderInfo> {
+            XGatewayDogecoin::get_doge_block_header(txid)
+        }
+    }
+
     impl xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<Block, AccountId, Balance, BlockNumber> for Runtime {
         fn bound_addrs(who: AccountId) -> BTreeMap<Chain, Vec<ChainAddress>> {
             XGatewayCommon::bound_addrs(&who)
@@ -1390,7 +1451,10 @@ impl_runtime_apis! {
 
             let mut list = Vec::<BenchmarkList>::new();
 
-            list_benchmarks!(list, extra);
+            list_benchmark!(list, extra, xpallet_gateway_records, XGatewayRecords);
+            list_benchmark!(list, extra, xpallet_gateway_common, XGatewayCommon);
+            list_benchmark!(list, extra, xpallet_gateway_bitcoin, XGatewayBitcoin);
+            list_benchmark!(list, extra, xpallet_gateway_dogecoin, XGatewayDogecoin);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1424,7 +1488,10 @@ impl_runtime_apis! {
             let mut batches = Vec::<BenchmarkBatch>::new();
             let params = (&config, &whitelist);
 
-            add_benchmarks!(params, batches);
+            add_benchmark!(params, batches, xpallet_gateway_records, XGatewayRecords);
+            add_benchmark!(params, batches, xpallet_gateway_common, XGatewayCommon);
+            add_benchmark!(params, batches, xpallet_gateway_bitcoin, XGatewayBitcoin);
+            add_benchmark!(params, batches, xpallet_gateway_dogecoin, XGatewayDogecoin);
 
             if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
             Ok(batches)

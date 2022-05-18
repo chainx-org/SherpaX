@@ -11,7 +11,7 @@ It should at least work until the following commits
 
 -   polkadot.js.org (apps v0.98.2-106)
 -   Polkadot release-v0.9.11 @ `eb9f107e3a04687dcf80111563f2bcea7d5b15d3`
--   Substrate polkadot-v0.9.11  @ `57346f6b24875f8935280dba51fa8ab0a9ba1e39`
+-   Substrate polkadot-v0.9.18  @ `57346f6b24875f8935280dba51fa8ab0a9ba1e39`
 
 ## 2. Local Test
 

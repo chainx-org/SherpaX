@@ -86,9 +86,12 @@ fp-self-contained = { git = "https://github.com/chainx-org/frontier", default-fe
 sherpax-primitives = { path = "../../primitives", default-features = false }
 xp-assets-registrar = { path = "../../primitives/assets-registrar", default-features = false }
 xp-gateway-bitcoin = { path = "../../primitives/gateway/bitcoin", default-features = false }
+xp-gateway-dogecoin = { path = "../../primitives/gateway/dogecoin", default-features = false }
 xp-runtime = { path = "../../primitives/runtime", default-features = false }
 xpallet-gateway-bitcoin = { path = "../../xpallets/gateway/bitcoin", default-features = false }
 xpallet-gateway-bitcoin-rpc-runtime-api = { path = "../../xpallets/gateway/bitcoin/rpc/runtime-api", default-features = false }
+xpallet-gateway-dogecoin = { path = "../../xpallets/gateway/dogecoin", default-features = false }
+xpallet-gateway-dogecoin-rpc-runtime-api = { path = "../../xpallets/gateway/dogecoin/rpc/runtime-api", default-features = false }
 xpallet-gateway-common = { path = "../../xpallets/gateway/common", default-features = false }
 xpallet-gateway-common-rpc-runtime-api = { path = "../../xpallets/gateway/common/rpc/runtime-api", default-features = false }
 xpallet-gateway-records = { path = "../../xpallets/gateway/records", default-features = false }
@@ -116,7 +119,7 @@ std = [
     "sp-std/std",
     "sp-transaction-pool/std",
     "sp-version/std",
-
+    "frame-try-runtime/std",
     "frame-executive/std",
     "frame-support/std",
     "frame-try-runtime/std",
@@ -160,9 +163,12 @@ std = [
     "sherpax-primitives/std",
     "xp-assets-registrar/std",
     "xp-gateway-bitcoin/std",
+    "xp-gateway-dogecoin/std",
     "xp-runtime/std",
     "xpallet-gateway-bitcoin/std",
     "xpallet-gateway-bitcoin-rpc-runtime-api/std",
+    "xpallet-gateway-dogecoin/std",
+    "xpallet-gateway-dogecoin-rpc-runtime-api/std",
     "xpallet-gateway-common/std",
     "xpallet-gateway-common-rpc-runtime-api/std",
     "xpallet-gateway-records/std",
@@ -182,9 +188,11 @@ runtime-benchmarks = [
     "pallet-evm/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
     "xpallet-gateway-bitcoin/runtime-benchmarks",
+    "xpallet-gateway-dogecoin/runtime-benchmarks",
     "xpallet-gateway-common/runtime-benchmarks",
     "xpallet-gateway-records/runtime-benchmarks",
 ]
+
 try-runtime = [
     "frame-executive/try-runtime",
     "frame-try-runtime",
@@ -212,6 +220,7 @@ try-runtime = [
     "pallet-multisig/try-runtime",
     "pallet-ethereum/try-runtime",
     "pallet-assets-bridge/try-runtime",
+    "xpallet-gateway-dogecoin/try-runtime",
     "xpallet-gateway-bitcoin/try-runtime",
     "xpallet-gateway-common/try-runtime",
     "xpallet-gateway-records/try-runtime"

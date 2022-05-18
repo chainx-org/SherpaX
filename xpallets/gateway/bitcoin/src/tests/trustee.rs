@@ -21,10 +21,10 @@ use crate::{
 #[test]
 pub fn test_check_trustee_entity() {
     ExtBuilder::default().build_and_execute(|| {
-        let addr_ok_3 = hex!("0311252930af8ba766b9c7a6580d8dc4bbf9b0befd17a8ef7fabac275bba77ae40");
+        let addr_ok_3 = hex!("042f7e2f0f3e912bf416234913b388393beb5092418fea986e45c0b9633adefd85168f3b1d13ae29651c29e424760b3795fc78152ac119e0dc4e2b9055329099b3");
         let public3 = Public::from_slice(&addr_ok_3).unwrap();
         assert_eq!(XGatewayBitcoin::check_trustee_entity(&addr_ok_3).unwrap().0, public3);
-        let addr_ok_2 = hex!("0211252930af8ba766b9c7a6580d8dc4bbf9b0befd17a8ef7fabac275bba77ae40");
+        let addr_ok_2 = hex!("0451e0dc3d9709d860c49785fc84b62909d991cffd81592f6994c452438f91b6a2e586541c4b3bc1ebeb5fb9fad2ed2e696b2175c54458ab6f103717cbeeb4e52c");
         let public2 = Public::from_slice(&addr_ok_2).unwrap();
         assert_eq!(XGatewayBitcoin::check_trustee_entity(&addr_ok_2).unwrap().0, public2);
 
@@ -45,9 +45,9 @@ pub fn test_check_trustee_entity() {
 
 #[test]
 pub fn test_multi_address() {
-    let pubkey1_bytes = hex!("0311252930af8ba766b9c7a6580d8dc4bbf9b0befd17a8ef7fabac275bba77ae40");
-    let pubkey2_bytes = hex!("02e34d10113f2dd162e8d8614a4afbb8e2eb14eddf4036042b35d12cf5529056a2");
-    let pubkey3_bytes = hex!("023e505c48a955e759ce61145dc4a9a7447425290b8483f4e36f05169e7967c86d");
+    let pubkey1_bytes = hex!("042f7e2f0f3e912bf416234913b388393beb5092418fea986e45c0b9633adefd85168f3b1d13ae29651c29e424760b3795fc78152ac119e0dc4e2b9055329099b3");
+    let pubkey2_bytes = hex!("0451e0dc3d9709d860c49785fc84b62909d991cffd81592f6994c452438f91b6a2e586541c4b3bc1ebeb5fb9fad2ed2e696b2175c54458ab6f103717cbeeb4e52c");
+    let pubkey3_bytes = hex!("04a09e8182977710bab64472c0ecaf9e52255a890554a00a62facd05c0b13817f8995bf590851c19914bfc939d53365b90cc2f0fcfddaca184f0c1e7ce1736f0b8");
 
     let script = Builder::default()
         .push_opcode(Opcode::OP_2)
@@ -59,11 +59,11 @@ pub fn test_multi_address() {
         .into_script();
     let multisig_address = Address {
         kind: Type::P2SH,
-        network: Network::Testnet,
+        network: Network::DogeCoinTestnet,
         hash: AddressTypes::Legacy(dhash160(&script)),
     };
     assert_eq!(
-        "2MtAUgQmdobnz2mu8zRXGSTwUv9csWcNwLU",
+        "2Mw36zb6tAdZ6vjPvS3fXvR1r1wg1K8UXX7",
         multisig_address.to_string()
     );
 }
@@ -119,9 +119,9 @@ fn test_create_multi_address() {
 #[test]
 fn test_create_taproot_address() {
     let mut hot_keys = Vec::new();
-    let pubkey1_bytes = hex!("0283f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2");
-    let pubkey2_bytes = hex!("027a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d");
-    let pubkey3_bytes = hex!("02c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565f");
+    let pubkey1_bytes = hex!("0483f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2b16f3068e94333e11ee63770936eca9692a25f76012511d38ac30ece20f07dca");
+    let pubkey2_bytes = hex!("047a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d47c09531e4f2ca2ae7f9ed80c1f9df2edd8afa19188692724d2bc18c18d98c10");
+    let pubkey3_bytes = hex!("04c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565faced14acb5172ee19aee5417488fecdda33f4cfea9ff04f250e763e6f7458d5e");
     let pubkey4_bytes = hex!("0237322a5008a1b26ac72778167e770e1fa2272cfd9f9fe0f2c20bd41fe051da6c");
     let pubkey5_bytes = hex!("03227368d7168173229f1898b8448dc5c0640ce35eb574639e42ec515b73d5f2d3");
     let pubkey6_bytes = hex!("027196048a63ec7a3b9cb5a23a51952503e7fca8de2ec42388952e067d39fc83ff");

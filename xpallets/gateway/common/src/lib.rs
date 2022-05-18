@@ -15,6 +15,7 @@ mod mock;
 mod tests;
 
 mod binding;
+pub mod migrations;
 pub mod traits;
 pub mod trustees;
 pub mod types;
@@ -36,6 +37,7 @@ use sp_runtime::{
 use sp_std::{collections::btree_map::BTreeMap, convert::TryFrom, prelude::*};
 
 use sherpax_primitives::{AddrStr, ChainAddress, Text};
+use traits::BytesLike;
 use xp_assets_registrar::Chain;
 use xp_runtime::Memo;
 
@@ -44,7 +46,6 @@ use xpallet_support::traits::{MultisigAddressFor, Validator};
 
 use self::{
     traits::{ProposalProvider, TotalSupply, TrusteeForChain, TrusteeInfoUpdate, TrusteeSession},
-    trustees::bitcoin::BtcTrusteeAddrInfo,
     types::{
         GenericTrusteeIntentionProps, GenericTrusteeSessionInfo, RewardInfo, ScriptInfo,
         TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo,
@@ -55,10 +56,9 @@ pub use self::weights::WeightInfo;
 
 pub use pallet::*;
 
-type Balanceof<T> =
-    <<T as xpallet_gateway_records::Config>::Currency as frame_support::traits::Currency<
-        <T as frame_system::Config>::AccountId,
-    >>::Balance;
+type Balanceof<T> = <<T as xpallet_gateway_records::Config>::Currency as Currency<
+    <T as frame_system::Config>::AccountId,
+>>::Balance;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -102,6 +102,28 @@ pub mod pallet {
         type BitcoinTotalSupply: TotalSupply<Self::Balance>;
         /// Get btc withdrawal proposal.
         type BitcoinWithdrawalProposal: ProposalProvider;
+
+        /// Dogecoin
+        /// Get btc chain info.
+        type Dogecoin: ChainT<Self::AssetId, Self::Balance>;
+        /// Generate dogecoin trustee session info.
+        type DogecoinTrustee: TrusteeForChain<
+            Self::AccountId,
+            Self::BlockNumber,
+            trustees::dogecoin::DogeTrusteeType,
+            trustees::dogecoin::DogeTrusteeAddrInfo,
+        >;
+        /// Get trustee session info.
+        type DogecoinTrusteeSessionProvider: TrusteeSession<
+            Self::AccountId,
+            Self::BlockNumber,
+            trustees::dogecoin::DogeTrusteeAddrInfo,
+        >;
+        /// When the trust changes, the total supply of btc: total issue + pending deposit. Help
+        /// to the allocation of btc withdrawal fees.
+        type DogecoinTotalSupply: TotalSupply<Self::Balance>;
+        /// Get btc withdrawal proposal.
+        type DogecoinWithdrawalProposal: ProposalProvider;
 
         type WeightInfo: WeightInfo;
     }
@@ -189,12 +211,13 @@ pub mod pallet {
             // or the trustee is in little black house
             ensure!(
                 Self::generate_trustee_pool().contains(&who)
-                    || Self::little_black_house().contains(&who),
+                    || Self::little_black_house(chain).contains(&who),
                 Error::<T>::NotTrusteePreselectedMember
             );
 
             ensure!(
-                Self::ensure_not_current_trustee(&who) && !Self::trustee_transition_status(),
+                Self::ensure_not_current_trustee(chain, &who)
+                    && !Self::trustee_transition_status(chain),
                 Error::<T>::ExistCurrentTrustee
             );
 
@@ -203,25 +226,27 @@ pub mod pallet {
 
         /// Manual execution of the election by admin.
         #[pallet::weight(0u64)]
-        pub fn excute_trustee_election(origin: OriginFor<T>) -> DispatchResult {
+        pub fn excute_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(Self::try_ensure_trustee_admin)
                 .map(|_| ())
                 .or_else(ensure_root)?;
 
-            Self::do_trustee_election()
+            Self::do_trustee_election(chain)
         }
 
         /// Force cancel trustee transition
         ///
-        /// This is called by the root.
+        /// This is called by the root or council.
         #[pallet::weight(0u64)]
         pub fn cancel_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
-            ensure_root(origin)?;
+            T::CouncilOrigin::try_origin(origin)
+                .map(|_| ())
+                .or_else(ensure_root)?;
 
             Self::cancel_trustee_transition_impl(chain)?;
-            TrusteeTransitionStatus::<T>::put(false);
+            TrusteeTransitionStatus::<T>::insert(chain, false);
             Ok(())
         }
 
@@ -238,6 +263,7 @@ pub mod pallet {
         #[transactional]
         pub fn move_trust_into_black_room(
             origin: OriginFor<T>,
+            chain: Chain,
             trustees: Option<Vec<T::AccountId>>,
         ) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
@@ -253,7 +279,7 @@ pub mod pallet {
             );
 
             if let Some(trustees) = trustees {
-                LittleBlackHouse::<T>::mutate(|l| {
+                LittleBlackHouse::<T>::mutate(chain, |l| {
                     for trustee in trustees.iter() {
                         l.push(trustee.clone());
                     }
@@ -261,13 +287,13 @@ pub mod pallet {
                     l.dedup();
                 });
                 trustees.into_iter().for_each(|trustee| {
-                    if TrusteeSigRecord::<T>::contains_key(&trustee) {
-                        TrusteeSigRecord::<T>::mutate(&trustee, |record| *record = 0);
+                    if TrusteeSigRecord::<T>::contains_key(chain, &trustee) {
+                        TrusteeSigRecord::<T>::mutate(chain, &trustee, |record| *record = Some(0));
                     }
                 });
             }
 
-            Self::do_trustee_election()?;
+            Self::do_trustee_election(chain)?;
             Ok(())
         }
 
@@ -280,6 +306,7 @@ pub mod pallet {
         #[pallet::weight(0u64)]
         pub fn move_trust_out_black_room(
             origin: OriginFor<T>,
+            chain: Chain,
             members: Vec<T::AccountId>,
         ) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
@@ -294,8 +321,8 @@ pub mod pallet {
                 members
             );
             members.into_iter().for_each(|member| {
-                if Self::little_black_house().contains(&member) {
-                    LittleBlackHouse::<T>::mutate(|house| house.retain(|a| *a != member));
+                if Self::little_black_house(chain).contains(&member) {
+                    LittleBlackHouse::<T>::mutate(chain, |house| house.retain(|a| *a != member));
                 }
             });
 
@@ -308,9 +335,9 @@ pub mod pallet {
         ///
         /// This is called by the root.
         #[pallet::weight(100_000_000u64)]
-        pub fn force_trustee_election(origin: OriginFor<T>) -> DispatchResult {
+        pub fn force_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             ensure_root(origin)?;
-            Self::update_transition_status(false, None);
+            Self::update_transition_status(chain, false, None);
 
             Ok(())
         }
@@ -380,20 +407,6 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Dangerous! Be careful to set TrusteeTransitionDuration
-        #[pallet::weight(< T as Config >::WeightInfo::change_trustee_transition_duration())]
-        pub fn change_trustee_transition_duration(
-            origin: OriginFor<T>,
-            duration: T::BlockNumber,
-        ) -> DispatchResult {
-            T::CouncilOrigin::try_origin(origin)
-                .map(|_| ())
-                .or_else(ensure_root)?;
-
-            TrusteeTransitionDuration::<T>::put(duration);
-            Ok(())
-        }
-
         /// Set the trustee admin.
         ///
         /// This is a root-only operation.
@@ -410,14 +423,17 @@ pub mod pallet {
 
         /// Assign trustee reward
         ///
-        /// Any trust can actively call this to receive the
-        /// award for the term the trust is in after the change
-        /// of term.
+        /// To allocate trust rewards through conuncil. If
+        /// trustees have not changed for a long time, the
+        /// current trustees' signature record will be
+        /// cleared after allocating the current trustees'
+        /// reward. The rewards that allocate the previous
+        /// session will not clear the trustees' signature
+        /// record.
         ///
-        /// If a trust has not renewed for a long period of time
-        /// (no change in council membership or no unusual
-        /// circumstances to not renew), but they want to receive
-        /// their award early, they can call this through the council.
+        /// All trust rewards will be allocated when calling.
+        /// I don't think it should be called by a trust. It
+        /// is best to call it through council.
         #[pallet::weight(< T as Config >::WeightInfo::claim_trustee_reward())]
         #[transactional]
         pub fn claim_trustee_reward(
@@ -425,6 +441,8 @@ pub mod pallet {
             chain: Chain,
             session_num: i32,
         ) -> DispatchResult {
+            T::CouncilOrigin::ensure_origin(origin)?;
+
             let session_num: u32 = if session_num < 0 {
                 match session_num {
                     -1i32 => Self::trustee_session_info_len(chain),
@@ -438,25 +456,33 @@ pub mod pallet {
             };
 
             if session_num == Self::trustee_session_info_len(chain) {
-                T::CouncilOrigin::ensure_origin(origin)?;
                 // update trustee sig record info (update reward weight)
                 TrusteeSessionInfoOf::<T>::mutate(chain, session_num, |info| {
                     if let Some(info) = info {
                         info.0.trustee_list.iter_mut().for_each(|trustee| {
-                            trustee.1 = Self::trustee_sig_record(&trustee.0);
+                            trustee.1 = Self::trustee_sig_record(chain, &trustee.0).unwrap_or(0u64);
                         });
                     }
                 });
-            } else {
-                let session_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
-                let who = ensure_signed(origin)?;
-                ensure!(
-                    session_info.trustee_list.iter().any(|n| n.0 == who),
-                    Error::<T>::InvalidTrusteeHisMember
-                );
             }
 
-            Self::apply_claim_trustee_reward(session_num)
+            match chain {
+                Chain::Bitcoin => {
+                    let session_info =
+                        T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
+
+                    Self::apply_claim_trustee_reward(chain, session_num, session_info)?;
+                }
+                Chain::Dogecoin => {
+                    let session_info =
+                        T::DogecoinTrusteeSessionProvider::trustee_session(session_num)?;
+
+                    Self::apply_claim_trustee_reward(chain, session_num, session_info)?;
+                }
+                _ => return Err(Error::<T>::NotSupportedChain.into()),
+            }
+
+            Ok(())
         }
     }
 
@@ -500,10 +526,14 @@ pub mod pallet {
         InvalidTrusteeSession,
         /// exceed the maximum length of the about field of trustess session info
         InvalidAboutLen,
-        /// invalid multisig
-        InvalidMultisig,
+        /// invalid script signature
+        InvalidScriptSig,
+        /// invalid redeem script
+        InvalidRedeemScript,
         /// unsupported chain
         NotSupportedChain,
+        /// duplicated multisig
+        DuplicatedMultiAddress,
         /// existing duplicate account
         DuplicatedAccountId,
         /// not registered as trustee
@@ -516,8 +546,6 @@ pub mod pallet {
         NotTrusteePreselectedMember,
         /// invalid public key
         InvalidPublicKey,
-        /// invalid relayer
-        InvalidRelayer,
         /// invalid session number
         InvalidSessionNum,
         /// invalid trustee history member
@@ -544,15 +572,18 @@ pub mod pallet {
         ExistCurrentTrustee,
     }
 
+    /// The trustee multi substrate account.
     #[pallet::storage]
     #[pallet::getter(fn trustee_multisig_addr)]
     pub(crate) type TrusteeMultiSigAddr<T: Config> =
         StorageMap<_, Twox64Concat, Chain, T::AccountId, OptionQuery>;
 
+    /// The trustee administrator.
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin)]
     pub(crate) type TrusteeAdmin<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
+    /// The trustee multiply for signature record.
     #[pallet::storage]
     #[pallet::getter(fn trustee_admin_multiply)]
     pub(crate) type TrusteeAdminMultiply<T: Config> =
@@ -563,15 +594,23 @@ pub mod pallet {
         11
     }
 
+    /// Storage trustee aggregate pubkey to related accounts for bitcoin taproot.
     #[pallet::storage]
     #[pallet::getter(fn agg_pubkey_info)]
     pub(crate) type AggPubkeyInfo<T: Config> =
         StorageMap<_, Twox64Concat, Vec<u8>, Vec<T::AccountId>, ValueQuery>;
 
+    /// Storage trustee pubkey to account for dogecoin p2sh.
+    #[pallet::storage]
+    #[pallet::getter(fn hot_pubkey_info)]
+    pub(crate) type HotPubkeyInfo<T: Config> =
+        StorageMap<_, Twox64Concat, Vec<u8>, T::AccountId, OptionQuery>;
+
+    /// Record the amount of the trust signature, which is easy to allocate rewards.
     #[pallet::storage]
     #[pallet::getter(fn trustee_sig_record)]
     pub(crate) type TrusteeSigRecord<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, u64, ValueQuery>;
+        StorageDoubleMap<_, Twox64Concat, Chain, Twox64Concat, T::AccountId, u64>;
 
     /// Trustee info config of the corresponding chain.
     #[pallet::storage]
@@ -642,17 +681,11 @@ pub mod pallet {
     pub(crate) type ReferralBindingOf<T: Config> =
         StorageDoubleMap<_, Blake2_128Concat, T::AccountId, Twox64Concat, Chain, T::AccountId>;
 
-    /// How long each trustee is kept. This defines the next block number at which an
-    /// trustee transition will happen. If set to zero, no trustee transition are ever triggered.
-    #[pallet::storage]
-    #[pallet::getter(fn trustee_transition_duration)]
-    pub(crate) type TrusteeTransitionDuration<T: Config> =
-        StorageValue<_, T::BlockNumber, ValueQuery>;
-
     /// The status of the of the trustee transition
     #[pallet::storage]
     #[pallet::getter(fn trustee_transition_status)]
-    pub(crate) type TrusteeTransitionStatus<T: Config> = StorageValue<_, bool, ValueQuery>;
+    pub(crate) type TrusteeTransitionStatus<T: Config> =
+        StorageMap<_, Twox64Concat, Chain, bool, ValueQuery>;
 
     /// Members not participating in trustee elections.
     ///
@@ -660,7 +693,8 @@ pub mod pallet {
     /// little black room. Filter out the member in the next trustee election
     #[pallet::storage]
     #[pallet::getter(fn little_black_house)]
-    pub(crate) type LittleBlackHouse<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
+    pub(crate) type LittleBlackHouse<T: Config> =
+        StorageMap<_, Twox64Concat, Chain, Vec<T::AccountId>, ValueQuery>;
 
     /// When the trust exchange begins, the total cross-chain assets of a certain AssetId
     #[pallet::storage]
@@ -675,7 +709,6 @@ pub mod pallet {
             TrusteeInfoConfig,
             Vec<(T::AccountId, Text, Vec<u8>, Vec<u8>)>,
         )>,
-        pub genesis_trustee_transition_duration: T::BlockNumber,
         pub genesis_trustee_transition_status: bool,
     }
 
@@ -684,7 +717,6 @@ pub mod pallet {
         fn default() -> Self {
             Self {
                 trustees: Default::default(),
-                genesis_trustee_transition_duration: Default::default(),
                 genesis_trustee_transition_status: Default::default(),
             }
         }
@@ -710,8 +742,14 @@ pub mod pallet {
                     }
                     TrusteeInfoConfigOf::<T>::insert(chain, info_config.clone());
                 }
-                TrusteeTransitionDuration::<T>::put(config.genesis_trustee_transition_duration);
-                TrusteeTransitionStatus::<T>::put(&config.genesis_trustee_transition_status);
+                TrusteeTransitionStatus::<T>::insert(
+                    Chain::Bitcoin,
+                    &config.genesis_trustee_transition_status,
+                );
+                TrusteeTransitionStatus::<T>::insert(
+                    Chain::Dogecoin,
+                    &config.genesis_trustee_transition_status,
+                );
             };
             extra_genesis_builder(self);
         }
@@ -733,6 +771,10 @@ impl<T: Config> Pallet<T> {
             Chain::Bitcoin => {
                 // bitcoin do not need memo
                 T::Bitcoin::check_addr(addr, b"")?;
+            }
+            Chain::Dogecoin => {
+                // dogecoin do not need memo
+                T::Dogecoin::check_addr(addr, b"")?;
             }
             _ => return Err(Error::<T>::NotSupportedChain.into()),
         };
@@ -763,6 +805,11 @@ impl<T: Config> Pallet<T> {
             Chain::Bitcoin => {
                 let hot = T::BitcoinTrustee::check_trustee_entity(&hot_entity)?;
                 let cold = T::BitcoinTrustee::check_trustee_entity(&cold_entity)?;
+                (hot.into(), cold.into())
+            }
+            Chain::Dogecoin => {
+                let hot = T::DogecoinTrustee::check_trustee_entity(&hot_entity)?;
+                let cold = T::DogecoinTrustee::check_trustee_entity(&cold_entity)?;
                 (hot.into(), cold.into())
             }
             _ => return Err(Error::<T>::NotSupportedChain.into()),
@@ -806,11 +853,23 @@ impl<T: Config> Pallet<T> {
         ));
     }
 
-    pub fn ensure_not_current_trustee(who: &T::AccountId) -> bool {
-        if let Ok(info) = T::BitcoinTrusteeSessionProvider::current_trustee_session() {
-            !info.trustee_list.into_iter().any(|n| &n.0 == who)
-        } else {
-            true
+    pub fn ensure_not_current_trustee(chain: Chain, who: &T::AccountId) -> bool {
+        match chain {
+            Chain::Bitcoin => {
+                if let Ok(info) = T::BitcoinTrusteeSessionProvider::current_trustee_session() {
+                    !info.trustee_list.into_iter().any(|n| &n.0 == who)
+                } else {
+                    true
+                }
+            }
+            Chain::Dogecoin => {
+                if let Ok(info) = T::DogecoinTrusteeSessionProvider::current_trustee_session() {
+                    !info.trustee_list.into_iter().any(|n| &n.0 == who)
+                } else {
+                    true
+                }
+            }
+            _ => false,
         }
     }
 
@@ -828,34 +887,45 @@ impl<T: Config> Pallet<T> {
 
 /// Trustee Transition
 impl<T: Config> Pallet<T> {
-    pub fn do_trustee_election() -> DispatchResult {
+    pub fn do_trustee_election(chain: Chain) -> DispatchResult {
         ensure!(
-            !Self::trustee_transition_status(),
+            !Self::trustee_transition_status(chain),
             Error::<T>::LastTransitionNotCompleted
         );
 
-        ensure!(
-            T::BitcoinWithdrawalProposal::get_withdrawal_proposal().is_none(),
-            Error::<T>::WithdrawalProposalExist,
-        );
+        match chain {
+            Chain::Bitcoin => ensure!(
+                T::BitcoinWithdrawalProposal::get_withdrawal_proposal().is_none(),
+                Error::<T>::WithdrawalProposalExist,
+            ),
+            Chain::Dogecoin => ensure!(
+                T::DogecoinWithdrawalProposal::get_withdrawal_proposal().is_none(),
+                Error::<T>::WithdrawalProposalExist,
+            ),
+            _ => return Err(Error::<T>::NotSupportedChain.into()),
+        }
 
         // Current trustee list
-        let old_trustee_candidate: Vec<T::AccountId> =
-            if let Ok(info) = T::BitcoinTrusteeSessionProvider::current_trustee_session() {
-                info.trustee_list.into_iter().unzip::<_, _, _, Vec<u64>>().0
-            } else {
-                vec![]
-            };
+        let old_trustee_candidate: Vec<T::AccountId> = match chain {
+            Chain::Bitcoin => match T::BitcoinTrusteeSessionProvider::current_trustee_session() {
+                Ok(info) => info.trustee_list.into_iter().unzip::<_, _, _, Vec<u64>>().0,
+                Err(_) => vec![],
+            },
+            Chain::Dogecoin => match T::DogecoinTrusteeSessionProvider::current_trustee_session() {
+                Ok(info) => info.trustee_list.into_iter().unzip::<_, _, _, Vec<u64>>().0,
+                Err(_) => vec![],
+            },
+            _ => return Err(Error::<T>::NotSupportedChain.into()),
+        };
 
-        let filter_members: Vec<T::AccountId> = Self::little_black_house();
+        let filter_members: Vec<T::AccountId> = Self::little_black_house(chain);
 
         let all_trustee_pool = Self::generate_trustee_pool();
 
         let new_trustee_pool: Vec<T::AccountId> = all_trustee_pool
             .iter()
             .filter_map(|who| {
-                match filter_members.contains(who) || !Self::ensure_set_address(who, Chain::Bitcoin)
-                {
+                match filter_members.contains(who) || !Self::ensure_set_address(who, chain) {
                     true => None,
                     false => Some(who.clone()),
                 }
@@ -891,12 +961,21 @@ impl<T: Config> Pallet<T> {
         if incoming.is_empty() && outgoing.is_empty() {
             return Err(Error::<T>::TrusteeMembersNotEnough.into());
         }
-        Self::transition_trustee_session_impl(Chain::Bitcoin, new_trustee_candidate)?;
-        LittleBlackHouse::<T>::put(remain_filter_members);
-        if Self::trustee_session_info_len(Chain::Bitcoin) != 1 {
-            TrusteeTransitionStatus::<T>::put(true);
-            let total_supply = T::BitcoinTotalSupply::total_supply();
-            PreTotalSupply::<T>::insert(T::BtcAssetId::get(), total_supply);
+        Self::transition_trustee_session_impl(chain, new_trustee_candidate)?;
+        LittleBlackHouse::<T>::insert(chain, remain_filter_members);
+        if Self::trustee_session_info_len(chain) != 1 {
+            TrusteeTransitionStatus::<T>::insert(chain, true);
+            match chain {
+                Chain::Bitcoin => {
+                    let total_supply = T::BitcoinTotalSupply::total_supply();
+                    PreTotalSupply::<T>::insert(T::BtcAssetId::get(), total_supply);
+                }
+                Chain::Dogecoin => {
+                    let total_supply = T::DogecoinTotalSupply::total_supply();
+                    PreTotalSupply::<T>::insert(T::DogeAssetId::get(), total_supply);
+                }
+                _ => (),
+            }
         }
         Ok(())
     }
@@ -975,6 +1054,22 @@ impl<T: Config> Pallet<T> {
 
                 (session_info.0.into(), session_info.1)
             }
+            Chain::Dogecoin => {
+                let props = props
+                    .into_iter()
+                    .map(|(id, prop)| {
+                        (
+                            id,
+                            TrusteeIntentionProps::<T::AccountId, _>::try_from(prop)
+                                .expect("must decode succss from storage data"),
+                        )
+                    })
+                    .collect();
+                let session_info =
+                    T::DogecoinTrustee::generate_trustee_session_info(props, config)?;
+
+                (session_info.0.into(), session_info.1)
+            }
             _ => return Err(Error::<T>::NotSupportedChain.into()),
         };
         Ok(info)
@@ -1025,13 +1120,29 @@ impl<T: Config> Pallet<T> {
         TrusteeSessionInfoOf::<T>::insert(chain, session_number, session_info.0.clone());
         TrusteeMultiSigAddr::<T>::insert(chain, multi_addr);
         // Remove the information of the previous aggregate public key，Withdrawal is prohibited at this time.
-        AggPubkeyInfo::<T>::remove_all(None);
-        for index in 0..session_info.1.agg_pubkeys.len() {
-            AggPubkeyInfo::<T>::insert(
-                &session_info.1.agg_pubkeys[index],
-                session_info.1.personal_accounts[index].clone(),
-            );
+        match chain {
+            Chain::Bitcoin => {
+                AggPubkeyInfo::<T>::remove_all(None);
+                for index in 0..session_info.1.agg_pubkeys.len() {
+                    AggPubkeyInfo::<T>::insert(
+                        &session_info.1.agg_pubkeys[index],
+                        session_info.1.personal_accounts[index].clone(),
+                    );
+                }
+            }
+            Chain::Dogecoin => {
+                HotPubkeyInfo::<T>::remove_all(None);
+                let trustees = session_info.0 .0.trustee_list.clone();
+                for (trustee, _) in trustees {
+                    if let Some(trustee_info) = Self::trustee_intention_props_of(&trustee, chain) {
+                        let hot_key = trustee_info.0.hot_entity;
+                        HotPubkeyInfo::<T>::insert(hot_key, trustee.clone());
+                    }
+                }
+            }
+            _ => return Err(Error::<T>::NotSupportedChain.into()),
         }
+
         TrusteeAdmin::<T>::kill();
 
         Self::deposit_event(Event::<T>::TrusteeSetChanged(
@@ -1074,7 +1185,7 @@ impl<T: Config> Pallet<T> {
             .into_iter()
             .any(|(c, multisig)| multi_addr == multisig && c == chain);
         if find_duplicated {
-            return Err(Error::<T>::InvalidMultisig.into());
+            return Err(Error::<T>::DuplicatedMultiAddress.into());
         }
         Ok(multi_addr)
     }
@@ -1086,8 +1197,11 @@ impl<T: Config> Pallet<T> {
 
 /// Trustee Reward
 impl<T: Config> Pallet<T> {
-    pub fn apply_claim_trustee_reward(session_num: u32) -> DispatchResult {
-        let trustee_info = T::BitcoinTrusteeSessionProvider::trustee_session(session_num)?;
+    pub fn apply_claim_trustee_reward<TrusteeAddrInfo: BytesLike>(
+        chain: Chain,
+        session_num: u32,
+        trustee_info: TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddrInfo>,
+    ) -> DispatchResult {
         let multi_account = match trustee_info.multi_account.clone() {
             None => return Err(Error::<T>::InvalidMultiAccount.into()),
             Some(n) => n,
@@ -1105,15 +1219,19 @@ impl<T: Config> Pallet<T> {
             }
             Err(e) => return Err(e),
         }
-
-        match Self::alloc_not_native_reward(&multi_account, T::BtcAssetId::get(), &trustee_info) {
-            Ok(total_btc_reward) => {
-                if !total_btc_reward.is_zero() {
+        let asset_id = match chain {
+            Chain::Bitcoin => T::BtcAssetId::get(),
+            Chain::Dogecoin => T::DogeAssetId::get(),
+            _ => return Err(Error::<T>::NotSupportedChain.into()),
+        };
+        match Self::alloc_not_native_reward(&multi_account, asset_id, &trustee_info) {
+            Ok(total_asset_reward) => {
+                if !total_asset_reward.is_zero() {
                     Self::deposit_event(Event::<T>::AllocNotNativeReward(
                         multi_account,
                         session_num,
-                        T::BtcAssetId::get(),
-                        total_btc_reward,
+                        asset_id,
+                        total_asset_reward,
                     ));
                 }
             }
@@ -1122,13 +1240,14 @@ impl<T: Config> Pallet<T> {
         Ok(())
     }
 
-    fn compute_reward<Balance>(
+    fn compute_reward<Balance, TrusteeAddrInfo>(
         reward: Balance,
-        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddrInfo>,
     ) -> Result<RewardInfo<T::AccountId, Balance>, DispatchError>
     where
         Balance: Saturating + CheckedDiv + Zero + Copy,
         u64: UniqueSaturatedInto<Balance>,
+        TrusteeAddrInfo: BytesLike,
     {
         let sum_weight = trustee_info
             .trustee_list
@@ -1158,9 +1277,9 @@ impl<T: Config> Pallet<T> {
         Ok(reward_info)
     }
 
-    fn alloc_native_reward(
+    fn alloc_native_reward<TrusteeAddrInfo: BytesLike>(
         from: &T::AccountId,
-        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddrInfo>,
     ) -> Result<Balanceof<T>, DispatchError> {
         let total_reward = <T as xpallet_gateway_records::Config>::Currency::free_balance(from);
         if total_reward.is_zero() {
@@ -1186,10 +1305,10 @@ impl<T: Config> Pallet<T> {
         Ok(total_reward)
     }
 
-    fn alloc_not_native_reward(
+    fn alloc_not_native_reward<TrusteeAddrInfo: BytesLike>(
         from: &T::AccountId,
         asset_id: T::AssetId,
-        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, BtcTrusteeAddrInfo>,
+        trustee_info: &TrusteeSessionInfo<T::AccountId, T::BlockNumber, TrusteeAddrInfo>,
     ) -> Result<T::Balance, DispatchError> {
         let total_reward = pallet_assets::Pallet::<T>::balance(asset_id, from);
         if total_reward.is_zero() {
@@ -1237,6 +1356,7 @@ impl<T: Config> Pallet<T> {
         let chain = xpallet_gateway_records::Pallet::<T>::chain_of(asset_id)?;
         match chain {
             Chain::Bitcoin => T::Bitcoin::withdrawal_limit(asset_id),
+            Chain::Dogecoin => T::Dogecoin::withdrawal_limit(asset_id),
             _ => Err(Error::<T>::NotSupportedChain.into()),
         }
     }

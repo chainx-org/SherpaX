@@ -47,6 +47,9 @@ pub const L_BTC: AssetId = 0x90000000 | X_BTC;
 /// ETH asset in ChainX backed by the Mainnet Ethereum.
 pub const X_ETH: AssetId = 60;
 
+/// Dogecoin asset in ChainX backed by the Mainnet Dogecoin.
+pub const X_DOGE: AssetId = 9;
+
 /// DOT asset in ChainX backed by the Mainnet Polkadot.
 pub const X_DOT: AssetId = 354;
 /// Reserved since this symbol had been used in legacy ChainX 1.0.

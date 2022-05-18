@@ -19,6 +19,7 @@ use light_bitcoin::{
     keys::{Address, Network},
     primitives::{hash_rev, H256},
 };
+use xp_assets_registrar::Chain;
 
 pub use self::validator::validate_transaction;
 use crate::{
@@ -64,7 +65,7 @@ pub fn process_tx<T: Config>(
 fn trustee_transition<T: Config>(tx: Transaction) -> BtcTxResult {
     let amount = tx.outputs().iter().map(|output| output.value).sum::<u64>();
 
-    T::TrusteeInfoUpdate::update_transition_status(false, Some(amount));
+    T::TrusteeInfoUpdate::update_transition_status(Chain::Bitcoin, false, Some(amount));
 
     BtcTxResult::Success
 }
@@ -252,10 +253,18 @@ fn withdraw<T: Config>(tx: Transaction) -> BtcTxResult {
                 (proposal.withdrawal_id_list.len() as u64 * btc_withdrawal_fee).saturated_into();
 
             // Record trustee signature
-            T::TrusteeInfoUpdate::update_trustee_sig_record(
-                input.script_witness[1].as_slice(),
+            match T::TrusteeInfoUpdate::update_trustee_sig_record(
+                Chain::Bitcoin,
+                tx,
                 total.saturated_into(),
-            );
+            ) {
+                Ok(_) => {
+                    info!(target: "runtime::bitcoin", "[withdraw] Withdrawal tx ({:?}) sig record success.", tx_hash);
+                }
+                Err(err) => {
+                    error!(target: "runtime::bitcoin", "[withdraw] Withdrawal tx ({:?}) sig record error:{:?}", tx_hash, err);
+                }
+            };
 
             Pallet::<T>::deposit_event(Event::<T>::Withdrawn(
                 tx_hash,

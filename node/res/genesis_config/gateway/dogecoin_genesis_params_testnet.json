@@ -1,0 +1,12 @@
+{
+    "network": "DogeCoinTestnet",
+    "confirmation_number": 1,
+    "height": 3782200,
+    "hash": "78450863d7503a8b8441510c5cecbad087aa03e5ce118f33e54aed542491aad1",
+    "version": 6422788,
+    "previous_header_hash": "fdbc6c89882d0bcb003c96a849bbe8f739eec6e62c1e8a04ecaa2c6fc7f4c385",
+    "merkle_root_hash": "baf30c61780f84f4daa3653474680d96ba4ef318ad8a6f8b9537d994e1c00a2c",
+    "time": 1651731133,
+    "bits": 471186995,
+    "nonce": 0
+}

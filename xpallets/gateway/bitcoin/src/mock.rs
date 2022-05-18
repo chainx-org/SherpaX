@@ -35,11 +35,7 @@ use light_bitcoin::{
 };
 use xpallet_support::traits::MultisigAddressFor;
 
-use crate::{
-    self as xpallet_gateway_bitcoin,
-    types::{BtcParams, BtcTxVerifier},
-    Config, Error,
-};
+use crate::{self as xpallet_gateway_bitcoin, types::BtcParams, Config, Error};
 
 /// The AccountId alias in this test module.
 pub(crate) type AccountId = AccountId32;
@@ -182,6 +178,7 @@ impl xpallet_gateway_records::Config for Test {
     type Event = ();
     type Currency = Balances;
     type BtcAssetId = BtcAssetId;
+    type DogeAssetId = ();
     type WeightInfo = ();
 }
 
@@ -203,6 +200,11 @@ impl xpallet_gateway_common::Config for Test {
     type BitcoinTrusteeSessionProvider = trustees::bitcoin::BtcTrusteeSessionManager<Test>;
     type BitcoinTotalSupply = XGatewayBitcoin;
     type BitcoinWithdrawalProposal = XGatewayBitcoin;
+    type Dogecoin = ();
+    type DogecoinTrustee = ();
+    type DogecoinTrusteeSessionProvider = ();
+    type DogecoinTotalSupply = ();
+    type DogecoinWithdrawalProposal = ();
     type WeightInfo = ();
 }
 
@@ -271,7 +273,6 @@ impl ExtBuilder {
                 10 * 60,              // target_spacing_seconds
                 4,                    // retargeting_factor
             ), // retargeting_factor
-            verifier: BtcTxVerifier::Recover,
             confirmation_number: 4,
             btc_withdrawal_fee: 0,
             max_withdrawal_count: 100,
@@ -305,7 +306,6 @@ impl ExtBuilder {
 
         let _ = xpallet_gateway_common::GenesisConfig::<Test> {
             trustees: info,
-            genesis_trustee_transition_duration: Default::default(),
             genesis_trustee_transition_status: Default::default(),
         }
         .assimilate_storage(&mut storage);
@@ -324,7 +324,6 @@ impl ExtBuilder {
                 10 * 60,              // target_spacing_seconds
                 4,                    // retargeting_factor
             ), // retargeting_factor
-            verifier: BtcTxVerifier::Recover,
             confirmation_number: 4,
             btc_withdrawal_fee: 0,
             max_withdrawal_count: 100,
@@ -379,20 +378,20 @@ pub fn trustees() -> Vec<(AccountId32, Vec<u8>, Vec<u8>, Vec<u8>)> {
         (
             alice(),
             b"Alice".to_vec(),
-            hex!("0283f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2").to_vec(),
-            hex!("0300849497d4f88ebc3e1bc2583677c5abdbd3b63640b3c5c50cd4628a33a2a2ca").to_vec(),
+            hex!("0483f579dd2380bd31355d066086e1b4d46b518987c1f8a64d4c0101560280eae2b16f3068e94333e11ee63770936eca9692a25f76012511d38ac30ece20f07dca").to_vec(),
+            hex!("0400849497d4f88ebc3e1bc2583677c5abdbd3b63640b3c5c50cd4628a33a2a2cab6b69094b5a213da80f9ef730fab39de770ca124f2d9a9cb161856be54b9adc5").to_vec(),
         ),
         (
             bob(),
             b"Bob".to_vec(),
-            hex!("027a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d").to_vec(),
-            hex!("032122032ae9656f9a133405ffe02101469a8d62002270a33ceccf0e40dda54d08").to_vec(),
+            hex!("047a0868a14bd18e2e45ff3ad960f892df8d0edd1a5685f0a1dc63c7986d4ad55d47c09531e4f2ca2ae7f9ed80c1f9df2edd8afa19188692724d2bc18c18d98c10").to_vec(),
+            hex!("042122032ae9656f9a133405ffe02101469a8d62002270a33ceccf0e40dda54d08c989b55f1b6b46a8dee284cf6737de0a377e410bcfd361a015528ae80a349529").to_vec(),
         ),
         (
             charlie(),
             b"Charlie".to_vec(),
-            hex!("02c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565f").to_vec(),
-            hex!("02b3cc747f572d33f12870fa6866aebbfd2b992ba606b8dc89b676b3697590ad63").to_vec(),
+            hex!("04c9929543dfa1e0bb84891acd47bfa6546b05e26b7a04af8eb6765fcc969d565faced14acb5172ee19aee5417488fecdda33f4cfea9ff04f250e763e6f7458d5e").to_vec(),
+            hex!("04b3cc747f572d33f12870fa6866aebbfd2b992ba606b8dc89b676b3697590ad63d5ca398bdb6f8ee619f2e16997f21e5e8f0e0b00e2f275c7cb1253f381058d56").to_vec(),
         ),
     ]
 }

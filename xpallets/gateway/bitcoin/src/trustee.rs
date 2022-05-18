@@ -16,11 +16,10 @@ use sp_std::{
 
 use light_bitcoin::{
     chain::Transaction,
-    crypto::dhash160,
-    keys::{Address, AddressTypes, Public, Type},
+    keys::{Address, Public},
     mast::{compute_min_threshold, Mast},
     primitives::Bytes,
-    script::{Builder, Opcode, Script},
+    script::{generate_p2sh_address, generate_redeem_script, Builder, Opcode, Script},
 };
 
 use xp_assets_registrar::Chain;
@@ -96,11 +95,11 @@ pub fn check_keys<T: Config>(keys: &[Public]) -> DispatchResult {
         );
         return Err(Error::<T>::DuplicatedKeys.into());
     }
-    let has_normal_pubkey = keys
+    let has_compressed_pubkey = keys
         .iter()
-        .any(|public: &Public| matches!(public, Public::Normal(_)));
-    if has_normal_pubkey {
-        return Err("Unexpect! All keys(bitcoin Public) should be compressed".into());
+        .any(|public: &Public| matches!(public, Public::Compressed(_)));
+    if has_compressed_pubkey {
+        return Err("Unexpect! All keys(bitcoin Public) should be Normal".into());
     }
     Ok(())
 }
@@ -119,26 +118,25 @@ impl<T: Config> TrusteeForChain<T::AccountId, T::BlockNumber, BtcTrusteeType, Bt
     fn check_trustee_entity(raw_addr: &[u8]) -> Result<BtcTrusteeType, DispatchError> {
         let trustee_type = BtcTrusteeType::try_from(raw_addr.to_vec())
             .map_err(|_| Error::<T>::InvalidPublicKey)?;
+        // Unified use of the full public key
         let public = trustee_type.0;
-        let public: musig2::PublicKey = public
-            .try_into()
-            .map_err(|_| Error::<T>::InvalidPublicKey)?;
 
-        let raw_addr = public.serialize_compressed();
-        let public = Public::from_slice(&raw_addr).map_err(|_| Error::<T>::InvalidPublicKey)?;
+        if public.len() != 65 {
+            return Err(Error::<T>::InvalidPublicKey.into());
+        }
 
-        if 2 != raw_addr[0] && 3 != raw_addr[0] {
-            log!(error, "Not Compressed Public(prefix not 2|3)");
+        if 4 != raw_addr[0] {
+            log!(error, "Not Full Public(prefix not 4)");
             return Err(Error::<T>::InvalidPublicKey.into());
         }
 
         if ZERO_P == raw_addr[1..33] {
-            log!(error, "Not Compressed Public(Zero32)");
+            log!(error, "Not Public X(Zero32)");
             return Err(Error::<T>::InvalidPublicKey.into());
         }
 
         if raw_addr[1..33].to_vec() >= EC_P.to_vec() {
-            log!(error, "Not Compressed Public(EC_P)");
+            log!(error, "Not Public X(EC_P)");
             return Err(Error::<T>::InvalidPublicKey.into());
         }
 
@@ -428,50 +426,17 @@ pub(crate) fn create_multi_address<T: Config>(
     pubkeys: &[Public],
     sig_num: u32,
 ) -> Option<BtcTrusteeAddrInfo> {
-    let mut pubkeys = pubkeys.to_vec();
-    pubkeys.sort_unstable();
+    if let Ok(redeem_script) = generate_redeem_script(pubkeys.to_vec(), sig_num) {
+        let addr = generate_p2sh_address(&redeem_script, Pallet::<T>::network_id());
 
-    let sum = pubkeys.len() as u32;
-    if sig_num > sum {
-        panic!("required sig num should less than trustee_num; qed")
+        let script_bytes: Bytes = redeem_script.into();
+        Some(BtcTrusteeAddrInfo {
+            addr: addr.into_bytes(),
+            redeem_script: script_bytes.into(),
+        })
+    } else {
+        None
     }
-    if sum > 15 {
-        log!(
-            error,
-            "Bitcoin's multisig can't more than 15, current:{}",
-            sum
-        );
-        return None;
-    }
-
-    let opcode = match Opcode::from_u8(Opcode::OP_1 as u8 + sig_num as u8 - 1) {
-        Some(o) => o,
-        None => return None,
-    };
-    let mut build = Builder::default().push_opcode(opcode);
-    for pubkey in pubkeys.iter() {
-        build = build.push_bytes(pubkey);
-    }
-
-    let opcode = match Opcode::from_u8(Opcode::OP_1 as u8 + sum as u8 - 1) {
-        Some(o) => o,
-        None => return None,
-    };
-    let redeem_script = build
-        .push_opcode(opcode)
-        .push_opcode(Opcode::OP_CHECKMULTISIG)
-        .into_script();
-
-    let addr = Address {
-        kind: Type::P2SH,
-        network: Pallet::<T>::network_id(),
-        hash: AddressTypes::Legacy(dhash160(&redeem_script)),
-    };
-    let script_bytes: Bytes = redeem_script.into();
-    Some(BtcTrusteeAddrInfo {
-        addr: addr.to_string().into_bytes(),
-        redeem_script: script_bytes.into(),
-    })
 }
 
 /// Check that the cash withdrawal transaction is correct

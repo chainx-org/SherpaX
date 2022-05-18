@@ -119,6 +119,7 @@ where
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
     C::Api: xpallet_gateway_bitcoin_rpc_runtime_api::XGatewayBitcoinApi<Block, AccountId>,
+    C::Api: xpallet_gateway_dogecoin_rpc_runtime_api::XGatewayDogecoinApi<Block, AccountId>,
     C::Api: xpallet_gateway_common_rpc_runtime_api::XGatewayCommonApi<
         Block,
         AccountId,
@@ -138,6 +139,7 @@ where
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
     use xpallet_gateway_bitcoin_rpc::{XGatewayBitcoin, XGatewayBitcoinApi};
     use xpallet_gateway_common_rpc::{XGatewayCommon, XGatewayCommonApi};
+    use xpallet_gateway_dogecoin_rpc::{XGatewayDogecoin, XGatewayDogecoinApi};
     use xpallet_gateway_records_rpc::{XGatewayRecords, XGatewayRecordsApi};
 
     let mut io = jsonrpc_core::IoHandler::default();
@@ -225,6 +227,9 @@ where
     }
 
     io.extend_with(XGatewayBitcoinApi::to_delegate(XGatewayBitcoin::new(
+        client.clone(),
+    )));
+    io.extend_with(XGatewayDogecoinApi::to_delegate(XGatewayDogecoin::new(
         client.clone(),
     )));
     io.extend_with(XGatewayRecordsApi::to_delegate(XGatewayRecords::new(

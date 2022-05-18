@@ -69,6 +69,10 @@ pub mod pallet {
         /// The btc asset id.
         type BtcAssetId: Get<Self::AssetId>;
 
+        #[pallet::constant]
+        /// The dogecoin asset id.
+        type DogeAssetId: Get<Self::AssetId>;
+
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
     }

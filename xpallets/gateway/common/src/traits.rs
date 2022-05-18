@@ -1,9 +1,10 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
-use frame_support::dispatch::DispatchError;
+use frame_support::dispatch::{DispatchError, DispatchResult};
 use sp_std::{convert::TryFrom, prelude::Vec};
 
 use crate::types::{ScriptInfo, TrusteeInfoConfig, TrusteeIntentionProps, TrusteeSessionInfo};
+use light_bitcoin::chain::Transaction;
 use sherpax_primitives::ReferralId;
 use xp_assets_registrar::Chain;
 
@@ -16,6 +17,12 @@ pub trait ChainProvider {
 
 pub trait TotalSupply<Balance> {
     fn total_supply() -> Balance;
+}
+
+impl<Balance: Default> TotalSupply<Balance> for () {
+    fn total_supply() -> Balance {
+        Balance::default()
+    }
 }
 
 pub trait ProposalProvider {
@@ -53,6 +60,27 @@ pub trait TrusteeForChain<
     >;
 }
 
+impl<AccountId, BlockNumber, TrusteeEntity: BytesLike, TrusteeAddress: BytesLike>
+    TrusteeForChain<AccountId, BlockNumber, TrusteeEntity, TrusteeAddress> for ()
+{
+    fn check_trustee_entity(_: &[u8]) -> Result<TrusteeEntity, DispatchError> {
+        Err("NoTrustee".into())
+    }
+
+    fn generate_trustee_session_info(
+        _: Vec<(AccountId, TrusteeIntentionProps<AccountId, TrusteeEntity>)>,
+        _: TrusteeInfoConfig,
+    ) -> Result<
+        (
+            TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>,
+            ScriptInfo<AccountId>,
+        ),
+        DispatchError,
+    > {
+        Err("NoTrustee".into())
+    }
+}
+
 pub trait TrusteeSession<AccountId, BlockNumber, TrusteeAddress: BytesLike> {
     fn trustee_session(
         number: u32,
@@ -66,7 +94,7 @@ pub trait TrusteeSession<AccountId, BlockNumber, TrusteeAddress: BytesLike> {
     fn last_trustee_session(
     ) -> Result<TrusteeSessionInfo<AccountId, BlockNumber, TrusteeAddress>, DispatchError>;
 
-    fn trustee_transition_state() -> bool;
+    fn trustee_transition_state(chain: Chain) -> bool;
 
     #[cfg(feature = "std")]
     fn genesis_trustee(chain: Chain, init: &[AccountId]);
@@ -95,7 +123,7 @@ impl<AccountId, BlockNumber, TrusteeAddress: BytesLike>
         Err("NoTrustee".into())
     }
 
-    fn trustee_transition_state() -> bool {
+    fn trustee_transition_state(_: Chain) -> bool {
         false
     }
 
@@ -105,15 +133,21 @@ impl<AccountId, BlockNumber, TrusteeAddress: BytesLike>
 
 pub trait TrusteeInfoUpdate {
     /// Update the trustee trasition status when the renewal of the trustee is completed
-    fn update_transition_status(status: bool, trans_amount: Option<u64>);
+    fn update_transition_status(chain: Chain, status: bool, trans_amount: Option<u64>);
     /// Each withdrawal is completed to record the weight of the signer
-    fn update_trustee_sig_record(script: &[u8], withdraw_amout: u64);
+    fn update_trustee_sig_record(
+        chain: Chain,
+        tx: Transaction,
+        withdraw_amout: u64,
+    ) -> DispatchResult;
 }
 
 impl TrusteeInfoUpdate for () {
-    fn update_transition_status(_: bool, _: Option<u64>) {}
+    fn update_transition_status(_: Chain, _: bool, _: Option<u64>) {}
 
-    fn update_trustee_sig_record(_: &[u8], _: u64) {}
+    fn update_trustee_sig_record(_: Chain, _: Transaction, _: u64) -> DispatchResult {
+        Ok(())
+    }
 }
 
 pub trait ReferralBinding<AccountId, AssetId> {

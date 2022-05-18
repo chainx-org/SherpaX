@@ -1,6 +1,5 @@
 use crate::bitcoin::{
-    btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, BtcTxVerifier, Chain,
-    TrusteeInfoConfig,
+    btc_genesis_params, BtcGenesisParams, BtcParams, BtcTrusteeParams, Chain, TrusteeInfoConfig,
 };
 use frame_benchmarking::frame_support::PalletId;
 use hex_literal::hex;
@@ -89,6 +88,11 @@ fn sbtc() -> (Chain, AssetId) {
     (Chain::Bitcoin, 1)
 }
 
+/// Asset registration
+fn doge() -> (Chain, AssetId) {
+    (Chain::Dogecoin, 9)
+}
+
 #[allow(clippy::type_complexity)]
 fn reserved_assets(
     root_key: &AccountId,
@@ -107,7 +111,7 @@ fn reserved_assets(
             (6, root_key.clone(), true, 10_000_000_000u128),
             (7, root_key.clone(), true, 10_000_000_000u128),
             (8, root_key.clone(), true, 10_000_000_000u128),
-            (9, root_key.clone(), true, 10_000_000_000u128),
+            (9, root_key.clone(), true, 1u128),
         ],
         vec![
             (
@@ -166,9 +170,9 @@ fn reserved_assets(
             ),
             (
                 9,
-                "Reserved9".to_string().into_bytes(),
-                "RSV9".to_string().into_bytes(),
-                18,
+                "Dogecoin".to_string().into_bytes(),
+                "Doge".to_string().into_bytes(),
+                8,
             ),
         ],
     )
@@ -204,6 +208,9 @@ pub fn benchmarks_config() -> Result<ChainSpec, String> {
                 false,
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_benchmarks.json"
+                )),
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/dogecoin_genesis_params_testnet.json"
                 )),
                 crate::bitcoin::benchmarks_trustees(),
             )
@@ -244,10 +251,20 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 // Sudo account
                 get_account_id_from_seed::<sr25519::Public>("Alice"),
                 // Pre-funded accounts
-                vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
-                true,
+                vec![
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob"),
+                    get_account_id_from_seed::<sr25519::Public>("Charlie"),
+                    get_account_id_from_seed::<sr25519::Public>("Dave"),
+                    get_account_id_from_seed::<sr25519::Public>("Eve"),
+                    get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+                ],
+                false,
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/dogecoin_genesis_params_testnet.json"
                 )),
                 crate::bitcoin::dev_trustees(),
             )
@@ -302,6 +319,9 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 true,
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
+                )),
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/dogecoin_genesis_params_testnet.json"
                 )),
                 crate::bitcoin::mainnet_trustees(),
             )
@@ -376,6 +396,9 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                 btc_genesis_params(include_str!(
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
+                btc_genesis_params(include_str!(
+                    "../res/genesis_config/gateway/dogecoin_genesis_params_testnet.json"
+                )),
                 crate::bitcoin::mainnet_trustees(),
             )
         },
@@ -421,6 +444,7 @@ pub fn sherpax_genesis(
     endowed_accounts: Vec<AccountId>,
     load_genesis: bool,
     bitcoin: BtcGenesisParams,
+    dogecoin: BtcGenesisParams,
     trustees: Vec<(Chain, TrusteeInfoConfig, Vec<BtcTrusteeParams>)>,
 ) -> GenesisConfig {
     let (balances, vesting) = if load_genesis {
@@ -450,7 +474,23 @@ pub fn sherpax_genesis(
             }
         })
         .expect("bitcoin trustees generation can not fail; qed");
+    let doge_genesis_trustees = trustees
+        .iter()
+        .find_map(|(chain, _, trustee_params)| {
+            if *chain == Chain::Dogecoin {
+                Some(
+                    trustee_params
+                        .iter()
+                        .map(|i| (i.0).clone())
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                None
+            }
+        })
+        .expect("dogecoin trustees generation can not fail; qed");
     let sbtc_info = sbtc();
+    let doge_info = doge();
     let assets_info = reserved_assets(&root_key);
     let wasm_binary = WASM_BINARY.unwrap();
     GenesisConfig {
@@ -503,7 +543,6 @@ pub fn sherpax_genesis(
         treasury: Default::default(),
         x_gateway_common: sherpax_runtime::XGatewayCommonConfig {
             trustees,
-            genesis_trustee_transition_duration: 30 * DAYS,
             genesis_trustee_transition_status: false,
         },
         x_gateway_bitcoin: sherpax_runtime::XGatewayBitcoinConfig {
@@ -522,10 +561,26 @@ pub fn sherpax_genesis(
             ), // retargeting_factor
             btc_withdrawal_fee: 500000,
             max_withdrawal_count: 100,
-            verifier: BtcTxVerifier::Recover,
+        },
+        x_gateway_dogecoin: sherpax_runtime::XGatewayDogecoinConfig {
+            genesis_trustees: doge_genesis_trustees,
+            network_id: dogecoin.network,
+            confirmation_number: dogecoin.confirmation_number,
+            genesis_hash: dogecoin.hash(),
+            genesis_info: (dogecoin.header(), dogecoin.height),
+            params_info: sherpax_runtime::DogeParams::new(
+                // for dogecoin
+                545259519,            // max_bits
+                2 * 60 * 60,          // block_max_future
+                2 * 7 * 24 * 60 * 60, // target_timespan_seconds
+                10 * 60,              // target_spacing_seconds
+                4,                    // retargeting_factor
+            ), // retargeting_factor
+            doge_withdrawal_fee: 500000,
+            max_withdrawal_count: 100,
         },
         x_gateway_records: sherpax_runtime::XGatewayRecordsConfig {
-            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0)],
+            initial_asset_chain: vec![(sbtc_info.1, sbtc_info.0), (doge_info.1, doge_info.0)],
         },
     }
 }
