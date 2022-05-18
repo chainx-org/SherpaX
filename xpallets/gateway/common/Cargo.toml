@@ -36,7 +36,7 @@ xpallet-support = { path = "../../support", default-features = false }
 
 # light-bitcoin
 light-bitcoin = { git = "https://github.com/chainx-org/light-bitcoin", branch = "support-dogecoin", default-features = false }
-musig2 = { git = "https://github.com/chainx-org/Musig2", branch = "lib", default-features = false }
+musig2 = { git = "ssh://git@github.com/chainx-org/Musig2.git", branch = "lib", default-features = false }
 
 [dev-dependencies]
 lazy_static = "1.4"
