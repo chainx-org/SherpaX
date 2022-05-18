@@ -309,7 +309,7 @@ impl ExtBuilder {
         }
         .assimilate_storage(&mut storage);
 
-        let (genesis_info, genesis_hash, network_id) = load_signet_btc_genesis_header_info();
+        let (genesis_info, genesis_hash, network_id) = load_dogecoin_genesis_header_info();
 
         let _ = xpallet_gateway_dogecoin::GenesisConfig::<Test> {
             genesis_trustees,
@@ -409,24 +409,24 @@ pub fn trustees() -> Vec<(AccountId32, Vec<u8>, Vec<u8>, Vec<u8>)> {
     ]
 }
 
-pub fn load_signet_btc_genesis_header_info() -> ((BlockHeader, u32), H256, Network) {
+pub fn load_dogecoin_genesis_header_info() -> ((BlockHeader, u32), H256, Network) {
     (
         (
             BlockHeader {
                 version: 6422788,
                 previous_header_hash: h256_rev(
-                    "fdbc6c89882d0bcb003c96a849bbe8f739eec6e62c1e8a04ecaa2c6fc7f4c385",
+                    "763abbde93dfda3034a74ae7db661a6bacbd4569d5b1d81972c9ab566366b3e5",
                 ),
                 merkle_root_hash: h256_rev(
-                    "baf30c61780f84f4daa3653474680d96ba4ef318ad8a6f8b9537d994e1c00a2c",
+                    "ff758444fe236b999c58b4f0653ec6ad8978e8ec3e12beadf7c544cc87b592c7",
                 ),
-                time: 1651731133,
-                bits: Compact::new(471186995),
+                time: 1652868482,
+                bits: Compact::new(494032418),
                 nonce: 0,
             },
-            3782200,
+            3836100,
         ),
-        h256_rev("78450863d7503a8b8441510c5cecbad087aa03e5ce118f33e54aed542491aad1"),
+        h256_rev("97e7095b5d8cfa2722618c7c1c755965754a1acaad81954b975017c31f61e9c5"),
         Network::DogeCoinTestnet,
     )
 }
@@ -444,8 +444,8 @@ fn trustees_info() -> Vec<(
     vec![(Chain::Dogecoin, btc_config, btc_trustees)]
 }
 
-pub fn generate_blocks_3782200_3782230() -> BTreeMap<u32, BlockHeader> {
-    let headers = include_str!("./res/headers-3782200-3782230.json");
+pub fn generate_blocks_3836100_3836160() -> BTreeMap<u32, BlockHeader> {
+    let headers = include_str!("./res/headers-3836100-3836160.json");
     let headers: Vec<(u32, String)> = serde_json::from_str(headers).unwrap();
     headers
         .into_iter()

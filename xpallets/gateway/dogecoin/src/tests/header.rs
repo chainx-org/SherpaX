@@ -10,7 +10,7 @@ use light_bitcoin::{
 
 use crate::{
     mock::{
-        alice, generate_blocks_3782200_3782230, generate_blocks_478557_478563, ExtBuilder,
+        alice, generate_blocks_3836100_3836160, generate_blocks_478557_478563, ExtBuilder,
         XGatewayDogecoin, XGatewayDogecoinErr,
     },
     types::DogeHeaderIndex,
@@ -22,16 +22,16 @@ fn test_genesis() {
         let (header, num) = XGatewayDogecoin::genesis_info();
         assert_eq!(
             header.hash(),
-            h256("0xd1aa912454ed4ae5338f11cee503aa87d0baec5c0c5141848b3a50d763084578")
+            h256("0xc5e9611fc31750974b9581adca1a4a756559751c7c8c612227fa8c5d5b09e797")
         );
-        assert_eq!(num, 3782200);
+        assert_eq!(num, 3836100);
 
         let index = XGatewayDogecoin::best_index();
         assert_eq!(
             index,
             DogeHeaderIndex {
                 hash: header.hash(),
-                height: 3782200
+                height: 3836100
             }
         );
     })
@@ -194,15 +194,15 @@ fn test_insert_forked_headers() {
 #[test]
 fn test_change_difficulty() {
     ExtBuilder::default().build_and_execute(|| {
-        let headers = generate_blocks_3782200_3782230();
-        let to_height = 3782200 + 20;
-        let current_difficulty = headers[&3782201].bits;
+        let headers = generate_blocks_3836100_3836160();
+        let to_height = 3836100 + 20;
+        let current_difficulty = headers[&3836101].bits;
         let new_difficulty = headers[&to_height].bits;
         println!(
             "current_difficulty: bit:{:?}|new_difficulty: bit:{:?}",
             current_difficulty, new_difficulty
         );
-        for i in 3782201..to_height {
+        for i in 3836101..to_height {
             assert_ok!(XGatewayDogecoin::apply_push_header(headers[&i]));
         }
     })
@@ -211,9 +211,9 @@ fn test_change_difficulty() {
 #[test]
 fn test_call() {
     ExtBuilder::default().build_and_execute(|| {
-        let headers = generate_blocks_3782200_3782230();
+        let headers = generate_blocks_3836100_3836160();
         let origin = frame_system::RawOrigin::Signed(alice()).into();
-        let v = serialization::serialize(&headers[&(3782200 + 1)]);
+        let v = serialization::serialize(&headers[&(3836100 + 1)]);
         let v = v.take();
         assert_ok!(XGatewayDogecoin::push_header(origin, v));
     })

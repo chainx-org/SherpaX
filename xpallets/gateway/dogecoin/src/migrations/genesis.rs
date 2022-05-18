@@ -57,7 +57,7 @@ pub fn doge_testnet_genesis_params() -> DogeGenesisParams {
     DogeGenesisParams {
         network: Network::DogeCoinTestnet,
         confirmation_number: 1,
-        height: 3782200,
+        height: 3836100,
         hash: "78450863d7503a8b8441510c5cecbad087aa03e5ce118f33e54aed542491aad1".to_string(),
         version: 6422788,
         previous_header_hash: "fdbc6c89882d0bcb003c96a849bbe8f739eec6e62c1e8a04ecaa2c6fc7f4c385"
