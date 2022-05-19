@@ -943,6 +943,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
         weight += xpallet_gateway_common::migrations::chains::apply::<Runtime>();
         // Initialization dogecoin storage
         weight += xpallet_gateway_dogecoin::migrations::genesis::apply::<Runtime>();
+        // Initialization record of dogecoin storage
+        weight += xpallet_gateway_records::migrations::genesis::apply::<Runtime>();
 
         weight
     }
