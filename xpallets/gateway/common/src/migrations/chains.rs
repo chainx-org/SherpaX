@@ -1,8 +1,8 @@
 // Copyright 2019-2020 ChainX Project Authors. Licensed under GPL-3.0.
 
 use crate::{
-    Config, GenericTrusteeIntentionProps, LittleBlackHouse, TrusteeIntentionPropertiesOf,
-    TrusteeIntentionProps, TrusteeSigRecord, TrusteeTransitionStatus,
+    Config, GenericTrusteeIntentionProps, LittleBlackHouse, TrusteeInfoConfig, TrusteeInfoConfigOf,
+    TrusteeIntentionPropertiesOf, TrusteeIntentionProps, TrusteeSigRecord, TrusteeTransitionStatus,
 };
 use frame_support::{
     log::info,
@@ -31,6 +31,7 @@ pub fn apply<T: Config>() -> Weight {
         .saturating_add(migrate_trustee_transition_status::<T>())
         .saturating_add(migrate_little_black_house::<T>())
         .saturating_add(migrate_trustee_intention_properties::<T>())
+        .saturating_add(dogecoin_genesis::<T>())
 }
 
 /// Migrate from the old trustee session info.
@@ -105,4 +106,13 @@ pub fn migrate_trustee_intention_properties<T: Config>() -> Weight {
     );
     <T as frame_system::Config>::DbWeight::get()
         .reads_writes(count as Weight + 1, count as Weight + 1)
+}
+
+pub fn dogecoin_genesis<T: Config>() -> Weight {
+    let dogecoin_info_config = TrusteeInfoConfig {
+        min_trustee_count: 3,
+        max_trustee_count: 15,
+    };
+    TrusteeInfoConfigOf::<T>::insert(Chain::Dogecoin, dogecoin_info_config);
+    <T as frame_system::Config>::DbWeight::get().writes(1)
 }

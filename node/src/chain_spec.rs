@@ -397,7 +397,7 @@ pub fn mainnet_config() -> Result<ChainSpec, String> {
                     "../res/genesis_config/gateway/btc_genesis_params_testnet.json"
                 )),
                 btc_genesis_params(include_str!(
-                    "../res/genesis_config/gateway/dogecoin_genesis_params_testnet.json"
+                    "../res/genesis_config/gateway/dogecoin_genesis_params_mainnet.json"
                 )),
                 crate::bitcoin::mainnet_trustees(),
             )

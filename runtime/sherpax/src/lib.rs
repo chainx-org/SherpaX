@@ -156,7 +156,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 40,
+    spec_version: 41,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 3,
@@ -943,6 +943,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
         weight += xpallet_gateway_common::migrations::chains::apply::<Runtime>();
         // Initialization dogecoin storage
         weight += xpallet_gateway_dogecoin::migrations::genesis::apply::<Runtime>();
+        // Initialization record of dogecoin storage
+        weight += xpallet_gateway_records::migrations::genesis::apply::<Runtime>();
 
         weight
     }

@@ -226,7 +226,7 @@ pub mod pallet {
 
         /// Manual execution of the election by admin.
         #[pallet::weight(0u64)]
-        pub fn excute_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
+        pub fn execute_trustee_election(origin: OriginFor<T>, chain: Chain) -> DispatchResult {
             T::CouncilOrigin::try_origin(origin)
                 .map(|_| ())
                 .or_else(Self::try_ensure_trustee_admin)

@@ -5,6 +5,7 @@
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+pub mod migrations;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -166,6 +167,20 @@ pub mod pallet {
                 Locks::<T>::insert(who, asset_id, locked_balance);
             }
 
+            Ok(())
+        }
+
+        /// Set asset id of Chain
+        ///
+        /// This is a root-only operation.
+        #[pallet::weight(0)]
+        pub fn set_chain_asset_id(
+            origin: OriginFor<T>,
+            chain: Chain,
+            asset_id: T::AssetId,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+            AssetChainOf::<T>::insert(asset_id, chain);
             Ok(())
         }
     }

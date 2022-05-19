@@ -194,6 +194,7 @@ pub mod pallet {
         /// Identifier for the class of asset.
         type AssetId: Member
             + Parameter
+            + AtLeast32BitUnsigned
             + Default
             + Copy
             + HasCompact
