@@ -232,18 +232,18 @@ fn test_process_tx() {
 fn test_push_tx_call() {
     set_default_ss58_version(Ss58AddressFormatRegistry::ChainxAccount.into());
     // https://blockchain.info/rawtx/f1a9161a045a01db7ae02b8c0531e2fe2e9740efe30afe6d84a12e3cac251344?format=hex
-    let normal_deposit: Transaction = "010000000143fb4694093a57cd727791deac22563e1f6595b8f5dc519be4e8701b8afecec4000000008a47304402205ef330d36268379c78e32cfc3b04b3bfc8d595c9c161b65a9e81f866331dbdee02206c0e960eeeb74ea02deac4328251f5a62b39b185aa5a451134b77e873619f123014104a09e8182977710bab64472c0ecaf9e52255a890554a00a62facd05c0b13817f8995bf590851c19914bfc939d53365b90cc2f0fcfddaca184f0c1e7ce1736f0b80000000002809698000000000017a9142995ac346d93b015e2941715d432af5ac4e1010c870000000000000000326a3035516a706f3772516e7751657479736167477a6334526a376f737758534c6d4d7141754332416255364c464646476a3800000000".parse().unwrap();
+    let normal_deposit: Transaction = "010000000144b4ae11c340569056655af8b875a9d6af881b599dc0fa7fa3dff59d6ade0bce020000008a47304402207ea6837fea50ea3f84aa3100ff1c48448d4610eb71c7fc9adb7cc3d9dba89d36022063ee329c6b4ee4c9e1a7deb76b1795132a2de73da55e75cab0b2a0dfeb9fb6740141042f7e2f0f3e912bf416234913b388393beb5092418fea986e45c0b9633adefd85168f3b1d13ae29651c29e424760b3795fc78152ac119e0dc4e2b9055329099b3000000000300e1f5050000000017a9140473e14aec27f8edb5baa7ac03a600b094651751870000000000000000326a303555543838746b4675457668506367577178486f686b584844684c6b3954666b704d595455684748533654683834384700bc522a020000001976a9144afe03f863d27be1cfb7ec0859c4ff89569bb23988ac00000000".parse().unwrap();
     let tx = serialization::serialize(&normal_deposit);
-    let headers = generate_blocks_3782200_3782230();
-    let block_hash = headers[&3782205].hash();
+    let headers = generate_blocks_3836100_3836160();
+    let block_hash = headers[&3836138].hash();
 
-    let raw_proof = hex::decode("020000000209c634a0ed2c7717515926f7dee968bf5925c8fb5d1d8a653eefb71b3db65a419926808d419bbe850e9b6347146a3b6107381f6d075297acb969838d325673e80105").unwrap();
+    let raw_proof = hex::decode("0200000002ed5df33dc0bcb73dbd6adacdb5a7cb71377f62c4b15320cf59735a29bee2becc9651fae85e1ce20ee7e1d934a548802698384d3bf8cda619cbf10a916bb2374e0105").unwrap();
     let proof: PartialMerkleTree = serialization::deserialize(Reader::new(&raw_proof)).unwrap();
 
     ExtBuilder::default().build_and_execute(|| {
         let confirmed = XGatewayDogecoin::confirmation_number();
         // insert headers
-        for i in 3782201..=3782205 + confirmed {
+        for i in 3836101..=3836154 + confirmed {
             assert_ok!(XGatewayDogecoin::apply_push_header(headers[&i]));
         }
         let info = DogeRelayedTxInfo {
