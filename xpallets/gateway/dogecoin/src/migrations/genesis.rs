@@ -53,19 +53,19 @@ impl DogeGenesisParams {
     }
 }
 
-pub fn doge_testnet_genesis_params() -> DogeGenesisParams {
+pub fn doge_mainnet_genesis_params() -> DogeGenesisParams {
     DogeGenesisParams {
-        network: Network::DogeCoinTestnet,
-        confirmation_number: 1,
-        height: 3836100,
-        hash: "78450863d7503a8b8441510c5cecbad087aa03e5ce118f33e54aed542491aad1".to_string(),
+        network: Network::DogeCoinMainnet,
+        confirmation_number: 6,
+        height: 4230635,
+        hash: "8a5efa8007ae46db2f6073b31d329031afe1ecd966ffe2440e05964af7bfd4de".to_string(),
         version: 6422788,
-        previous_header_hash: "fdbc6c89882d0bcb003c96a849bbe8f739eec6e62c1e8a04ecaa2c6fc7f4c385"
+        previous_header_hash: "87cc425af5a4365c7484f1b94c932323c6dd2309444683086b7284d49500b7c6"
             .to_string(),
-        merkle_root_hash: "baf30c61780f84f4daa3653474680d96ba4ef318ad8a6f8b9537d994e1c00a2c"
+        merkle_root_hash: "4a57bcb025773314a42fe1bff32b36ad3bb4fed063ff7a7c97c4b78c7c1c12f2"
             .to_string(),
-        time: 1651731133,
-        bits: Compact::new(471186995),
+        time: 1652951041,
+        bits: Compact::new(436401055),
         nonce: 0,
     }
 }
@@ -81,7 +81,7 @@ pub fn apply<T: Config>() -> Weight {
 
 pub fn dogecoin_genesis<T: Config>() -> Weight {
     // TODO：Use dogecoin mainnet genesis info.
-    let dogecoin_block_params = doge_testnet_genesis_params();
+    let dogecoin_block_params = doge_mainnet_genesis_params();
     let dogecoin_params = DogeParams::new(
         // for dogecoin
         545259519,            // max_bits
