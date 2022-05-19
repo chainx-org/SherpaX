@@ -3,8 +3,8 @@
 extern crate alloc;
 use crate::{
     types::DogeHeaderIndex, BestIndex, BlockHashFor, Config, ConfirmationNumber, DogeHeaderInfo,
-    DogeParams, DogeWithdrawalFee, GenesisInfo, Headers, MainChain, MaxWithdrawalCount, NetworkId,
-    ParamsInfo,
+    DogeMinDeposit, DogeParams, DogeWithdrawalFee, GenesisInfo, Headers, MainChain,
+    MaxWithdrawalCount, NetworkId, ParamsInfo,
 };
 use alloc::string::{String, ToString};
 use frame_support::{log::info, traits::Get, weights::Weight};
@@ -111,12 +111,13 @@ pub fn dogecoin_genesis<T: Config>() -> Weight {
     ParamsInfo::<T>::put(dogecoin_params);
     NetworkId::<T>::put(dogecoin_block_params.network);
     ConfirmationNumber::<T>::put(dogecoin_block_params.confirmation_number);
-    DogeWithdrawalFee::<T>::put(1_000_000);
+    DogeWithdrawalFee::<T>::put(2_000_000_000);
     MaxWithdrawalCount::<T>::put(100);
+    DogeMinDeposit::<T>::put(1_000_000_000);
 
     info!(
         target: "runtime::gateway::dogecoin",
         "✅ Migration for dogecoin genesis done"
     );
-    <T as frame_system::Config>::DbWeight::get().writes(10)
+    <T as frame_system::Config>::DbWeight::get().writes(11)
 }
