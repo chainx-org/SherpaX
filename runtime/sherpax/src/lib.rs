@@ -156,7 +156,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 41,
+    spec_version: 42,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 3,
@@ -934,22 +934,6 @@ impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConve
     }
 }
 
-pub struct CustomOnRuntimeUpgrade;
-impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
-    fn on_runtime_upgrade() -> frame_support::weights::Weight {
-        let mut weight = 0;
-
-        // Add multi-chain to some storage
-        weight += xpallet_gateway_common::migrations::chains::apply::<Runtime>();
-        // Initialization dogecoin storage
-        weight += xpallet_gateway_dogecoin::migrations::genesis::apply::<Runtime>();
-        // Initialization record of dogecoin storage
-        weight += xpallet_gateway_records::migrations::genesis::apply::<Runtime>();
-
-        weight
-    }
-}
-
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
@@ -983,19 +967,22 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
-    CustomOnRuntimeUpgrade,
+    DogeCoinGatewayMigration,
 >;
 
-// Migration for scheduler pallet to move from a plain Call to a CallOrHash.
-pub struct SchedulerMigrationV3;
-
-impl OnRuntimeUpgrade for SchedulerMigrationV3 {
+pub struct DogeCoinGatewayMigration;
+impl frame_support::traits::OnRuntimeUpgrade for DogeCoinGatewayMigration {
     fn on_runtime_upgrade() -> frame_support::weights::Weight {
-        frame_support::log::info!("🔍️ SchedulerMigrationV3 start");
-        let w = Scheduler::migrate_v2_to_v3();
-        frame_support::log::info!("🚀 SchedulerMigrationV3 end");
-
-        w
+        let mut weight = 0;
+        frame_support::log::info!("🔍️ DogeCoinGatewayMigration start");
+        // Add multi-chain to some storage
+        weight += xpallet_gateway_common::migrations::chains::apply::<Runtime>();
+        // Initialization dogecoin storage
+        weight += xpallet_gateway_dogecoin::migrations::genesis::apply::<Runtime>();
+        // Initialization record of dogecoin storage
+        weight += xpallet_gateway_records::migrations::genesis::apply::<Runtime>();
+        frame_support::log::info!("🚀 DogeCoinGatewayMigration end");
+        weight
     }
 }
 

@@ -7337,7 +7337,7 @@ dependencies = [
 
 [[package]]
 name = "sherpax"
-version = "1.3.0"
+version = "1.4.0"
 dependencies = [
  "clap",
  "fc-consensus",
@@ -7418,7 +7418,7 @@ dependencies = [
 
 [[package]]
 name = "sherpax-runtime"
-version = "1.3.0"
+version = "1.4.0"
 dependencies = [
  "fp-evm",
  "fp-rpc",
