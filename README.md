@@ -8,10 +8,8 @@ How to use/test locally
 ## 1. Supported dependencies
 
 It should at least work until the following commits
-
--   polkadot.js.org (apps v0.98.2-106)
--   Polkadot release-v0.9.11 @ `eb9f107e3a04687dcf80111563f2bcea7d5b15d3`
--   Substrate polkadot-v0.9.18  @ `57346f6b24875f8935280dba51fa8ab0a9ba1e39`
+- Substrate: polkadot-v0.9.18  @ `fc3fd073d3a0acf9933c3994b660ebd7b5833f65`
+- ChainX frontier: polkadot-v0.9.18 @ `4e91f788ba02a0add42f09cae21bf96e3d346330`
 
 ## 2. Local Test
 
