@@ -572,7 +572,7 @@ pub mod pallet {
             let require = match ensure_signed_or_root(origin) {
                 Ok(s) if s == Self::admin_key() => true,
                 Ok(None) => true,
-                _ => false
+                _ => false,
             };
 
             ensure!(require, Error::<T>::RequireAdmin);
