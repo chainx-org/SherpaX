@@ -569,7 +569,14 @@ pub mod pallet {
             origin: OriginFor<T>,
             new_admin: <T::Lookup as StaticLookup>::Source,
         ) -> DispatchResultWithPostInfo {
-            ensure_root(origin)?;
+            let require = match ensure_signed_or_root(origin) {
+                Ok(s) if s == Self::admin_key() => true,
+                Ok(None) => true,
+                _ => false
+            };
+
+            ensure!(require, Error::<T>::RequireAdmin);
+
             let new_admin = T::Lookup::lookup(new_admin)?;
 
             Admin::<T>::mutate(|admin| *admin = Some(new_admin.clone()));
