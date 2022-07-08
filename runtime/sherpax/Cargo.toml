@@ -1,6 +1,6 @@
 [package]
 name = "sherpax-runtime"
-version = "1.4.0"
+version = "1.4.1"
 authors = ['The ChainX Authors']
 edition = "2021"
 
