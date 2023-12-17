@@ -1381,6 +1381,7 @@ impl<T: Config> Pallet<T> {
                 WithdrawalLimit<T::Balance>,
             ),
         > = xpallet_gateway_records::Pallet::<T>::pending_withdrawal_set()
+            .filter(|(_, record)| record.asset_id() == *asset_id)
             .map(|(id, record)| {
                 (
                     id,
